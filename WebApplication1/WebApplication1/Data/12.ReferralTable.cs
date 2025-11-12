@@ -4,9 +4,9 @@ namespace ReferralTable
 {
     public class Referral
     {
-        public Guid ReferralId { get; set; }
-        public Guid ReferrerId { get; set; }
-        public Guid ReferredId { get; set; }
+        public int ReferralId { get; set; }
+        public int ReferrerId { get; set; }
+        public int ReferredId { get; set; }
         public decimal BonusAmount { get; set; }
         public DateTime Timestamp { get; set; }
 

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using TradesTableNameSpace;
 
 namespace OrderBookTablenamepsace
 {
@@ -11,6 +12,9 @@ namespace OrderBookTablenamepsace
         public decimal Price { get; set; }
         public decimal Amount { get; set; }
         public DateTime Timestamp { get; set; }
+
+        public ICollection<TradesTable> TradesAsBuyOrder { get; set; }
+        public ICollection<TradesTable> TradesAsSellOrder { get; set; }
     }
 
 }

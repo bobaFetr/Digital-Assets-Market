@@ -9,7 +9,7 @@ namespace WalletTableNameSpace
         [Key]
         public int  WalletID     { get; set; }
         [ForeignKey("User")]
-        public Guid UserId { get; set; }
+        public int UserId { get; set; }
         public string Currency { get; set; }
         public decimal Balance { get; set; }
         public string Addres { get; set; }

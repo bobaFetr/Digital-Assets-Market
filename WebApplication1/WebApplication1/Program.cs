@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.Resource;
+using NetServer.DB_Context;
 
 namespace WebApplication1
 {
@@ -10,7 +12,13 @@ namespace WebApplication1
     {
         public static void Main(string[] args)
         {
+    //         builder.Services.AddDbContext<DB_COntext>(options =>
+    // options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
             var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddDbContext<DB_COntext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            
 
             // Add services to the container.
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

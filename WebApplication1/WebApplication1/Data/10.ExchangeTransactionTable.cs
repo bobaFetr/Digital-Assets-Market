@@ -10,7 +10,7 @@ namespace ExchangeTransactionNameSpace
         [Key]
         public int TransactionID { get; set; }
         [ForeignKey("User")]
-        public Guid UserID { get; set; }
+        public int UserID { get; set; }
         public string TypeOfTransaction { get; set; }
         public string Currency { get; set; }
 
@@ -25,7 +25,7 @@ namespace ExchangeTransactionNameSpace
 
         public User User { get; set; }
         [ForeignKey("BlockchainEvent")]
-        public Guid BlockchainEventEventId { get; set; }
+        public int BlockchainEventEventId { get; set; }
         public BlockchainEvent BlockchainEvent { get; set; }
     }
 }
