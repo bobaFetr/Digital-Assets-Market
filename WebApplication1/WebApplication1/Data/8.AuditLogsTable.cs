@@ -6,8 +6,8 @@ namespace AuditLogTableNameSpace
     public class AuditLog
     {
         [Key]
-        public Guid LogId { get; set; }
-        public Guid UserId { get; set; }
+        public int LogId { get; set; }
+        public int UserId { get; set; }
         public string Action { get; set; }
         public string Details { get; set; }
         public DateTime Timestamp { get; set; }

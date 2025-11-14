@@ -6,8 +6,8 @@ namespace KycDocumentTableNameSpace
     public class KycDocument
     {
         [Key]
-        public Guid DocId { get; set; }
-        public Guid UserId { get; set; }
+        public int DocId { get; set; }
+        public int UserId { get; set; }
         public string Type { get; set; }
         public string FilePath { get; set; }
         public string Status { get; set; }

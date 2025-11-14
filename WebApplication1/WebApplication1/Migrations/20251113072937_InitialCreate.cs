@@ -31,7 +31,8 @@ namespace WebApplication1.Migrations
                 name: "FeesTable",
                 columns: table => new
                 {
-                    FeeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    FeeId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Symbol = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     MakerFee = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     TakerFee = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
@@ -80,19 +81,19 @@ namespace WebApplication1.Migrations
                 name: "AuditLogTable",
                 columns: table => new
                 {
-                    LogId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    LogId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
                     Action = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Details = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UserId1 = table.Column<int>(type: "int", nullable: false)
+                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AuditLogTable", x => x.LogId);
                     table.ForeignKey(
-                        name: "FK_AuditLogTable_Users_UserId1",
-                        column: x => x.UserId1,
+                        name: "FK_AuditLogTable_Users_UserId",
+                        column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -102,20 +103,20 @@ namespace WebApplication1.Migrations
                 name: "KycDocumenTable",
                 columns: table => new
                 {
-                    DocId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    DocId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
                     Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FilePath = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SubmittedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UserId1 = table.Column<int>(type: "int", nullable: false)
+                    SubmittedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_KycDocumenTable", x => x.DocId);
                     table.ForeignKey(
-                        name: "FK_KycDocumenTable_Users_UserId1",
-                        column: x => x.UserId1,
+                        name: "FK_KycDocumenTable_Users_UserId",
+                        column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -127,14 +128,13 @@ namespace WebApplication1.Migrations
                 {
                     Order_Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    User_Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
                     Type_Of_Order = table.Column<int>(type: "int", nullable: false),
                     symbol = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Order_Status = table.Column<int>(type: "int", nullable: false),
-                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UserId = table.Column<int>(type: "int", nullable: false)
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -179,21 +179,21 @@ namespace WebApplication1.Migrations
                 name: "SessionTable",
                 columns: table => new
                 {
-                    SessionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SessionId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
                     Token = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IpAddress = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DeviceInfo = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UserId1 = table.Column<int>(type: "int", nullable: false)
+                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_SessionTable", x => x.SessionId);
                     table.ForeignKey(
-                        name: "FK_SessionTable_Users_UserId1",
-                        column: x => x.UserId1,
+                        name: "FK_SessionTable_Users_UserId",
+                        column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -297,14 +297,14 @@ namespace WebApplication1.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_AuditLogTable_UserId1",
+                name: "IX_AuditLogTable_UserId",
                 table: "AuditLogTable",
-                column: "UserId1");
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_KycDocumenTable_UserId1",
+                name: "IX_KycDocumenTable_UserId",
                 table: "KycDocumenTable",
-                column: "UserId1");
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrdersTable_UserId",
@@ -322,9 +322,9 @@ namespace WebApplication1.Migrations
                 column: "ReferrerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_SessionTable_UserId1",
+                name: "IX_SessionTable_UserId",
                 table: "SessionTable",
-                column: "UserId1");
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TradesTable_Buy_Order_Id",

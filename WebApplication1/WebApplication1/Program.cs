@@ -31,6 +31,12 @@ namespace WebApplication1
 
             var app = builder.Build();
 
+            // using (var scope = app.Services.CreateScope())
+            // {
+            //     var context = scope.ServiceProvider.GetRequiredService<DB_COntext>();
+            //     DbInitializer.Seed(context);
+            // }
+
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
@@ -45,7 +51,7 @@ namespace WebApplication1
 
             app.MapControllers();
 
-            app.Run();
+            app.Run();//i need curd operations bewtween database and the app
         }
     }
 }

@@ -20,7 +20,7 @@ namespace OrdersTablenamepsace.Data
         [Key]
         public int Order_Id { get; set; }
 
-        public Guid  User_Id { get; set; }
+        public int  UserId  { get; set; }
 
         public OrderType Type_Of_Order { get; set; }
 

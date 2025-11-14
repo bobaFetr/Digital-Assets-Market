@@ -6,8 +6,8 @@ namespace SessionTableNameSpace
     public class SessionTable
     {
         [Key]
-        public Guid SessionId { get; set; }
-        public Guid UserId { get; set; }
+        public int SessionId { get; set; }
+        public int UserId { get; set; }
         public string Token { get; set; }
         public string IpAddress { get; set; }
         public string DeviceInfo { get; set; }

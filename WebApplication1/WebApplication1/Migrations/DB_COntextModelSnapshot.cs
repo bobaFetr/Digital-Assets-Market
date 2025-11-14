@@ -24,9 +24,11 @@ namespace WebApplication1.Migrations
 
             modelBuilder.Entity("AuditLogTableNameSpace.AuditLog", b =>
                 {
-                    b.Property<Guid>("LogId")
+                    b.Property<int>("LogId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LogId"));
 
                     b.Property<string>("Action")
                         .IsRequired()
@@ -39,15 +41,12 @@ namespace WebApplication1.Migrations
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("UserId1")
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("LogId");
 
-                    b.HasIndex("UserId1");
+                    b.HasIndex("UserId");
 
                     b.ToTable("AuditLogTable");
                 });
@@ -127,9 +126,11 @@ namespace WebApplication1.Migrations
 
             modelBuilder.Entity("FeeTableNameSpace.Fee", b =>
                 {
-                    b.Property<Guid>("FeeId")
+                    b.Property<int>("FeeId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FeeId"));
 
                     b.Property<decimal>("MakerFee")
                         .HasColumnType("decimal(18,2)");
@@ -151,9 +152,11 @@ namespace WebApplication1.Migrations
 
             modelBuilder.Entity("KycDocumentTableNameSpace.KycDocument", b =>
                 {
-                    b.Property<Guid>("DocId")
+                    b.Property<int>("DocId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DocId"));
 
                     b.Property<string>("FilePath")
                         .IsRequired()
@@ -170,15 +173,12 @@ namespace WebApplication1.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("UserId1")
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("DocId");
 
-                    b.HasIndex("UserId1");
+                    b.HasIndex("UserId");
 
                     b.ToTable("KycDocumenTable");
                 });
@@ -236,9 +236,6 @@ namespace WebApplication1.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("User_Id")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("created_at")
                         .HasColumnType("datetime2");
 
@@ -284,9 +281,11 @@ namespace WebApplication1.Migrations
 
             modelBuilder.Entity("SessionTableNameSpace.SessionTable", b =>
                 {
-                    b.Property<Guid>("SessionId")
+                    b.Property<int>("SessionId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SessionId"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -306,15 +305,12 @@ namespace WebApplication1.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("UserId1")
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("SessionId");
 
-                    b.HasIndex("UserId1");
+                    b.HasIndex("UserId");
 
                     b.ToTable("SessionTable");
                 });
@@ -433,7 +429,7 @@ namespace WebApplication1.Migrations
                 {
                     b.HasOne("UserNameSpace.Data.User", "User")
                         .WithMany("AuditLogs")
-                        .HasForeignKey("UserId1")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -463,7 +459,7 @@ namespace WebApplication1.Migrations
                 {
                     b.HasOne("UserNameSpace.Data.User", "User")
                         .WithMany("KycDocuments")
-                        .HasForeignKey("UserId1")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -504,7 +500,7 @@ namespace WebApplication1.Migrations
                 {
                     b.HasOne("UserNameSpace.Data.User", "User")
                         .WithMany("Sessions")
-                        .HasForeignKey("UserId1")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
