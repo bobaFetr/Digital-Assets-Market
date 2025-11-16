@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using ExchangeTransactionNameSpace;
 
-namespace BlockchainEventtablenNameSpace
+namespace DAM
 {
     public class BlockchainEvent
     {

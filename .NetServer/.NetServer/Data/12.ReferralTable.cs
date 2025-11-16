@@ -1,6 +1,6 @@
 using UserNameSpace.Data;
 
-namespace ReferralTable
+namespace DAM
 {
     public class Referral
     {

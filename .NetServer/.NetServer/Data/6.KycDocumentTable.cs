@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using UserNameSpace.Data;
 
-namespace KycDocumentTableNameSpace
+namespace DAM
 {
     public class KycDocument
     {

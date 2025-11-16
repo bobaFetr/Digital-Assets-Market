@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using UserNameSpace.Data;
 
-namespace SessionTableNameSpace
+namespace DAM
 {
     public class SessionTable
     {

@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using TradesTableNameSpace;
 using UserNameSpace.Data;
 
-namespace OrdersTablenamepsace.Data
+namespace DAM
 {
     public enum OrderType
     {

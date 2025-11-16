@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using UserNameSpace.Data;
 
-namespace AuditLogTableNameSpace
+namespace DAM
 {
     public class AuditLog
     {

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using BlockchainEventtablenNameSpace;
 using UserNameSpace.Data;
 
-namespace ExchangeTransactionNameSpace
+namespace DAM
 {
     public class ExchangeTransaction
     {

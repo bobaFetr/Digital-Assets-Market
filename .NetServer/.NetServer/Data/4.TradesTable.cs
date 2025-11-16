@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using OrdersTablenamepsace.Data;
 
-namespace TradesTableNameSpace
+namespace DAM
 {
     public class TradesTable
     {

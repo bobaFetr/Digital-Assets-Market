@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using TradesTableNameSpace;
 
-namespace OrderBookTablenamepsace
+namespace DAM
 {
     public class OrderBook
     {

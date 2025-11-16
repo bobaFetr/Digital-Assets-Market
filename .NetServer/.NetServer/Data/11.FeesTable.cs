@@ -1,4 +1,4 @@
-namespace FeeTableNameSpace
+namespace DAM
 {
     public class Fee
     {
