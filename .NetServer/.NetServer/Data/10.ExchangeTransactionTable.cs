@@ -15,7 +15,7 @@ namespace ExchangeTransactionNameSpace
         public string Currency { get; set; }
 
         public decimal Amount { get; set; }
-        public string status { get; set; }
+        public string Status { get; set; }
 
         
         public string BlockchainTransactionHash { get; set; }

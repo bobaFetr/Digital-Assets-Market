@@ -50,7 +50,7 @@ namespace NetServer.DB_Context
             modelBuilder.Entity<OrdersTable>()
         .HasMany(o => o.TradesAsBuyOrder)
         .WithOne(t => t.BuyOrder)
-        .HasForeignKey(t => t.Buy_Order_Id)
+        .HasForeignKey(t => t.BuyOrderId)
         .OnDelete(DeleteBehavior.Restrict); 
 
             modelBuilder.Entity<Referral>()
@@ -73,13 +73,13 @@ namespace NetServer.DB_Context
         modelBuilder.Entity<TradesTable>()
     .HasOne(t => t.BuyOrder)
     .WithMany(o => o.TradesAsBuyOrder)
-    .HasForeignKey(t => t.Buy_Order_Id)
+    .HasForeignKey(t => t.BuyOrderId)
     .OnDelete(DeleteBehavior.Restrict);
 
 modelBuilder.Entity<TradesTable>()
     .HasOne(t => t.SellOrder)
     .WithMany(o => o.TradesAsSellOrder)
-    .HasForeignKey(t => t.Sell_Order_Id)
+    .HasForeignKey(t => t.SellOrderId)
     .OnDelete(DeleteBehavior.Restrict);
 
         }

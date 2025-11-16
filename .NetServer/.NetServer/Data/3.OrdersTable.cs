@@ -18,13 +18,13 @@ namespace OrdersTablenamepsace.Data
     public class OrdersTable
     {
         [Key]
-        public int Order_Id { get; set; }
+        public int OrderId { get; set; }
 
         public int  UserId  { get; set; }
 
-        public OrderType Type_Of_Order { get; set; }
+        public OrderType TypeOfOrder { get; set; }
 
-        public string symbol { get; set; } = string.Empty;
+        public string Symbol { get; set; } = string.Empty;
 
         public decimal Price { get; set; }
         public decimal Amount { get; set; }
