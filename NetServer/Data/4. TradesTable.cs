@@ -1,4 +1,7 @@
-namespace DAM
+using System.ComponentModel.DataAnnotations;
+using OrdersTableNameSpace;
+
+namespace TRadesTableNameSpace
 {
     public class TradesTable
     {

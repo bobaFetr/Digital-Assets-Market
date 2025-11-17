@@ -1,4 +1,7 @@
-namespace DAM
+using System.ComponentModel.DataAnnotations;
+using UserNameSpace.Data;
+
+namespace ChatTableNameSpace
 {
     public class ChatTable
     {
@@ -13,6 +16,7 @@ namespace DAM
         public virtual User Receiver { get; set; }
 
 
-        public Icollection<User> Users { get; set; }
+        //public ICloneable<User> Users { get; set; }
+        public ICollection<User> Users { get; set; }
     }
 }

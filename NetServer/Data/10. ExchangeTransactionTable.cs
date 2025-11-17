@@ -1,4 +1,9 @@
-namespace DAM
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using BLockchainEventTableNameSpace;
+using UserNameSpace.Data;
+
+namespace ExchangeTransactionTableNameSpace
 {
     public class ExchangeTransaction
     {

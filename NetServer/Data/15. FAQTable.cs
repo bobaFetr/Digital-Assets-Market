@@ -1,4 +1,7 @@
-namespace DAM
+using System.ComponentModel.DataAnnotations;
+using UserNameSpace.Data;
+
+namespace FAQTableNameSpace
 {
     public class FAQTable
     {
@@ -11,7 +14,7 @@ namespace DAM
 
         // Navigation property for the relationship
         public int CategoryId { get; set; }
-        public virtual Category Category { get; set; }
+        
 
         public virtual ICollection<User> Readers { get; set; }
     }

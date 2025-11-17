@@ -1,4 +1,7 @@
-namespace DAM
+using System.ComponentModel.DataAnnotations;
+using UserNameSpace.Data;
+
+namespace AuditLogTableNameSpace
 {
     public class AuditLog
     {

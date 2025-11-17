@@ -1,4 +1,8 @@
-namespace DAM
+using System.ComponentModel.DataAnnotations;
+//using DAM;
+using ExchangeTransactionTableNameSpace;
+
+namespace BLockchainEventTableNameSpace
 {
     public class BlockchainEvent
     {

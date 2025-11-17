@@ -1,4 +1,8 @@
-namespace DAM
+using System.ComponentModel.DataAnnotations;
+using TRadesTableNameSpace;
+using UserNameSpace.Data;
+
+namespace OrdersTableNameSpace
 {
     public enum OrderType
     {

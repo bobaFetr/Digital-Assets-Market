@@ -1,7 +1,10 @@
-namespace DAM
+using UserNameSpace.Data;
+using System.ComponentModel.DataAnnotations;
+namespace ReferralTableNameSpace
 {
     public class Referral
     {
+        [Key]
         public int ReferralId { get; set; }
         public int ReferrerId { get; set; }
         public int ReferredId { get; set; }

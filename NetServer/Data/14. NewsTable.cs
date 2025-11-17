@@ -1,4 +1,7 @@
-namespace DAM
+using System.ComponentModel.DataAnnotations;
+using UserNameSpace.Data;
+
+namespace NewsTableNameSpace
 {
     public class NewsTable
     {
@@ -11,7 +14,7 @@ namespace DAM
         
         // Foreign key example
         public int CategoryId { get; set; }
-        public virtual Category Category { get; set; }
+        
         
         // One-to-many example
         public virtual ICollection<User> Readers { get; set; }

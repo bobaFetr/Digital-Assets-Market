@@ -1,8 +1,9 @@
-namespace DAM
+using System.ComponentModel.DataAnnotations;
+namespace FeeTableNameSpace
 {
     public class Fee
     {
-        //[Key]
+        [Key]
         public int FeeId { get; set; }
         public string Symbol { get; set; }
         public decimal MakerFee { get; set; }

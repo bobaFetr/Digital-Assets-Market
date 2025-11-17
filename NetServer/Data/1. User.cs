@@ -1,3 +1,18 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using AuditLogTableNameSpace;
+using ExchangeTransactionTableNameSpace;
+using KycDocumentTableNameSpace;
+using OrdersTableNameSpace;
+using ReferralTableNameSpace;
+using SessionTableNameSpace;
+
+
+//using EntityFrameworkCore;
+using WalletTableNameSpace;
+//Annotations;
+//using UserNameSpace.Data.RelatedTables;
 namespace UserNameSpace.Data
 {
     public class User
