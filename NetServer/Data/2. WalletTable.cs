@@ -1,7 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using UserNameSpace.Data;
-
 namespace WalletTableNameSpace
 {
     public class WalletTable

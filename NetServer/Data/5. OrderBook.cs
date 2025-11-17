@@ -1,6 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using TradesTableNameSpace;
-
 namespace DAM
 {
     public class OrderBook

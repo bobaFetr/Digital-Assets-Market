@@ -1,6 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using UserNameSpace.Data;
-
 namespace DAM
 {
     public class KycDocument
@@ -16,4 +13,4 @@ namespace DAM
         public User User { get; set; }
     }
 
-}
+}   

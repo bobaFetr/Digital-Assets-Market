@@ -1,6 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using UserNameSpace.Data;
-
 namespace DAM
 {
     public class SessionTable

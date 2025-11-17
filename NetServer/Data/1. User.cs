@@ -1,12 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using AuditLogTableNameSpace;
-using ExchangeTransactionNameSpace;
-using KycDocumentTableNameSpace;
-using OrdersTablenamepsace.Data;
-using ReferralTable;
-using SessionTableNameSpace;
-using WalletTableNameSpace;
-
 namespace UserNameSpace.Data
 {
     public class User

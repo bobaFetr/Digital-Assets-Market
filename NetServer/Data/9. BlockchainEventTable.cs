@@ -1,6 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using ExchangeTransactionNameSpace;
-
 namespace DAM
 {
     public class BlockchainEvent

@@ -1,7 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using OrdersTablenamepsace.Data;
-
 namespace DAM
 {
     public class TradesTable

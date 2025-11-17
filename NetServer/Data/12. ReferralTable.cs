@@ -1,5 +1,3 @@
-using UserNameSpace.Data;
-
 namespace DAM
 {
     public class Referral
