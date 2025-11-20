@@ -7,7 +7,7 @@ namespace NetServer.Data.Seeding
 {
     public static class FAQSeeding
     {
-        public static ICollection<FAQTable> GenerateTrades()
+        public static ICollection<FAQTable> GenerateFAQ()
         {
             var faq = new HashSet<FAQTable>();
             faq.Add(new FAQTable

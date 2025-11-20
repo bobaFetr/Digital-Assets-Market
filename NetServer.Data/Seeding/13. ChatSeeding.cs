@@ -7,7 +7,7 @@ namespace NetServer.Data.Seeding
 {
     public static  class ChatSeeding
     {
-        public static ICollection<ChatTable> GenerateTrades()
+        public static ICollection<ChatTable> GenerateChats()
         {
             var chats = new HashSet<ChatTable>();
             chats.Add(new ChatTable

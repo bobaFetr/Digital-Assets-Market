@@ -7,7 +7,7 @@ namespace NetServer.Data.Seeding
 {
     public static class ReferralSeeding
     {
-        public static ICollection<Referral> GenerateTrades()
+        public static ICollection<Referral> GenerateReferrals()
         {
             var referral = new HashSet<Referral>();
             referral.Add(new Referral

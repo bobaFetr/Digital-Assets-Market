@@ -7,7 +7,7 @@ namespace NetServer.Data.Seeding
 {
     public  static class NewsSeeding
     {
-        public static ICollection<NewsTable> GenerateTrades()
+        public static ICollection<NewsTable> GenerateNews()
         {
            // var user = new User();
             var news = new HashSet<NewsTable>();

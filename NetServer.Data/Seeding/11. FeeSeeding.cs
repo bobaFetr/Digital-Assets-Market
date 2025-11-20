@@ -7,7 +7,7 @@ namespace NetServer.Data.Seeding
 {
     public static  class FeeSeeding
     {
-        public static ICollection<Fee> GenerateTrades()
+        public static ICollection<Fee> GenerateFees()
         {
             var fees = new HashSet<Fee>();
             fees.Add(new Fee
