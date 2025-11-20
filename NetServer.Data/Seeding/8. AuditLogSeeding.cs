@@ -7,7 +7,7 @@ namespace NetServer.Data.Seeding
 {
     public static class AuditLogSeeding
     {
-        public static ICollection<AuditLog> GenerateTrades()
+        public static ICollection<AuditLog> GenerateAuditLogs()
         {
             var auditLogs = new HashSet<AuditLog>();
             auditLogs.Add(new AuditLog

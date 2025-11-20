@@ -16,6 +16,8 @@ namespace NetServer.Data.Models
         public DateTime SubmittedAt { get; set; }
 
         public User User { get; set; }
+
+        public ICollection<KycDocument> KycDocuments { get; set; }
     }
 
 }   

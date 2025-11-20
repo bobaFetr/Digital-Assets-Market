@@ -13,5 +13,8 @@ namespace NetServer.Data.Models
 
         public ICollection<TradesTable> TradesAsBuyOrder { get; set; }
         public ICollection<TradesTable> TradesAsSellOrder { get; set; }
+
+
+        
     }
 }

@@ -7,7 +7,7 @@ namespace NetServer.Data.Seeding
 {
     public static class SessionTableSeeding
     {
-        public static ICollection<SessionTable> GenerateTrades()
+        public static ICollection<SessionTable> GenerateSessions()
         {
             var sessionTables = new HashSet<SessionTable>();
             sessionTables.Add(new SessionTable

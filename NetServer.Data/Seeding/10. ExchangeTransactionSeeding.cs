@@ -8,7 +8,7 @@ namespace NetServer.Data.Seeding
 {
     public  class ExchangeTransactionSeeding
     {
-        public static ICollection<ExchangeTransaction> GenerateTrades()
+        public static ICollection<ExchangeTransaction> GenerateExchangeTransactions()
         {
             var exchangeTransactions = new HashSet<ExchangeTransaction>();
             exchangeTransactions.Add(new ExchangeTransaction

@@ -8,7 +8,7 @@ namespace NetServer.Data.Seeding
 {
     public static class KycDocumentSeeding
     {
-        public static ICollection<KycDocument> GenerateTrades()
+        public static ICollection<KycDocument> GenerateKycDocuments()
         {
             var kycDocuments = new HashSet<KycDocument>();
             kycDocuments.Add(new KycDocument

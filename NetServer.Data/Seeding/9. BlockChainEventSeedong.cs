@@ -7,7 +7,7 @@ namespace NetServer.Data.Seeding
 {
     public static class BlockChainEventSeeding
     {
-        public static ICollection<BlockchainEvent> GenerateTrades()
+        public static ICollection<BlockchainEvent> BlockChainEvents()
         {
             var blockChainEvents = new HashSet<BlockchainEvent>();
             blockChainEvents.Add(new BlockchainEvent

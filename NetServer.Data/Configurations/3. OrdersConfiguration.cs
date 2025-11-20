@@ -25,29 +25,13 @@ namespace NetServer.Data.Configurations
 
             // Relationship: Trades as Buy Order
             builder.HasMany(o => o.TradesAsBuyOrder)
-                   .WithOne(t => t.BuyOrderId)          // navigation in TradesTable
-                   .HasForeignKey(t => t.BuyOrderId)  // FK in TradesTable
+                   .WithOne() // No navigation property for BuyOrder in TradesTable
+                   .HasForeignKey(t => t.BuyOrderId)
                    .OnDelete(DeleteBehavior.Cascade);
 
-            // Relationship: Trades as Sell Order
-            builder.HasMany(o => o.TradesAsSellOrder)
-                   .WithOne(t => t.SellOrder)         // navigation in TradesTable
-                   .HasForeignKey(t => t.SellOrderId) // FK in TradesTable
-                   .OnDelete(DeleteBehavior.Cascade);
+            
 
-            // Property configurations
-            builder.Property(o => o.Symbol)
-                   .IsRequired()
-                   .HasMaxLength(50);
-
-            builder.Property(o => o.Price)
-                   .HasColumnType("decimal(18,2)");
-
-            builder.Property(o => o.Amount)
-                   .HasColumnType("decimal(18,2)");
-
-            builder.Property(o => o.CreatedAt)
-                   .HasDefaultValueSql("GETUTCDATE()");
+            
         }
     }
 }

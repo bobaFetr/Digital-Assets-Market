@@ -10,7 +10,9 @@ namespace NetServer.Data.Models
         public Guid BuyOrderId { get; set; }
 
         
-        public OrdersTable SellOrder { get; set; }
+        public OrderBook SellOrder { get; set; }
+
+        public OrderBook BuyOrder { get; set; }
 
         public decimal Price { get; set; }
         public double Amount { get; set; }
