@@ -41,12 +41,6 @@ namespace NetServer.Data
             modelBuilder.Entity<Fee>().HasKey(f => f.FeeId);
 
             // Relationships
-            modelBuilder.Entity<OrdersTable>()
-                .HasMany(o => o.TradesAsBuyOrder)
-                .WithOne(t => t.BuyOrder)
-                .HasForeignKey(t => t.BuyOrderId)
-                .OnDelete(DeleteBehavior.Restrict);
-
             modelBuilder.Entity<TradesTable>()
                 .HasOne(t => t.BuyOrder)
                 .WithMany(o => o.TradesAsBuyOrder)
@@ -56,7 +50,7 @@ namespace NetServer.Data
             modelBuilder.Entity<TradesTable>()
                 .HasOne(t => t.SellOrder)
                 .WithMany(o => o.TradesAsSellOrder)
-                .HasForeignKey(t => t.SellOrderId)
+                .HasForeignKey("SellOrderId")
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Referral>()
@@ -108,11 +102,13 @@ namespace NetServer.Data
         public AppDbContext CreateDbContext(string[] args)
         {
             var basePath = Directory.GetCurrentDirectory();
+            //ConfigurationBuilder
             var config = new ConfigurationBuilder()
                 .SetBasePath(basePath)
                 .AddJsonFile("appsettings.json", optional: true)
                 .AddEnvironmentVariables()
-                .Build();
+                .Build();//ConfigurationBuilder was delared in one of the migration files, bu they were deleted.
+            //that's why it's red
 
             var connectionString = config.GetConnectionString("DefaultConnection")
                 ?? "Server=(localdb)\\mssqllocaldb;Database=DamDb;Trusted_Connection=True;";

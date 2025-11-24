@@ -20,4 +20,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\NetServer.Data\NetServer.Data.csproj" />
+  </ItemGroup>
+
 </Project>

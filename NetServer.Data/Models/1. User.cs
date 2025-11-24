@@ -19,13 +19,13 @@ namespace NetServer.Data.Models
         public StatusBit Status { get; set; } = StatusBit.Active;
         public enum StatusBit
         {
-            Inactive = 0,
+            Inactive = 0,//place this in the enum folder
             Active = 1
         }
 
 
 
-        public ICollection<WalletTable> Wallets { get; set; }
+        public ICollection<WalletTable> Wallets { get; set; } = new List<WalletTable>();
         public ICollection<OrdersTable> Orders { get; set; }
         public ICollection<SessionTable> Sessions { get; set; }
         public ICollection<KycDocument> KycDocuments { get; set; }

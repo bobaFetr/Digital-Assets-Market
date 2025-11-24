@@ -1,9 +1,9 @@
 header {
-  background-color: rgb(255, 165, 0);
+  background-color: #EBA667;
   color: #f0f0f0;
   padding: 20px;
   text-align: center;
-  box-shadow: 0 4px 8px rgb(0, 255, 60);
+  box-shadow: 0 4px 8px #EBCA67;
   position: fixed;
   top: 0;
   left: 0;
@@ -20,7 +20,7 @@ header h1 {
 header button {
   margin-top: 10px;
   padding: 10px 20px;
-  background-color: #000000;
+  background-color: #EBBA67;
   border: none;
   border-radius: 5px;
   color: white;
@@ -30,9 +30,12 @@ header button {
 }
 
 header button:hover {
-  background-color: #0097a7;
+  /* background-color: #0097a7; */
+  background-color: #D18E3C;
 }
-
+.search {
+  margin-top: 10px;
+}
 .main-content {
   padding: 20px;
   max-width: 600px;
@@ -59,7 +62,7 @@ header button:hover {
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
-  background-color: #0b0f1a;
+  background-color: #EBD7B5;
   color: #f0f0f0;
 }
 
@@ -75,7 +78,7 @@ body {
 h1 {
   text-align: center;
   margin-bottom: 30px;
-  color: #00ffcc;
+  color: #ff0000;
 }
 
 canvas {
@@ -93,7 +96,7 @@ li {
   background-color: #1e2633;
   margin: 10px 0;
   padding: 10px;
-  border-left: 4px solid #00ffcc;
+  border-left: 4px solid #3300ff;
   color: #f0f0f0;
 }
 .app-container {
@@ -124,7 +127,7 @@ li {
 
 .orderbook-section h2,
 .orderbook-section h3 {
-  color: #00ffcc;
+  color: #ffbf00;
 }
 
 .orderbook-section ul {
@@ -135,4 +138,41 @@ li {
 .orderbook-section li {
   margin-bottom: 8px;
   font-size: 14px;
+}
+
+.dropdown-container {
+  display: inline-block;
+  position: relative;
+}
+
+.dropdown-button {
+  background: #333;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #222;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #444;
+}
+
+.dropdown-menu li {
+  padding: 8px 12px;
+}
+
+.dropdown-menu li a {
+  color: white;
+  text-decoration: none;
+}
+
+.dropdown-menu li a:hover {
+  background: #444;
 }

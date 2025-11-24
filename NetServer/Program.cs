@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using NetServer;
+using NetServer.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 

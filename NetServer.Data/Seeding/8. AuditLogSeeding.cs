@@ -16,7 +16,7 @@ namespace NetServer.Data.Seeding
                 UserId = Guid.NewGuid(),
                 Action = "UserLogin",
                 Details = "User logged in successfully.",
-                Timestamp = DateTime.UtcNow
+                Timestamp = DateTime.UtcNow//make  constannts for guids and datetime
             });
             return auditLogs;
         }

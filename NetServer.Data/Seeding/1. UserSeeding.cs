@@ -3,6 +3,7 @@ using NetServer.Data.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static NetServer.Data.Seeding.Constants.DataSeedingConstants.UserConstants;
 
 namespace NetServer.Data.Seeding
 {
@@ -14,7 +15,7 @@ namespace NetServer.Data.Seeding
 
             users.Add(new User
             {
-                Id = Guid.NewGuid(),
+                Id = User1Id,
                 UserName = "Аlice",
                 Email = "",//email and password should be crypted
                 PasswordHash = "hashed_password_1",
