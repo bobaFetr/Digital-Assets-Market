@@ -21,6 +21,8 @@ namespace NetServer.Data.Seeding.Constants
             public static readonly Guid User7Id = Guid.Parse("22222222-2222-2222-2222-222222222222");
 
             public static readonly Guid User8Id = Guid.Parse("22222222-2222-2222-2222-222222222222");
+
+            public static readonly Guid User = Guid.Parse("22222222-2222-2222-2222-222222222222");
         }
     }
 }

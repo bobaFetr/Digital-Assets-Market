@@ -11,7 +11,7 @@ namespace NetServer.Data.Configurations
 {
     public class UserConfiguration : IEntityTypeConfiguration<User>
     {
-        private object modelBuilder;
+        //private object modelBuilder;
 
         public void Configure(EntityTypeBuilder<User> builder)
         {
