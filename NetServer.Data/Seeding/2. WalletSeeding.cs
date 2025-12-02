@@ -28,7 +28,7 @@ namespace NetServer.Data.Seeding
             //asp. net core identity package
             //var hasher = new PasswordHasher<User>();
             //var hasher = new PasswordHasher<User>();
-            //foreach (User user in users)
+            //foreach (User user in users)d
             //{
             //    user.PasswordHash = hasher.HashPassword(user, "12h444hHndndHJ");
             //}

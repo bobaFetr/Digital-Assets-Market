@@ -1,10 +1,6 @@
-using System.Reflection;
-using System.Security.Cryptography.Xml;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.Extensions.Configuration;
 using NetServer.Data.Models;
-using NetServer.Data.Configurations;
+using NetServer.Data.Seeding;
 namespace NetServer.Data
 {
     public class AppDbContext : DbContext
@@ -32,8 +28,9 @@ namespace NetServer.Data
         {
             base.OnModelCreating(modelBuilder);
 
+
             // Apply IEntityTypeConfiguration<T> implementations
-            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+            //modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
             // Example explicit keys
             modelBuilder.Entity<KycDocument>().HasKey(k => k.DocId);
@@ -71,11 +68,11 @@ namespace NetServer.Data
             .HasForeignKey(c => c.SenderId)
             .OnDelete(DeleteBehavior.Restrict);   // prevent cascade
 
-        modelBuilder.Entity<ChatTable>()
-            .HasOne(c => c.Receiver)
-            .WithMany()
-            .HasForeignKey(c => c.ReceiverId)
-            .OnDelete(DeleteBehavior.Restrict);   // prevent cascade
+            modelBuilder.Entity<ChatTable>()
+                .HasOne(c => c.Receiver)
+                .WithMany()
+                .HasForeignKey(c => c.ReceiverId)
+                .OnDelete(DeleteBehavior.Restrict);   // prevent cascade
 
 
             modelBuilder.Entity<NewsTable>()
@@ -84,39 +81,36 @@ namespace NetServer.Data
             modelBuilder.Entity<FAQTable>()
                 .HasKey(f => f.FaqId);
 
-            modelBuilder.ApplyConfiguration(new UserConfiguration());
+            modelBuilder.ApplyConfiguration(new UserSeeding());
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=DamDb;Trusted_Connection=True;");
-            }
+            optionsBuilder.EnableSensitiveDataLogging();
         }
     }
 
     // Design-time factory
-    public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
-    {
-        public AppDbContext CreateDbContext(string[] args)
-        {
-            var basePath = Directory.GetCurrentDirectory();
-            //ConfigurationBuilder
-            var config = new ConfigurationBuilder()
-                .SetBasePath(basePath)
-                .AddJsonFile("appsettings.json", optional: true)
-                .AddEnvironmentVariables()
-                .Build();//ConfigurationBuilder was delared in one of the migration files, bu they were deleted.
-            //that's why it's red
+    //public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
+    //{
+    //    public AppDbContext CreateDbContext(string[] args)
+    //    {
+    //        var basePath = Directory.GetCurrentDirectory();
+    //        //ConfigurationBuilder
+    //        var config = new ConfigurationBuilder()
+    //            .SetBasePath(basePath)
+    //            .AddJsonFile("appsettings.json", optional: true)
+    //            .AddEnvironmentVariables()
+    //            .Build();//ConfigurationBuilder was delared in one of the migration files, bu they were deleted.
+    //        //that's why it's red
 
-            var connectionString = config.GetConnectionString("DefaultConnection")
-                ?? "Server=(localdb)\\mssqllocaldb;Database=DamDb;Trusted_Connection=True;";
+    //        var connectionString = config.GetConnectionString("DefaultConnection")
+    //            ?? "Server=(localdb)\\mssqllocaldb;Database=DamDb;Trusted_Connection=True;";
 
-            var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-            optionsBuilder.UseSqlServer(connectionString);
+    //        var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
+    //        optionsBuilder.UseSqlServer(connectionString);
 
-            return new AppDbContext(optionsBuilder.Options);
-        }
-    }
+    //        return new AppDbContext(optionsBuilder.Options);
+    //    }
+    //}
 }

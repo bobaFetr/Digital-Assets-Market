@@ -13,7 +13,7 @@ namespace NetServer.Data.Seeding
             var exchangeTransactions = new HashSet<ExchangeTransaction>();
             exchangeTransactions.Add(new ExchangeTransaction
             {
-                TransactionID = Guid.NewGuid(),
+                TransactionID = new Guid("25ec6ee9-ea7d-4c32-97e5-2d0df0e23b9b"),
                 UserID = Guid.NewGuid(),
                 TypeOfTransaction = "Deposit",
                 Currency = "BTC",

@@ -5,8 +5,14 @@ namespace NetServer.Data.Models
 {
     public class ExchangeTransaction
     {
+        public ExchangeTransaction()
+        {
+            TransactionID = Guid.NewGuid();
+        }
+
         [Key]
         public Guid TransactionID { get; set; }
+
         [ForeignKey("User")]
         public Guid UserID { get; set; }
         public string TypeOfTransaction { get; set; }
@@ -23,7 +29,7 @@ namespace NetServer.Data.Models
 
         public User User { get; set; }
         [ForeignKey("BlockchainEvent")]
-        public int BlockchainEventEventId { get; set; }
+        public Guid BlockchainEventEventId { get; set; }
         public BlockchainEvent BlockchainEvent { get; set; }
     }
 }

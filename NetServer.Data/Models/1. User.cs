@@ -8,6 +8,14 @@ namespace NetServer.Data.Models
 {
     public class User
     {
+        public User()
+        {
+        }
+        public User(Guid id, DateTime createdAt)
+        {
+            Id = id;
+            CreatedAt = createdAt;
+        }
         [Key]
         public Guid Id { get; set; }
         public string UserName { get; set; } = string.Empty;
@@ -23,6 +31,7 @@ namespace NetServer.Data.Models
             Active = 1
         }
 
+        public bool IsBanned { get; set; }
 
 
         public ICollection<WalletTable> Wallets { get; set; } = new List<WalletTable>();

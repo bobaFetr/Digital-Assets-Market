@@ -1,141 +1,151 @@
-import { useState, useEffect, useRef } from "react";
-import "./App.css";
+import React, { useState } from "react";
+import "./Chat.css"; // create this file with the styles below
 
-const initialUsers = {
-  a: { id: "a", name: "Alice", color: "#4C7CF3", avatar: "A" },
-  b: { id: "b", name: "Bob", color: "#F39C12", avatar: "B" },
+const contacts = [
+  { id: 1, name: "Ava Carter", status: "online", accent: "#FF6B6B" },
+  { id: 2, name: "Noah King", status: "last seen 5m ago", accent: "#4ECDC4" },
+  { id: 3, name: "Mia Flores", status: "typing…", accent: "#A78BFA" },
+  { id: 4, name: "Leo Park", status: "offline", accent: "#FB923C" },
+];
+
+const initialConversations = {
+  1: [
+    { id: 1, fromMe: false, text: "Morning! How’s the release?", time: "09:12" },
+    { id: 2, fromMe: true, text: "Almost ready, just polishing UI.", time: "09:13" },
+    { id: 3, fromMe: false, text: "Awesome. Ping me when live.", time: "09:14" },
+  ],
+  2: [{ id: 1, fromMe: false, text: "Slides look great btw.", time: "07:55" }],
+  3: [],
+  4: [
+    { id: 1, fromMe: true, text: "We need that dataset?", time: "21:31" },
+    { id: 2, fromMe: false, text: "Uploading in 10min.", time: "21:32" },
+  ],
 };
 
-export default function App() {
-  const [users] = useState(initialUsers);
-  const [activeUserId, setActiveUserId] = useState("a");
-  const [messages, setMessages] = useState([
-    { id: 1, userId: "a", text: "Hey Bob!", timestamp: Date.now() - 60000 },
-    { id: 2, userId: "b", text: "Hey Alice, what's up?", timestamp: Date.now() - 45000 },
-  ]);
-  const [isTyping, setIsTyping] = useState({ a: false, b: false });
-  const bottomRef = useRef(null);
+export default function Chat() {
+  const [activeContact, setActiveContact] = useState(contacts[0]);
+  const [conversations, setConversations] = useState(initialConversations);
+  const [draft, setDraft] = useState("");
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  const currentMessages = conversations[activeContact.id] ?? [];
 
-  const handleSend = (text) => {
-    const trimmed = text.trim();
+  const handleSend = () => {
+    const trimmed = draft.trim();
     if (!trimmed) return;
-    setMessages((prev) => [
+
+    const newMessage = {
+      id: Date.now(),
+      fromMe: true,
+      text: trimmed,
+      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    };
+
+    setConversations((prev) => ({
       ...prev,
-      { id: prev.length + 1, userId: activeUserId, text: trimmed, timestamp: Date.now() },
-    ]);
-    setIsTyping((prev) => ({ ...prev, [activeUserId]: false }));
+      [activeContact.id]: [...(prev[activeContact.id] ?? []), newMessage],
+    }));
+    setDraft("");
   };
 
-  const handleTyping = (typing) => {
-    setIsTyping((prev) => ({ ...prev, [activeUserId]: typing }));
+  const onEnterPress = (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      handleSend();
+    }
+  };
+
+  const renderLastMessage = (id) => {
+    const msgs = conversations[id] ?? [];
+    if (msgs.length === 0) return "Start a conversation";
+    const last = msgs[msgs.length - 1];
+    return (last.fromMe ? "You: " : "") + (last.text.length > 30 ? last.text.slice(0, 27) + "..." : last.text);
   };
 
   return (
     <div className="chat-shell">
-      {/* Header */}
-      <header className="chat-header">
-        <div className="chat-title">Chat Room</div>
-        <div className="chat-presence">
-          {Object.values(users).map((u) => (
-            <div key={u.id} className="presence-item">
-              <span className="avatar" style={{ backgroundColor: u.color }}>{u.avatar}</span>
-              <span className={`name ${u.id === activeUserId ? "active" : ""}`}>{u.name}</span>
-            </div>
-          ))}
+      {/* Left: chat list */}
+      <aside className="chat-list">
+        <div className="chat-list-header">
+          <h1>Chats</h1>
+          <button className="new-chat-button">+</button>
         </div>
-        {Object.entries(isTyping).filter(([, t]) => t).length > 0 && (
-          <div className="typing">
-            {Object.entries(isTyping)
-              .filter(([, t]) => t)
-              .map(([id]) => users[id].name)
-              .join(", ")} typing…
-          </div>
-        )}
-      </header>
+        <input className="chat-search" placeholder="Search or start new chat" />
 
-      {/* Messages */}
-      <main className="message-list">
-        {messages.map((m) => {
-          const isOwn = m.userId === activeUserId;
-          const user = users[m.userId];
-          return (
-            <div key={m.id} className={`message-row ${isOwn ? "own" : "other"}`}>
-              {!isOwn && (
-                <div className="bubble-meta">
-                  <span className="avatar small" style={{ backgroundColor: user.color }}>
-                    {user.avatar}
+        <div className="chat-list-items">
+          {contacts.map((contact) => (
+            <button
+              key={contact.id}
+              className={`chat-list-item ${contact.id === activeContact.id ? "active" : ""}`}
+              onClick={() => setActiveContact(contact)}
+            >
+              <div className="contact-avatar" style={{ backgroundColor: contact.accent }}>
+                {contact.name[0]}
+              </div>
+              <div className="contact-info">
+                <div className="contact-row">
+                  <span className="contact-name">{contact.name}</span>
+                  <span className="contact-time">
+                    {conversations[contact.id]?.slice(-1)[0]?.time ?? ""}
                   </span>
                 </div>
-              )}
-              <div className="bubble" style={{ borderColor: user.color }}>
-                <p>{m.text}</p>
-                <span className="timestamp">
-                  {new Date(m.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                </span>
+                <span className="contact-preview">{renderLastMessage(contact.id)}</span>
               </div>
-            </div>
-          );
-        })}
-        <div ref={bottomRef} />
-      </main>
-
-      {/* Footer */}
-      <div className="chat-footer">
-        <div className="user-toggle">
-          {Object.values(users).map((u) => (
-            <button
-              key={u.id}
-              className={`toggle-btn ${activeUserId === u.id ? "active" : ""}`}
-              onClick={() => setActiveUserId(u.id)}
-              style={{ borderColor: u.color }}
-            >
-              <span className="avatar tiny" style={{ backgroundColor: u.color }}>{u.avatar}</span>
-              {u.name}
             </button>
           ))}
         </div>
-        <MessageInput onSend={handleSend} onTyping={handleTyping} color={users[activeUserId].color} />
-      </div>
-    </div>
-  );
-}
+      </aside>
 
-function MessageInput({ onSend, onTyping, color }) {
-  const [text, setText] = useState("");
+      {/* Right: conversation */}
+      <section className="chat-room">
+        <header className="chat-room-header">
+          <div className="contact-avatar large" style={{ backgroundColor: activeContact.accent }}>
+            {activeContact.name[0]}
+          </div>
+          <div className="chat-room-title">
+            <h2>{activeContact.name}</h2>
+            <span>{activeContact.status}</span>
+          </div>
+          <div className="chat-room-actions">
+            <button>📞</button>
+            <button>🎥</button>
+            <button>⋮</button>
+          </div>
+        </header>
 
-  useEffect(() => {
-    onTyping(Boolean(text));
-    return () => onTyping(false);
-  }, [text]);
+        <div className="chat-room-messages">
+          {currentMessages.length === 0 && (
+            <div className="empty-state">
+              Start a conversation with {activeContact.name}.
+            </div>
+          )}
+          {currentMessages.map((msg) => (
+            <div key={msg.id} className={`message-row ${msg.fromMe ? "me" : "other"}`}>
+              {!msg.fromMe && (
+                <div className="contact-avatar tiny" style={{ backgroundColor: activeContact.accent }}>
+                  {activeContact.name[0]}
+                </div>
+              )}
+              <div className="bubble-group">
+                <div className={`message-bubble ${msg.fromMe ? "me" : "other"}`}>
+                  {msg.text}
+                </div>
+                <span className="message-time">{msg.time}</span>
+              </div>
+            </div>
+          ))}
+        </div>
 
-  const submit = () => {
-    onSend(text);
-    setText("");
-  };
-
-  const onKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      submit();
-    }
-  };
-
-  return (
-    <div className="input-bar">
-      <textarea
-        className="input"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        onKeyDown={onKeyDown}
-        placeholder="Type a message…"
-      />
-      <button className="send" style={{ backgroundColor: color }} onClick={submit}>
-        Send
-      </button>
+        <footer className="chat-room-input">
+          <textarea
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={onEnterPress}
+            placeholder={`Message ${activeContact.name}`}
+            rows={1}
+          />
+          <button onClick={handleSend}>Send</button>
+        </footer>
+      </section>
     </div>
   );
 }

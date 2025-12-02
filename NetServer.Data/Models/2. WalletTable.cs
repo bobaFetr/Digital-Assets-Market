@@ -15,7 +15,6 @@ namespace NetServer.Data.Models
         public string Status { get; set; }
         public DateTime CreatedAt { get; set; }
         
-
         public User User { get; set; }
     }
 }
