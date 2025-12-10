@@ -1,114 +1,131 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import './App.css';
-import SecondPage from './SecondPage.jsx';
-import ThirdPage from './ThirdPage.jsx';
-import reactLogo from './assets/Copilot_20251008_144326.png';
-import BitcoinChart from './BitcoinChart.jsx';
-import Chat from './Chat.jsx';
-import Login from './Login.jsx';
-// import OrderBook from './OrderBook.jsx';
+import React from "react";
+import BitcoinChart from "./BitcoinChart"; // ✅ Import your chart component
 
-function App() {
+export default function App() {
   return (
-    <Router>
-      /*
-      <header className="app-header">
-        <img src={reactLogo} alt="React Logo" className="app-logo" />
-        <h1>Digital Assets Market</h1>
-        <Link to="/"><button>Home</button></Link>
-        <Link to="/second"><button>Crypto</button></Link>
-        <Link to="/second"><button>Pay</button></Link>
-        <Link to="/Login"><button>Login</button></Link>
-        <div className="dropdown-container">
-          <button className="dropdown-button">More ▾</button>
-          <ul className="dropdown-menu">
-            <li><Link to="/third">Reports</Link></li>
-            <li><Link to="/chat">Chat</Link></li>
-            <li><a href="https://support.example.com" target="_blank" rel="noreferrer">Support</a></li>
-          </ul>
+    <div style={{ display: "flex", height: "100vh", background: "#0d0f1a", color: "#fff", fontFamily: "Arial" }}>
+      {/* Sidebar */}
+      <aside style={{ width: "220px", background: "#11131f", padding: "20px" }}>
+        <h2 style={{ marginBottom: "20px" }}>CryptoMatrix</h2>
+        <nav>
+          {[
+            "Crypto Currencies",
+            "Businesses",
+            "Pay",
+            "Wallet",
+            "More",
+            "Data API",
+            "Stacking Calculator",
+          ].map((item) => (
+            <div
+              key={item}
+              style={{ padding: "12px 0", opacity: 0.7, cursor: "pointer" }}
+            >
+              {item}
+            </div>
+          ))}
+        </nav>
+      </aside>
+
+      {/* Main Content */}
+      <div style={{ flex: 1, padding: "20px", overflowY: "auto" }}>
+        <h2>Good Morning, User</h2>
+
+        {/* Recommended Coins */}
+        <div style={{ display: "flex", gap: "20px", marginTop: "20px" }}>
+          {[
+            { name: "Ethereum", code: "ETH", rate: "+12.34%" },
+            { name: "Bitcoin", code: "BTC", rate: "+12.34%" },
+            { name: "Bitcoin Cash", code: "BTH", rate: "+11.34%" },
+            { name: "Algorand", code: "ALGO", rate: "-12.34%" },
+          ].map((coin) => (
+            <div
+              key={coin.code}
+              style={{
+                background: "#1a1d2e",
+                padding: "20px",
+                borderRadius: "12px",
+                width: "200px",
+              }}
+            >
+              <h4>
+                {coin.name} ({coin.code})
+              </h4>
+              <p style={{ marginTop: "10px", color: "#7f8cff" }}>Reward Rate</p>
+              <h3 style={{ marginTop: "5px", color: coin.rate.startsWith("-") ? "#ff4d4d" : "#4dff88" }}>
+                {coin.rate}
+              </h3>
+            </div>
+          ))}
         </div>
 
-        <Link to="/Chat"><button>Chat</button></Link>
-        <div>
-          <search id='search bar'>
-            <input type="text" placeholder="Search..." />
-            <button type="submit">Go</button>
-          </search>
+        {/* ✅ Bitcoin Live Chart Section */}
+        <div style={{ background: "#1a1d2e", padding: "20px", borderRadius: "12px", marginTop: "30px" }}>
+          <h3>Bitcoin Live Chart</h3>
+          <BitcoinChart /> {/* Render the chart here */}
         </div>
-      </header>
-      */
-      <header className="app-header">
-        <img src={reactLogo} alt="React Logo" className="app-logo" />
-        <h1>Digital Assets Market</h1>
-        <Link to="/"><button>Home</button></Link>
-        <Link to="/second"><button>Crypto</button></Link>
-        <Link to="/second"><button>Pay</button></Link>
-        <div className="dropdown-container">
-          <button className="dropdown-button">More ▾</button>
-          <ul className="dropdown-menu">
-            <li><Link to="/third">Reports</Link></li>
-            <li><Link to="/chat">Chat</Link></li>
-            <li><a href="https://support.example.com" target="_blank" rel="noreferrer">Support</a></li>
-          </ul>
+
+        {/* Bitcoin Cash Graph Section */}
+        <div style={{ background: "#1a1d2e", padding: "20px", borderRadius: "12px", marginTop: "30px" }}>
+          <h3>Bitcoin Cash (BTH)</h3>
+          <h1 style={{ color: "#4dff88" }}>$23.7475</h1>
+          <div
+            style={{ height: "280px", background: "#0d0f1a", marginTop: "20px", borderRadius: "10px" }}
+          ></div>
         </div>
-        <div>
-          <search id="search bar">
-            <input type="text" placeholder="Search..." />
-            <button type="submit">Go</button>
-          </search>
-        </div>
-      </header>
-      <div className="main-content">
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <div className="app-container">
-                <h1>Profile</h1>
-                <p>ID</p>
-                <p>ACCOUNT BALANNCE</p>
-                <p>Number of trades</p> 
-                <button>Activity</button>
-                <div className="dashboard">
-                  <div className="chart-section">
-                    <BitcoinChart />
-                    
-                  </div>  
-                  {/* { s } */}
-                </div>
-              </div>
-            }
-          />
-          <Route path="/second" element={<SecondPage />} />
-          <Route path="/third" element={<ThirdPage />} />
-          <Route path="/chart/bitcoin" element={<BitcoinChart />} />
-          <Route path="/chat" element={<Chat />} />
-          {/* <Route path="/chart/orderbook" element={<OrderBook />} />     */}
-          <Route path="/login" element={<Login />} />
-        </Routes>
       </div>
 
-      <footer>
-        <div id='comunitty'>
-            <p>© 2024 Digital Assets Market. All rights reserved.</p>
-        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
-        <p>Follow us on Instagram!</p>
-          {/* <img src={require('./assets/instagram-logo.png')} alt="Instagram" className="social-logo" /> */}
-        </a>
-        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
-          <p>Follow us on Twitter!</p>
-        </a>
-        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
-          <p>Follow us on Facebook!</p>
-        </a>
-        <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
-          <p>Follow us on LinkedIn!</p>
-        </a>
+      {/* Right Sidebar */}
+      <aside
+        style={{
+          width: "300px",
+          background: "#11131f",
+          padding: "20px",
+          borderLeft: "1px solid #222",
+        }}
+      >
+        <h3>Total Balance</h3>
+        <h1 style={{ color: "#4dff88" }}>$37.4343</h1>
+
+        <div style={{ marginTop: "20px" }}>
+          <p>You Sell</p>
+          <div style={{ background: "#1a1d2e", padding: "10px", borderRadius: "8px" }}>BTC</div>
+          <p style={{ marginTop: "15px" }}>You Get</p>
+          <div style={{ background: "#1a1d2e", padding: "10px", borderRadius: "8px" }}>BTH</div>
+          <button
+            style={{
+              width: "100%",
+              marginTop: "20px",
+              padding: "12px",
+              borderRadius: "8px",
+              background: "#7f8cff",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            Exchange Now
+          </button>
         </div>
-        
-      </footer>
-    </Router>
+
+        <div style={{ marginTop: "30px" }}>
+          <h3>Market</h3>
+          {[
+            { code: "BTC", change: "+12.34%" },
+            { code: "ACA", change: "-2.34%" },
+            { code: "ALGO", change: "-12.34%" },
+            { code: "BTH", change: "+12.34%" },
+            { code: "BTL", change: "+12.34%" },
+          ].map((m) => (
+            <div
+              key={m.code}
+              style={{ display: "flex", justifyContent: "space-between", marginTop: "10px" }}
+            >
+              <span>{m.code}</span>
+              <span style={{ color: m.change.startsWith("-") ? "#ff4d4d" : "#4dff88" }}>{m.change}</span>
+            </div>
+          ))}
+        </div>
+      </aside>
+    </div>
   );
 }
-
-export default App;

@@ -44,3 +44,15 @@ app.get('/api/bitcoin/orders', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+
+/////////10.12.25
+app.get('/api/bitcoincash', async (req, res) => {
+  try {
+    const response = await axios.get(
+      'https://api.binance.com/api/v3/ticker/price?symbol=BCHUSDT'
+    );
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch BCH data' });
+  }
+});
