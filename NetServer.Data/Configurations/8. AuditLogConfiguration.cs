@@ -11,16 +11,15 @@ namespace NetServer.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<AuditLog> builder)
         {
-            //builder.(KycDocumentSeeding.GenerateTrades());
-            builder.HasData(AuditLogSeeding.GenerateAuditLogs());
-
             builder.HasKey(a => a.LogId);
 
-            builder.HasOne(a => a.User)
-                   .WithMany(u => u.AuditLogs)
-                   .HasForeignKey(a => a.UserId);
+            builder.HasData(AuditLogSeeding.GenerateAuditLogs());
 
-           
+            //builder.HasOne(a => a.User)
+            //       .WithMany(u => u.AuditLogs)
+            //       .HasForeignKey(a => a.UserId);
+
+
         }
     }
 }

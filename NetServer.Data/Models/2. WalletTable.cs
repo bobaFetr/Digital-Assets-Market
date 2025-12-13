@@ -5,6 +5,21 @@ namespace NetServer.Data.Models
 {
     public class WalletTable
     {
+        public WalletTable()
+        { 
+            WalletID = Guid.NewGuid();
+            UserId = Guid.NewGuid();
+            Currency = string.Empty;
+            Balance = 0.0m;
+            Addres = string.Empty;
+            Status = string.Empty;
+            CreatedAt = DateTime.UtcNow;
+        }
+        public WalletTable(Guid id, DateTime createdOn) 
+        { 
+            WalletID = id;
+            CreatedAt = createdOn;
+        }
         [Key]
         public Guid  WalletID     { get; set; }
         [ForeignKey("User")]

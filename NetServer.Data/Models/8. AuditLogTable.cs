@@ -3,6 +3,20 @@ namespace NetServer.Data.Models
 {
     public class AuditLog
     {
+        public AuditLog()
+        {
+            LogId = Guid.NewGuid();
+            UserId = Guid.NewGuid();
+            Action = string.Empty;
+            Details = string.Empty;
+            Timestamp = DateTime.UtcNow;
+        }
+        public AuditLog(Guid logId, Guid userId, DateTime timestamp)
+        {
+            LogId = logId;
+            UserId = userId;
+            Timestamp = timestamp;
+        }
         [Key]
         public Guid LogId { get; set; }
         public Guid UserId { get; set; }

@@ -15,6 +15,24 @@ namespace NetServer.Data.Models
     }
     public class OrdersTable
     {
+        public OrdersTable()
+        {
+            OrderId = Guid.NewGuid();
+            UserId = Guid.NewGuid();
+            TypeOfOrder = OrderType.Buy;
+            Symbol = string.Empty;
+            Price = 0.0m;
+            Amount = 0.0m;
+            OrderStatus = OrderStatus.Open;
+            CreatedAt = DateTime.UtcNow;
+        }
+        public OrdersTable(Guid orderId, DateTime createdAt)
+        {
+            OrderId = orderId;
+            CreatedAt = createdAt;
+            TradesAsBuyOrder = new HashSet<TradesTable>();
+            TradesAsSellOrder = new HashSet<TradesTable>();
+        }
         [Key]
         public Guid OrderId { get; set; }
 

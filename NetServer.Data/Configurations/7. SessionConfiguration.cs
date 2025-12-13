@@ -12,14 +12,13 @@ namespace NetServer.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<SessionTable> builder)
         {
-            //builder.(KycDocumentSeeding.GenerateTrades());
-            builder.HasData(SessionTableSeeding.GenerateSessions());
-
             builder.HasKey(s => s.SessionId);
 
-            builder.HasOne(s => s.User)
-                   .WithMany(u => u.Sessions)
-                   .HasForeignKey(s => s.UserId);
+            builder.HasData(SessionTableSeeding.GenerateSessions());
+
+            //builder.HasOne(s => s.User)
+            //       .WithMany(u => u.Sessions)
+            //       .HasForeignKey(s => s.UserId);
         }
     }
 }

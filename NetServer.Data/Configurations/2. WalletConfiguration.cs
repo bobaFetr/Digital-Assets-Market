@@ -12,14 +12,15 @@ namespace NetServer.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<WalletTable> builder)
         {
+            builder.HasKey(w => w.WalletID);
             builder.HasData(
                 WalletSeeding.GenerateWallets());
 
             
-            builder.HasOne(w => w.User)
-                .WithMany(u => u.Wallets) 
-                .HasForeignKey(w => w.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+            //builder.HasOne(w => w.User)
+            //    .WithMany(u => u.Wallets) 
+            //    .HasForeignKey(w => w.UserId)
+            //    .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

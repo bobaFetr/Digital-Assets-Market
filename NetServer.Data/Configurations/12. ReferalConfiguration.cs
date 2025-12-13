@@ -12,21 +12,19 @@ namespace NetServer.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Referral> builder)
         {
-            //GenerateFees
-            //GenerateReferrals
-            builder.HasData(ReferralSeeding.GenerateReferrals());
-
             builder.HasKey(r => r.ReferralId);
 
-            builder.HasOne(r => r.Referrer)
-                   .WithMany(u => u.ReferralsMade)
-                   .HasForeignKey(r => r.ReferrerId)
-                   .OnDelete(DeleteBehavior.Cascade);
+            builder.HasData(ReferralSeeding.GenerateReferrals());
 
-            builder.HasOne(r => r.Referred)
-                   .WithMany(u => u.ReferralsReceived)
-                   .HasForeignKey(r => r.ReferredId)
-                   .OnDelete(DeleteBehavior.Cascade);
+            //builder.HasOne(r => r.Referrer)
+            //       .WithMany(u => u.ReferralsMade)
+            //       .HasForeignKey(r => r.ReferrerId)
+            //       .OnDelete(DeleteBehavior.Cascade);
+
+            //builder.HasOne(r => r.Referred)
+            //       .WithMany(u => u.ReferralsReceived)
+            //       .HasForeignKey(r => r.ReferredId)
+            //       .OnDelete(DeleteBehavior.Cascade);
 
         }
     }

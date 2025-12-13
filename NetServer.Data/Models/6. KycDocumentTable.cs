@@ -4,6 +4,24 @@ namespace NetServer.Data.Models
 {
     public class KycDocument
     {
+        public KycDocument() 
+        { 
+            DocId = Guid.NewGuid();
+            UserId = Guid.NewGuid();
+            Type = string.Empty;
+            FilePath = string.Empty;
+            DocumentNumber = string.Empty;
+            ExpiryDate = DateTime.UtcNow;
+            Status = string.Empty;
+            SubmittedAt = DateTime.UtcNow;
+        }
+        public KycDocument(Guid id, DateTime expirydate, DateTime submittedAt) 
+        { 
+            DocId = id;
+            KycDocuments = new HashSet<KycDocument>();
+            ExpiryDate = expirydate;
+            SubmittedAt = submittedAt;
+        }
         [Key]
         public Guid DocId { get; set; }
         public Guid UserId { get; set; }

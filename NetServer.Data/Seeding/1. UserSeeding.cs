@@ -6,53 +6,14 @@ using NetServer.Data.Seeding.Constants;
 
 namespace NetServer.Data.Seeding
 {
-    public class UserSeeding : IEntityTypeConfiguration<User>
+    //IEntityTypeConfiguration<User>
+    public class UserSeeding : IEntityTypeConfiguration<UserSeeding>
     {
-        //public void Configure(EntityTypeBuilder<User> builder)
-        //{
-        //    builder.HasData(GenerateUSers());
 
-        //    builder.HasMany(u => u.Wallets)
-        //           .WithOne(w => w.User)
-        //           .HasForeignKey(w => w.UserId)
-        //           .OnDelete(DeleteBehavior.Cascade);
-
-        //    builder.HasMany(u => u.Orders)
-        //           .WithOne(o => o.User)
-        //           .HasForeignKey(o => o.UserId)
-        //           .OnDelete(DeleteBehavior.Cascade);
-
-        //    builder.HasMany(u => u.Sessions)
-        //           .WithOne(s => s.User)
-        //           .HasForeignKey(s => s.UserId)
-        //           .OnDelete(DeleteBehavior.Cascade);
-
-        //    builder.HasMany(u => u.KycDocuments)
-        //           .WithOne(k => k.User)
-        //           .HasForeignKey(k => k.UserId)
-        //           .OnDelete(DeleteBehavior.Cascade);
-
-        //    builder.HasMany(u => u.AuditLogs)
-        //           .WithOne(a => a.User)
-        //           .HasForeignKey(a => a.UserId)
-        //           .OnDelete(DeleteBehavior.Cascade);
-
-        //    builder.HasMany(u => u.ExchangeTransaction)
-        //           .WithOne(e => e.User)
-        //           .HasForeignKey(e => e.UserID)
-        //           .OnDelete(DeleteBehavior.Cascade);
-
-        //    builder.HasMany(u => u.ReferralsMade)
-        //           .WithOne(r => r.Referrer)
-        //           .HasForeignKey(r => r.ReferrerId)
-        //           .OnDelete(DeleteBehavior.Cascade);
-
-        //    builder.HasMany(u => u.ReferralsReceived)
-        //           .WithOne(r => r.Referred)
-        //           .HasForeignKey(r => r.ReferredId)
-        //           .OnDelete(DeleteBehavior.Cascade);
-        //}
-
+        ICollection<User> users = = new HashSet<User>()
+        {
+            new User()
+        };
         private static User GenerateUSers()
         {
 
@@ -77,6 +38,9 @@ namespace NetServer.Data.Seeding
             return user;
         }
 
-
+        void IEntityTypeConfiguration<UserSeeding>.Configure(EntityTypeBuilder<UserSeeding> builder)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

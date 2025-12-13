@@ -11,6 +11,7 @@ namespace NetServer.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Fee> builder)
         {
+            builder.HasKey(f => f.FeeId);
             //GenerateFees
             builder.HasData(FeeSeeding.GenerateFees());
         }

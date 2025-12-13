@@ -17,17 +17,17 @@ namespace NetServer.Data.Configurations
             // Primary key
             builder.HasKey(o => o.OrderId);
 
-            // Relationship: Order → User
-            builder.HasOne(o => o.User)
-                   .WithMany(u => u.Orders)
-                   .HasForeignKey(o => o.UserId)
-                   .OnDelete(DeleteBehavior.Cascade);
+            //// Relationship: Order → User
+            //builder.HasOne(o => o.User)
+            //       .WithMany(u => u.Orders)
+            //       .HasForeignKey(o => o.UserId)
+            //       .OnDelete(DeleteBehavior.Cascade);
 
-            // Relationship: Trades as Buy Order
-            builder.HasMany(o => o.TradesAsBuyOrder)
-                   .WithOne() // No navigation property for BuyOrder in TradesTable
-                   .HasForeignKey(t => t.BuyOrderId)
-                   .OnDelete(DeleteBehavior.Cascade);
+            //// Relationship: Trades as Buy Order
+            //builder.HasMany(o => o.TradesAsBuyOrder)
+            //       .WithOne() // No navigation property for BuyOrder in TradesTable
+            //       .HasForeignKey(t => t.BuyOrderId)
+            //       .OnDelete(DeleteBehavior.Cascade);
 
             
 

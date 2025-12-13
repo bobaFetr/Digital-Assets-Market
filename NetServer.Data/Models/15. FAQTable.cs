@@ -4,6 +4,28 @@ namespace NetServer.Data.Models
 {
     public class FAQTable
     {
+        public FAQTable()
+        { 
+            FaqId = Guid.NewGuid();
+            Question = string.Empty;
+            Answer = string.Empty;
+            CreatedAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.UtcNow;
+            CategoryId = Guid.NewGuid();
+            Author = new User();
+            PublishedAt = DateTime.UtcNow;
+            CreatedBy = new User();
+            EditedOn = DateTime.UtcNow;
+            EditedBy = new User();
+            DeletedOn = new User();
+        } 
+
+        public FAQTable(Guid faqId, DateTime createdAt)
+        {
+            FaqId = faqId;
+            Readers = new HashSet<User>();
+            CreatedAt = createdAt;
+        }
         [Key]
         public Guid FaqId { get; set; }
         public string Question { get; set; }

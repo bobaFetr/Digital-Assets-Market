@@ -2,7 +2,9 @@ import React from "react";
 import BitcoinChart from "./BitcoinChart"; // ✅ Import your chart component
 
 export default function App() {
+  //const [open, setOpen] = useState(false); // ✅ dropdown state
   return (
+    
     <div style={{ display: "flex", height: "100vh", background: "#0d0f1a", color: "#fff", fontFamily: "Arial" }}>
       {/* Sidebar */}
       <aside style={{ width: "220px", background: "#11131f", padding: "20px" }}>
@@ -16,6 +18,7 @@ export default function App() {
             "More",
             "Data API",
             "Stacking Calculator",
+            "Profile Settings",
           ].map((item) => (
             <div
               key={item}
@@ -129,3 +132,5 @@ export default function App() {
     </div>
   );
 }
+
+

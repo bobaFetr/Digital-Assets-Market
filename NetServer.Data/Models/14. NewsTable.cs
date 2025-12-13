@@ -4,6 +4,27 @@ namespace NetServer.Data.Models
 {
     public class NewsTable
     {
+        public NewsTable()
+        {
+            NewsId = Guid.NewGuid();
+            Title = string.Empty;
+            Content = string.Empty;
+            Author = string.Empty;
+            PublishedAt = DateTime.UtcNow;
+            CategoryId = 0;
+            CreatedBy = string.Empty;
+            EditedBy = string.Empty;
+            EditedOn = DateTime.UtcNow;
+            DeletedBy = string.Empty;
+            DeletedOn = DateTime.UtcNow;
+        }
+
+        public NewsTable(Guid newsId, DateTime publishedAt) 
+        { 
+            NewsId = newsId;
+            Readers = new HashSet<User>();
+            PublishedAt = publishedAt;
+        }
         [Key]
         public Guid NewsId { get; set; }
         public string Title { get; set; }

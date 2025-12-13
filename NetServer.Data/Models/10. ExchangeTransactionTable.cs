@@ -8,8 +8,20 @@ namespace NetServer.Data.Models
         public ExchangeTransaction()
         {
             TransactionID = Guid.NewGuid();
+            UserID = Guid.NewGuid();
+            TypeOfTransaction = string.Empty;
+            Currency = string.Empty;
+            Amount = 0.0m;
+            Status = string.Empty;
+            BlockchainTransactionHash = string.Empty;
         }
-
+        public ExchangeTransaction(Guid transactionId, Guid userId, DateTime timeStamp)
+        { 
+            TransactionID = transactionId;
+            UserID = userId;
+            BlockchainEvent = new HashSet<BlockchainEvent>();
+            TimeStamp = timeStamp;
+        }
         [Key]
         public Guid TransactionID { get; set; }
 

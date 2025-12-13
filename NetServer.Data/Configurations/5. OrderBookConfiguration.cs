@@ -12,21 +12,23 @@ namespace NetServer.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<OrderBook> builder)
         {
-            builder.HasData(OrderBookSeeding.GenerateTrades());
+            
 
             builder.HasKey(ob => ob.OrderBookId);
 
-            // One OrderBook → Many Trades (Buy side)
-            builder.HasMany(ob => ob.TradesAsBuyOrder)
-                   .WithOne(t => t.BuyOrder)
-                   .HasForeignKey(t => t.BuyOrderId)
-                   .OnDelete(DeleteBehavior.Cascade);
+            builder.HasData(OrderBookSeeding.GenerateTrades());
 
-            // One OrderBook → Many Trades (Sell side)
-            builder.HasMany(ob => ob.TradesAsSellOrder)
-                   .WithOne(t => t.SellOrder)
-                   .HasForeignKey(t => t.SellOrder)
-                   .OnDelete(DeleteBehavior.Restrict);
+            //// One OrderBook → Many Trades (Buy side)
+            //builder.HasMany(ob => ob.TradesAsBuyOrder)
+            //       .WithOne(t => t.BuyOrder)
+            //       .HasForeignKey(t => t.BuyOrderId)
+            //       .OnDelete(DeleteBehavior.Cascade);
+
+            //// One OrderBook → Many Trades (Sell side)
+            //builder.HasMany(ob => ob.TradesAsSellOrder)
+            //       .WithOne(t => t.SellOrder)
+            //       .HasForeignKey(t => t.SellOrder)
+            //       .OnDelete(DeleteBehavior.Restrict);
 
         }
         

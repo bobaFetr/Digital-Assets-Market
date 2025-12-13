@@ -11,13 +11,13 @@ namespace NetServer.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<BlockchainEvent> builder)
         {
-            builder.HasData(BlockChainEventSeeding.BlockChainEvents());
-
             builder.HasKey(b => b.EventId);
 
-            builder.HasMany(b => b.ExchangeTransaction)
-                   .WithOne(e => e.BlockchainEvent)
-                   .HasForeignKey(e => e.BlockchainEventEventId);
+            builder.HasData(BlockChainEventSeeding.BlockChainEvents());
+
+            //builder.HasMany(b => b.ExchangeTransaction)
+            //       .WithOne(e => e.BlockchainEvent)
+            //       .HasForeignKey(e => e.BlockchainEventEventId);
         }
     }
 }

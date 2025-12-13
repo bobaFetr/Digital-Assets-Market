@@ -4,6 +4,26 @@ namespace NetServer.Data.Models
 {
     public class ChatTable
     {
+        public ChatTable()
+        {
+            ChatId = Guid.NewGuid();
+            SenderId = Guid.NewGuid();
+            ReceiverId = Guid.NewGuid();
+            Message = string.Empty;
+            Timestamp = DateTime.UtcNow;
+            Sender = new User();
+            Receiver = new User();
+            MessageSendDate = DateTime.UtcNow;
+            MessageEdit = DateTime.UtcNow;
+            MessageDeleted = DateTime.UtcNow;
+        }
+
+        public ChatTable(Guid chatId, DateTime timestamp)
+        {
+            ChatId = chatId;
+            Users = new HashSet<User>();
+            Timestamp = timestamp;
+        }
         [Key]
         public Guid ChatId { get; set; }
         public Guid SenderId { get; set; }

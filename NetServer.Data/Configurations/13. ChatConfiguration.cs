@@ -12,20 +12,21 @@ namespace NetServer.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<ChatTable> builder)
         {
-            //GenerateChats
-            builder.HasData(ChatSeeding.GenerateChats());
+            
 
             builder.HasKey(c => c.ChatId);
 
-            builder.HasOne(c => c.Sender)
-                   .WithMany()
-                   .HasForeignKey(c => c.SenderId)
-                   .OnDelete(DeleteBehavior.Cascade);
+            builder.HasData(ChatSeeding.GenerateChats());
 
-            builder.HasOne(c => c.Receiver)
-                   .WithMany()
-                   .HasForeignKey(c => c.ReceiverId)
-                   .OnDelete(DeleteBehavior.Cascade);
+            //builder.HasOne(c => c.Sender)
+            //       .WithMany()
+            //       .HasForeignKey(c => c.SenderId)
+            //       .OnDelete(DeleteBehavior.Cascade);
+
+            //builder.HasOne(c => c.Receiver)
+            //       .WithMany()
+            //       .HasForeignKey(c => c.ReceiverId)
+            //       .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

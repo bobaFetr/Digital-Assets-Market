@@ -12,17 +12,21 @@ namespace NetServer.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<FAQTable> builder)
         {
+            
+
+            builder.HasKey(f => f.FaqId);
+
             builder.HasData(FAQSeeding.GenerateFAQ());
 
-             // Author relationship
-            builder.HasOne(f => f.Author)
-                   .WithMany()
-                   .HasForeignKey(f => f.CategoryId) // adjust if you want a proper FK
-                   .OnDelete(DeleteBehavior.Cascade);
+            //// Author relationship
+            //builder.HasOne(f => f.Author)
+            //       .WithMany()
+            //       .HasForeignKey(f => f.CategoryId) // adjust if you want a proper FK
+            //       .OnDelete(DeleteBehavior.Cascade);
 
-            // Readers relationship
-            builder.HasMany(f => f.Readers)
-                   .WithMany();
+            //// Readers relationship
+            //builder.HasMany(f => f.Readers)
+            //       .WithMany();
         }
     }
 }

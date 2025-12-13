@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Identity.Client;
+using NetServer.Data.Models;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -6,23 +8,87 @@ namespace NetServer.Data.Seeding.Constants
 {
     public static class DataSeedingConstants
     {
+        //1
         public static class UserConstants
         {
-            //public static readonly Guid User1Id = Guid.Parse("990de4a4-dacf-4479-91b1-295daef5a561");
-            public static readonly Guid User2Id = Guid.Parse("7e6cb9af-4da0-4088-b04b-af9a200218ce");
-            public static readonly Guid User3Id = Guid.Parse("22222222-2222-2222-2222-222222222222");
-            //public static readonly Guid User4Id = Guid.Parse("22222222-2222-2222-2222-222222222222");
-            // Add more user IDs as needed 
-            //c18371fb-7f2b-48bb-8dd4-054a847075ba
-            //public static readonly Guid User5Id = Guid.Parse("c18371fb-7f2b-48bb-8dd4-054a847075ba");
+            public const string User1Id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
+            public const string Username1 = "Alice";
+            public const string Email = "Alice@email.com";
+            public const string Password = "Password";
+            public static readonly DateTime CreatedAt1 = new(2025, 11, 28);
+            public const User.StatusBit Status1 = User.StatusBit.Active;
+            public const bool IsBanned1 = false;
+        }
 
-            //public static readonly Guid User6Id = Guid.Parse("1eb328e6-f758-432f-95e6-c2e6664434cd");
+        //2
+        public static class WalletConstants
+        {
+            public const string Wallet1Id = "b1c2d3e4-f5g6-7890-abcd-ef1234567890";
 
-            //public static readonly Guid User7Id = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        }
 
-            //public static readonly Guid User8Id = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        //3
+        public static class OrderConstants
+        {
 
-            //public static readonly Guid User = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        }
+
+        //4
+        public static class TradeConstants
+        {
+
+        }
+
+        //5
+        public static class OrderBookConstants
+        {
+
+        }
+
+
+        //6
+        public static class KycDocumentConstants
+        {
+        }
+
+        //7
+        public static class SessionConstants
+        {
+        }
+
+        //8
+        public static class AuditLogConstants
+        {
+        }
+
+        //9
+        public static class BlockChainEventtConstants
+        {
+        }
+
+        //10
+        public static class ExchangeTransactionConstants
+        {
+        }
+
+        //11
+        public static class FeeConstants 
+        {
+        }
+
+        //12
+        public static class referralConstants
+        {
+        }
+
+        //13
+        public static class ChatConstants 
+        {
+        }
+
+        //14
+        public static class FAQConstants
+        {
         }
     }
 }
