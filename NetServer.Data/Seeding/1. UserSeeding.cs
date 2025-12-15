@@ -19,7 +19,7 @@ namespace NetServer.Data.Seeding
 
             User user = new User
             {
-                Id = DataSeedingConstants.UserConstants.User2Id,
+                Id = DataSeedingConstants.UserConstants.User1Id,
                 UserName = "Аlice",
                 Email = "",//email and password should be crypted
                 PasswordHash = "hashed_password_1",
