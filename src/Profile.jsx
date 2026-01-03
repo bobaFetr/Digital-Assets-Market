@@ -34,9 +34,12 @@ export default function Profile() {
         {/* User Info Section */}
         <div style={{ background: "#1a1d2e", padding: "20px", borderRadius: "12px", marginTop: "20px" }}>
           <h3>User Information</h3>
-          <p style={{ marginTop: "10px" }}>Name: John Doe</p>
-          <p>Email: johndoe@example.com</p>
-          <p>Joined: January 2025</p>
+          <p style={{ marginTop: "10px" }}>Name</p>
+          <p>Email </p>
+          <p>Account Balance</p>
+          <p>Account ID</p>
+          <p>Activity</p>
+          <p>Favorites</p>
         </div>
 
         {/* Settings Section */}

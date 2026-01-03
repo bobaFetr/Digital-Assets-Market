@@ -22,8 +22,6 @@
 
   <ItemGroup>
     <Folder Include="Migrations\" />
-    <Folder Include="Models\Enums\" />
-    <Folder Include="Models\Mapping seeders\" />
   </ItemGroup>
 
 </Project>

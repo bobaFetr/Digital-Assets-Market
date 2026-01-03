@@ -10,6 +10,7 @@ using NetServer.Data;
 
 namespace NetServer.Data.Migrations
 {
+    //[DbContext(typeof(AppDbContext))]
     [DbContext(typeof(AppDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot
     {

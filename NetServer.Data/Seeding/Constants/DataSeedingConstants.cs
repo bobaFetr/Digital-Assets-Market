@@ -29,7 +29,7 @@ namespace NetServer.Data.Seeding.Constants
             public const decimal Balance1 = 1.5m;
             public const string Address1 = "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa";
             public const string Status1 = "Active";
-            public const DateTime CreatedAt1 = new(2025, 11, 28);
+            public static readonly DateTime CreatedAt1 = new(2025, 11, 28);
         }
 
         //3

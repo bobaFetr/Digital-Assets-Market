@@ -18,8 +18,14 @@ namespace NetServer.Data.Models
         public WalletTable(Guid id, DateTime createdOn) 
         { 
             WalletID = id;
+            Wallets = new HashSet<WalletTable>();
             CreatedAt = createdOn;
         }
+
+        public WalletTable(string wallet1Id, string user1Id, DateTime createdOn)
+        {
+        }
+
         [Key]
         public Guid  WalletID     { get; set; }
         [ForeignKey("User")]
@@ -29,7 +35,8 @@ namespace NetServer.Data.Models
         public string Addres { get; set; }
         public string Status { get; set; }
         public DateTime CreatedAt { get; set; }
-        
+        public ICollection<WalletTable> Wallets { get; set; }
+
         public User User { get; set; }
     }
 }

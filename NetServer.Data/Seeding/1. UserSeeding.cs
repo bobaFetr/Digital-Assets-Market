@@ -10,7 +10,7 @@ namespace NetServer.Data.Seeding
     public class UserSeeding : IEntityTypeConfiguration<UserSeeding>
     {
 
-        ICollection<User> users = = new HashSet<User>()
+        ICollection<User> users = new HashSet<User>()
         {
             new User()
         };
@@ -19,7 +19,8 @@ namespace NetServer.Data.Seeding
 
             User user = new User
             {
-                Id = DataSeedingConstants.UserConstants.User1Id,
+                //Id = DataSeedingConstants.UserConstants.User1Id,
+                Id = new Guid(),
                 UserName = "Аlice",
                 Email = "",//email and password should be crypted
                 PasswordHash = "hashed_password_1",

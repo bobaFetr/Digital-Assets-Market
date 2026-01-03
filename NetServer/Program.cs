@@ -4,7 +4,8 @@ using NetServer.Data;
 var builder = WebApplication.CreateBuilder(args);
 
 // Register DbContext with SQL Server
-builder.Services.AddDbContext<AppDbContext>(options =>
+//AppDbContext
+builder.Services.AddDbContext<NetServer.Data.AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddOpenApi();
@@ -19,7 +20,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // Example endpoint: get all users from SQL Server
-app.MapGet("/users", async (AppDbContext db) =>
+//AppDbContext
+app.MapGet("/users", async (NetServer.Data.AppDbContext db) =>
 {
     return await db.Users.ToListAsync();
 });

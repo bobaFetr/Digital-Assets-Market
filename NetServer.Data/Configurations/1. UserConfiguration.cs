@@ -15,7 +15,7 @@ namespace NetServer.Data.Configurations
 
         public void Configure(EntityTypeBuilder<User> builder)
         {
-            builder.HasData(UserSeeding.);
+            //builder.HasData(UserSeeding);
 
 
             //builder.HasMany(u => u.Wallets)
