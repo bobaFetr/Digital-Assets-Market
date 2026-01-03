@@ -5,6 +5,7 @@ import { Routes, Route, Link } from "react-router-dom";
 import BitcoinChart from "./BitcoinChart";
 import Chat from "./Chat";
 import Profile from "./Profile";
+import WithDraw from "./WithdrawPage.jsx";
 import logo from "./assets/Copilot_20251008_144326.png";
 
 function Home() {
@@ -53,7 +54,7 @@ function Home() {
                       <div className="nav-dropdown-item">AI Assistant</div>
                       <div className="nav-dropdown-item">Buy and Sell</div>
                       <div className="nav-dropdown-item">Deposit</div>
-                      <div className="nav-dropdown-item">Withdraw</div>
+                      <Link to="/withdraw" className="nav-dropdown-item">Withdraw</Link>
                     </div>
                   )}
                 </div>
@@ -184,6 +185,7 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/chat" element={<Chat />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/withdraw" element={<WithDraw />} />
     </Routes>
   );
 }
