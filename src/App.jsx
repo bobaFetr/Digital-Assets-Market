@@ -7,6 +7,8 @@ import Chat from "./Chat";
 import Profile from "./Profile";
 import WithDraw from "./WithdrawPage.jsx";
 import logo from "./assets/Copilot_20251008_144326.png";
+import SignUpPage from "./SignUp.jsx";
+import SignInPage from "./Login.jsx";
 
 function Home() {
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -81,6 +83,18 @@ function Home() {
                 </div>
               );
             }
+            if (item === "Sign Up") {
+              return (
+                <Link to="/sign-up" className="nav-item nav-item-link" style={{ marginTop: "16px", color: "#7f8cff" }}>
+                  Sign Up
+                </Link>
+              );
+            }
+            if (item === "Sign In") {
+              return (
+                <Link to="/sign-in" className="nav-dropdown-item">Sign In</Link>
+              );
+            }
             return (
               <div key={item} className="nav-item">
                 {item}
@@ -98,7 +112,7 @@ function Home() {
 
       {/* Main Content */}
       <div className="crypto-main">
-        <h2 className="header-greeting">Good Morning, User</h2>
+        {/* <h2 className="header-greeting">Good Morning, User</h2> */}
 
         {/* Recommended Coins */}
         <div className="cards-grid">
@@ -186,6 +200,8 @@ export default function App() {
       <Route path="/chat" element={<Chat />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/withdraw" element={<WithDraw />} />
+      <Route path="/sign-in" element={<SignInPage />} />
+      <Route path="/sign-up" element={<SignUpPage />} />
     </Routes>
   );
 }

@@ -106,7 +106,7 @@ function BitcoinChart() {
       },
       title: {
         display: true,
-        text: 'Жива графика на цената на Bitcoin (последните 60 минути)',
+        text: 'BTC PRICE LAST 60 MINUTES',
         color: '#f0f0f0',
       },
     },
