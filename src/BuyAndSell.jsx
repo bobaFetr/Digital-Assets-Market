@@ -1,30 +1,42 @@
-
-
 import React, { useState } from "react";
-import { Routes, Route, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import BitcoinChart from "./BitcoinChart";
-import Chat from "./Chat";
-import Profile from "./Profile";
-import WithDraw from "./WithdrawPage.jsx";
-import BuyAndSell from "./BuyAndSell";
 import logo from "./assets/Copilot_20251008_144326.png";
-import SignUpPage from "./SignUp.jsx";
-import SignInPage from "./Login.jsx";
 
-
-function Home() {
+export default function BuyAndSell() {
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [fromCurrency, setFromCurrency] = useState("BTC");
+  const [toCurrency, setToCurrency] = useState("ETH");
+  const [amount, setAmount] = useState(0);
+
+  const handleSwap = () => {
+    setFromCurrency((prev) => {
+      const old = prev;
+      setFromCurrency(toCurrency);
+      setToCurrency(old);
+      return toCurrency;
+    });
+  };
+
   return (
     <div className="crypto-layout">
-      {/* Sidebar */}
+      {/* Sidebar (same style as main page) */}
       <aside className="crypto-sidebar">
-        {/* <h2 className="brand-title">Name</h2> */}
         <img src={logo} alt="Logo" style={{ width: "100%", maxWidth: "150px", marginBottom: "30px" }} />
         <nav className="nav-links">
-          {["Pay", "Social", "More--->", "Profile Settings","Crypto", "Tools--->", "Sign Up", "Sign In"].map((item) => {
-            if(item === "Profile Settings"){
+          {[
+            "Pay",
+            "Social",
+            "More--->",
+            "Profile Settings",
+            "Crypto",
+            "Tools--->",
+            "Sign Up",
+            "Sign In",
+          ].map((item) => {
+            if (item === "Profile Settings") {
               return (
-                <Link to="/profile" className="nav-item nav-item-link" style={{ marginTop: "16px", color: "#7f8cff" }}>
+                <Link key={item} to="/profile" className="nav-item nav-item-link" style={{ marginTop: "16px", color: "#7f8cff" }}>
                   Profile Settings
                 </Link>
               );
@@ -106,7 +118,7 @@ function Home() {
                       <Link to="/BitcoinChart" className="nav-dropdown-item">BTC</Link>
                       <div className="nav-dropdown-item">BNB</div>
                       <div className="nav-dropdown-item"></div>
-                      <Link to="/withdraw" className="nav-dropdown-item"></Link>
+                      <Link to="/withdraw" className="nav-dropdown-item">Withdraw</Link>
                     </div>
                   )}
                 </div>
@@ -114,14 +126,14 @@ function Home() {
             }
             if (item === "Sign Up") {
               return (
-                <Link to="/sign-up" className="nav-item nav-item-link" style={{ marginTop: "16px", color: "#7f8cff" }}>
+                <Link key={item} to="/sign-up" className="nav-item nav-item-link" style={{ marginTop: "16px", color: "#7f8cff" }}>
                   Sign Up
                 </Link>
               );
             }
             if (item === "Sign In") {
               return (
-                <Link to="/sign-in" className="nav-dropdown-item">Sign In</Link>
+                <Link key={item} to="/sign-in" className="nav-dropdown-item">Sign In</Link>
               );
             }
             return (
@@ -130,6 +142,7 @@ function Home() {
               </div>
             );
           })}
+
           <Link to="/chat" className="nav-item nav-item-link" style={{ marginTop: "16px", color: "#7f8cff" }}>
             Chat
           </Link>
@@ -138,9 +151,15 @@ function Home() {
 
       {/* Main Content */}
       <div className="crypto-main">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <h2 className="chart-header">Buy & Sell</h2>
+          <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+            <div style={{ color: "#9aa3ff" }}>Available: <strong>0.000 BTC</strong></div>
+            <button className="btn-primary">Deposit</button>
+          </div>
+        </div>
 
-        {/* Recommended Coins */}
-        <div className="cards-grid">
+        <div className="cards-grid" style={{ marginTop: "18px" }}>
           {[
             { name: "Ethereum", code: "ETH", rate: "+12.34%" },
             { name: "Bitcoin", code: "BTC", rate: "+12.34%" },
@@ -159,18 +178,49 @@ function Home() {
           ))}
         </div>
 
-        {/* Bitcoin Live Chart */}
-        <div className="chart-container">
-          <h3 className="chart-header">Bitcoin Live Chart</h3>
+        <div className="chart-container" style={{ marginTop: "18px" }}>
+          <h3 className="chart-header">Market Chart</h3>
           <BitcoinChart />
         </div>
 
-        {/* Bitcoin Cash Graph */}
-        <div className="chart-container">
-          <h3 className="chart-header">Bitcoin Cash (BTH)</h3>
-          <h1 style={{ color: "var(--accent-green)", margin: "10px 0" }}>$23.7475</h1>
-          <div style={{ height: "280px", background: "#0d0f1a", marginTop: "20px", borderRadius: "10px" }}></div>
+        {/* Buy/Sell Exchange Box */}
+        <div className="chart-container" style={{ marginTop: "18px" }}>
+          <h3 className="chart-header">Exchange</h3>
+          <div style={{ background: "#0d0f1a", padding: "18px", borderRadius: "10px" }}>
+            <div style={{ display: "flex", gap: "12px", alignItems: "center", marginBottom: "12px" }}>
+              <label style={{ minWidth: "80px" }}>Sell</label>
+              <select value={fromCurrency} onChange={(e) => setFromCurrency(e.target.value)}>
+                <option>BTC</option>
+                <option>ETH</option>
+                <option>BNB</option>
+                <option>ALGO</option>
+              </select>
+              <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Amount" style={{ flex: 1 }} />
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: "12px" }}>
+              <button className="btn-primary" onClick={handleSwap} style={{ padding: "8px 12px" }}>Swap</button>
+            </div>
+
+            <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+              <label style={{ minWidth: "80px" }}>Buy</label>
+              <select value={toCurrency} onChange={(e) => setToCurrency(e.target.value)}>
+                <option>ETH</option>
+                <option>BTC</option>
+                <option>BNB</option>
+                <option>ALGO</option>
+              </select>
+              <div style={{ flex: 1 }}>
+                <input type="text" value={amount ? `${(amount * 24.5).toFixed(4)} ${toCurrency}` : ""} readOnly style={{ width: "100%" }} />
+              </div>
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "16px" }}>
+              <button className="btn-primary">Confirm Exchange</button>
+            </div>
+          </div>
         </div>
+
       </div>
 
       {/* Right Sidebar */}
@@ -183,17 +233,15 @@ function Home() {
         <div className="exchange-section">
           <p className="exchange-label">You Sell</p>
           <div className="currency-box">
-            <span>BTC</span>
-            <span>0.00</span>
+            <span>{fromCurrency}</span>
+            <span>{amount || "0.00"}</span>
           </div>
           <p className="exchange-label">You Get</p>
           <div className="currency-box">
-            <span>BTH</span>
-            <span>0.00</span>
+            <span>{toCurrency}</span>
+            <span>{amount ? `${(amount * 24.5).toFixed(4)}` : "0.00"}</span>
           </div>
-          <button className="btn-primary">
-            Exchange Now
-          </button>
+          <button className="btn-primary">Exchange Now</button>
         </div>
 
         <div>
@@ -222,20 +270,5 @@ function Home() {
         </div>
       </aside>
     </div>
-  );
-}
-
-export default function App() {
-  return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/chat" element={<Chat />} />
-      <Route path="/profile" element={<Profile />} />
-      <Route path="/withdraw" element={<WithDraw />} />
-      <Route path="/buy-sell" element={<BuyAndSell />} />
-      <Route path="/sign-in" element={<SignInPage />} />
-      <Route path="/sign-up" element={<SignUpPage />} />
-      <Route path="/BitcoinChart" element={<BitcoinChart />} />
-    </Routes>
   );
 }

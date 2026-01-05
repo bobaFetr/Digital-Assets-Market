@@ -44,7 +44,7 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="login-form">
             <label>
-              Email
+              Email or Username
               <input
                 type="email"
                 name="email"

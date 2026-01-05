@@ -47,7 +47,7 @@ function BitcoinChart() {
           {
             label: 'Цена на BTC (в USD)',
             data: prices,
-            borderColor: '#00ffcc',
+            borderColor: '#357859ff',
             backgroundColor: 'rgba(0, 255, 204, 0.1)',
             tension: 0.3,
             fill: true,
