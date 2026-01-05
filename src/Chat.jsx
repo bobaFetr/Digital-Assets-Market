@@ -228,7 +228,7 @@ export default function Chat() {
               <div style={{ fontSize: "16px", fontWeight: 600 }}>{activeContact.name}</div>
               <div style={{ fontSize: "12px", color: "#9ca3af" }}>{activeContact.status}</div>
             </div>
-            <div style={{ marginLeft: "auto", display: "flex", gap: "8px" }}>
+            {/* <div style={{ marginLeft: "auto", display: "flex", gap: "8px" }}>
               {["📞", "🎥", "⋮"].map((icon) => (
                 <button
                   key={icon}
@@ -245,7 +245,7 @@ export default function Chat() {
                   {icon}
                 </button>
               ))}
-            </div>
+            </div> */}
           </div>
 
           {/* Messages */}

@@ -7,9 +7,15 @@ import Chat from "./Chat";
 import Profile from "./Profile";
 import WithDraw from "./WithdrawPage.jsx";
 import BuyAndSell from "./BuyAndSell";
+
+import VerifyIdentityPage from "./VerifyIdentityPage";
+import VerificationEmailPage from "./VerificationEmailPage";
+import SentSMSToNumberPage from "./SentSMSToNumberPage";
+
 import logo from "./assets/Copilot_20251008_144326.png";
 import SignUpPage from "./SignUp.jsx";
 import SignInPage from "./Login.jsx";
+import { div } from "framer-motion/client";
 
 
 function Home() {
@@ -21,7 +27,7 @@ function Home() {
         {/* <h2 className="brand-title">Name</h2> */}
         <img src={logo} alt="Logo" style={{ width: "100%", maxWidth: "150px", marginBottom: "30px" }} />
         <nav className="nav-links">
-          {["Pay", "Social", "More--->", "Profile Settings","Crypto", "Tools--->", "Sign Up", "Sign In"].map((item) => {
+          {["Pay", "Social", "More--->", "Profile Settings","Crypto--->", "Tools--->", "Temp--->", "Sign Up", "Sign In"].map((item) => {
             if(item === "Profile Settings"){
               return (
                 <Link to="/profile" className="nav-item nav-item-link" style={{ marginTop: "16px", color: "#7f8cff" }}>
@@ -42,10 +48,10 @@ function Home() {
                     <div className="nav-dropdown-menu">
                       <div className="nav-dropdown-item">Tutorial for beginners</div>
                       <div className="nav-dropdown-item">Crypto Education</div>
-                      <div className="nav-dropdown-item">Another Assets</div>
-                      <div className="nav-dropdown-item">Favorites</div>
-                      <div className="nav-dropdown-item">Trending</div>
-                      <div className="nav-dropdown-item">Settings</div>
+                      <div className="nav-dropdown-item">Trending</div>                      
+                      <div className="nav-dropdown-item">Favorites</div>      
+                      <div className="nav-dropdown-item">Another Assets</div>                
+                      {/* <div className="nav-dropdown-item">Settings</div> */}
                       <div className="nav-dropdown-item">Help</div>
                     </div>
                   )}
@@ -83,30 +89,49 @@ function Home() {
                   </div>
                   {activeDropdown === "Social" && (
                     <div className="nav-dropdown-menu">
+                      <Link to="/chat" className="nav-dropdown-item">Chat</Link>
                       <div className="nav-dropdown-item">News</div>
                       <div className="nav-dropdown-item">Posts</div>
-                      <div className="nav-dropdown-item">FAQ</div>
-                      <Link to="/chat" className="nav-dropdown-item">Chat</Link>
+                      <div className="nav-dropdown-item">FAQ</div>                      
                     </div>
                   )}
                 </div>
               );
             }
-            if (item === "Crypto") {
+            if (item === "Crypto--->") {
               return (
                 <div key={item} className="nav-item-dropdown-container">
                   <div
-                    className={`nav-item ${activeDropdown === "Crypto" ? "active" : ""}`}
-                    onClick={() => setActiveDropdown(activeDropdown === "Crypto" ? null : "Crypto")}
+                    className={`nav-item ${activeDropdown === "Crypto--->" ? "active" : ""}`}
+                    onClick={() => setActiveDropdown(activeDropdown === "Crypto--->" ? null : "Crypto--->")}
                   >
                     {item}
                   </div>
-                  {activeDropdown === "Crypto" && (
+                  {activeDropdown === "Crypto--->" && (
                     <div className="nav-dropdown-menu">
                       <Link to="/BitcoinChart" className="nav-dropdown-item">BTC</Link>
                       <div className="nav-dropdown-item">BNB</div>
                       <div className="nav-dropdown-item"></div>
                       <Link to="/withdraw" className="nav-dropdown-item"></Link>
+                    </div>
+                  )}
+                </div>
+              );
+            }
+            if (item === "Temp--->") {
+              return (
+                <div key={item} className="nav-item-dropdown-container">
+                  <div
+                    className={`nav-item ${activeDropdown === "Temp--->" ? "active" : ""}`}
+                    onClick={() => setActiveDropdown(activeDropdown === "Temp--->" ? null : "Temp--->")}
+                  >
+                    {item}
+                  </div>
+                  {activeDropdown === "Temp--->" && (
+                    <div className="nav-dropdown-menu">
+                      <Link to="/VerifyIdentityPage" className="nav-dropdown-item">VerifyIdentity</Link>
+                      <Link to="/VerificationEmailPage" className="nav-dropdown-item">Verify Email</Link>
+                      <Link to="/SentSMSToNumberPage" className="nav-dropdown-item">Sent SMS</Link>
                     </div>
                   )}
                 </div>
@@ -124,18 +149,11 @@ function Home() {
                 <Link to="/sign-in" className="nav-dropdown-item">Sign In</Link>
               );
             }
-            return (
-              <div key={item} className="nav-item">
-                {item}
-              </div>
-            );
+            
           })}
-          <Link to="/chat" className="nav-item nav-item-link" style={{ marginTop: "16px", color: "#7f8cff" }}>
-            Chat
-          </Link>
         </nav>
       </aside>
-
+          
       {/* Main Content */}
       <div className="crypto-main">
 
@@ -233,6 +251,9 @@ export default function App() {
       <Route path="/profile" element={<Profile />} />
       <Route path="/withdraw" element={<WithDraw />} />
       <Route path="/buy-sell" element={<BuyAndSell />} />
+      <Route path="/VerifyIdentityPage" element={<VerifyIdentityPage />} />
+      <Route path="/VerificationEmailPage" element={<VerificationEmailPage />} />
+      <Route path="/SentSMSToNumberPage" element={<SentSMSToNumberPage />} />
       <Route path="/sign-in" element={<SignInPage />} />
       <Route path="/sign-up" element={<SignUpPage />} />
       <Route path="/BitcoinChart" element={<BitcoinChart />} />

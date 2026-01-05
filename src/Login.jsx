@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import "./Login.css"; // create this file with the styles below
 
 export default function Login() {
@@ -37,14 +38,14 @@ export default function Login() {
 
       <section className="login-panel">
         <div className="login-card">
-          <h2>Sign in</h2>
+          <h2>Sign in or Sign in as Admin</h2>
           <p className="subtext">Use your Digital Assets Market credentials</p>
 
           {error && <div className="login-alert">{error}</div>}
 
           <form onSubmit={handleSubmit} className="login-form">
             <label>
-              Email or Username
+              Email or Username or Phone Number
               <input
                 type="email"
                 name="email"
@@ -75,9 +76,7 @@ export default function Login() {
                 />
                 Remember me
               </label>
-              <button type="button" className="link-button">
-                Forgot password?
-              </button>
+              <Link to="/verify-identity" className="link-button">Forgot password?</Link>
             </div>
 
             <button type="submit" className="login-submit">
@@ -91,8 +90,8 @@ export default function Login() {
 
           <div className="social-buttons">
             <button>Google</button>
-            <button>Microsoft</button>
-            <button>Apple</button>
+            {/* <button>Microsoft</button>
+            <button>Apple</button> */}
           </div>
 
           <p className="signup-text">
