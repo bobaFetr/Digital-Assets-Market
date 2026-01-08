@@ -69,6 +69,11 @@ export default function VerifyIdentityPage() {
               <input type="file" accept="image/*,.pdf" />
             </label>
 
+            <label>
+              Country of residence
+              <input type="date" name="dob" value={form.dob} onChange={handleChange} />
+            </label>
+
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <Link to="/sign-in" className="link-button">Back to sign in</Link>

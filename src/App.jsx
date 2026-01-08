@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Routes, Route, Link } from "react-router-dom";
 import BitcoinChart from "./BitcoinChart";
+import BNBChart from "./BNB";
 import Chat from "./Chat";
 import Profile from "./Profile";
 import WithDraw from "./WithdrawPage.jsx";
@@ -15,6 +16,9 @@ import SentSMSToNumberPage from "./SentSMSToNumberPage";
 import logo from "./assets/Copilot_20251008_144326.png";
 import SignUpPage from "./SignUp.jsx";
 import SignInPage from "./Login.jsx";
+
+import "./App.css";
+import Admin from "./AdminMainPage.jsx";
 import { div } from "framer-motion/client";
 
 
@@ -27,7 +31,7 @@ function Home() {
         {/* <h2 className="brand-title">Name</h2> */}
         <img src={logo} alt="Logo" style={{ width: "100%", maxWidth: "150px", marginBottom: "30px" }} />
         <nav className="nav-links">
-          {["Pay", "Social", "More--->", "Profile Settings","Crypto--->", "Tools--->", "Temp--->", "Sign Up", "Sign In"].map((item) => {
+          {["Pay", "Social-->", "More--->", "Profile Settings","Crypto--->", "Tools--->", "Temp--->", "Sign Up", "Sign In"].map((item) => {
             if(item === "Profile Settings"){
               return (
                 <Link to="/profile" className="nav-item nav-item-link" style={{ marginTop: "16px", color: "#7f8cff" }}>
@@ -78,16 +82,16 @@ function Home() {
                 </div>
               );
             }
-            if (item === "Social") {
+            if (item === "Social-->") {
               return (
                 <div key={item} className="nav-item-dropdown-container">
                   <div
-                    className={`nav-item ${activeDropdown === "Social" ? "active" : ""}`}
-                    onClick={() => setActiveDropdown(activeDropdown === "Social" ? null : "Social")}
+                    className={`nav-item ${activeDropdown === "Social-->" ? "active" : ""}`}
+                    onClick={() => setActiveDropdown(activeDropdown === "Social-->" ? null : "Social-->")}
                   >
                     {item}
                   </div>
-                  {activeDropdown === "Social" && (
+                  {activeDropdown === "Social-->" && (
                     <div className="nav-dropdown-menu">
                       <Link to="/chat" className="nav-dropdown-item">Chat</Link>
                       <div className="nav-dropdown-item">News</div>
@@ -96,7 +100,7 @@ function Home() {
                     </div>
                   )}
                 </div>
-              );
+              );  
             }
             if (item === "Crypto--->") {
               return (
@@ -110,7 +114,7 @@ function Home() {
                   {activeDropdown === "Crypto--->" && (
                     <div className="nav-dropdown-menu">
                       <Link to="/BitcoinChart" className="nav-dropdown-item">BTC</Link>
-                      <div className="nav-dropdown-item">BNB</div>
+                      <Link to="/BNBChart" className="nav-dropdown-item">BNB</Link>
                       <div className="nav-dropdown-item"></div>
                       <Link to="/withdraw" className="nav-dropdown-item"></Link>
                     </div>
@@ -132,6 +136,7 @@ function Home() {
                       <Link to="/VerifyIdentityPage" className="nav-dropdown-item">VerifyIdentity</Link>
                       <Link to="/VerificationEmailPage" className="nav-dropdown-item">Verify Email</Link>
                       <Link to="/SentSMSToNumberPage" className="nav-dropdown-item">Sent SMS</Link>
+                      <Link to="/Admin" className="nav-dropdown-item">Admin</Link>
                     </div>
                   )}
                 </div>
@@ -149,7 +154,6 @@ function Home() {
                 <Link to="/sign-in" className="nav-dropdown-item">Sign In</Link>
               );
             }
-            
           })}
         </nav>
       </aside>
@@ -158,7 +162,7 @@ function Home() {
       <div className="crypto-main">
 
         {/* Recommended Coins */}
-        <div className="cards-grid">
+        {/* <div className="cards-grid">
           {[
             { name: "Ethereum", code: "ETH", rate: "+12.34%" },
             { name: "Bitcoin", code: "BTC", rate: "+12.34%" },
@@ -175,7 +179,7 @@ function Home() {
               </h3>
             </div>
           ))}
-        </div>
+        </div> */}
 
         {/* Bitcoin Live Chart */}
         <div className="chart-container">
@@ -189,10 +193,17 @@ function Home() {
           <h1 style={{ color: "var(--accent-green)", margin: "10px 0" }}>$23.7475</h1>
           <div style={{ height: "280px", background: "#0d0f1a", marginTop: "20px", borderRadius: "10px" }}></div>
         </div>
+        <div className="footer">
+            <footer>
+              <Link>Instagram</Link>
+              <Link>Facebook</Link>
+              <Link>Twitter</Link>
+            </footer>
+          </div>
       </div>
-
+      
       {/* Right Sidebar */}
-      <aside className="crypto-right-sidebar">
+      {/* <aside className="crypto-right-sidebar">
         <div className="balance-card">
           <div className="balance-title">Total Balance</div>
           <h1 className="balance-amount">$37.4343</h1>
@@ -229,16 +240,9 @@ function Home() {
                 <span className={m.change.startsWith("-") ? "rate-down" : "rate-up"}>{m.change}</span>
               </div>
             ))}
-          </div>
-          <div className="footer">
-            <footer>
-              <Link>Instagram</Link>
-              <Link>Facebook</Link>
-              <Link>Twitter</Link>
-            </footer>
-          </div>
+          </div>          
         </div>
-      </aside>
+      </aside> */}
     </div>
   );
 }
@@ -257,6 +261,10 @@ export default function App() {
       <Route path="/sign-in" element={<SignInPage />} />
       <Route path="/sign-up" element={<SignUpPage />} />
       <Route path="/BitcoinChart" element={<BitcoinChart />} />
+      <Route path="/BNBChart" element={<BNBChart />} />
+
+      <Route path="/Admin/*" element={<Admin />} />
+
     </Routes>
   );
 }

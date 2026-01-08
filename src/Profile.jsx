@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "./assets/Copilot_20251008_144326.png";
+import profilePicture from "/Users/Lenovo/Desktop/Windows-10-user-icon-big.png";
 export default function Profile() {
   const [activeDropdown, setActiveDropdown] = useState(null);
   return (
@@ -108,6 +109,9 @@ export default function Profile() {
 
         {/* User Info Section */}
         <div style={{ background: "#1a1d2e", padding: "20px", borderRadius: "12px", marginTop: "20px" }}>
+          <div className="Profile_Picture">
+            <img src={profilePicture} alt="Profile" style={{ width: "100px", borderRadius: "50%" }} />
+          </div>
           <h3>User Information</h3>
           <p style={{ marginTop: "10px" }}>Name</p>
           <p>Email </p>
@@ -115,23 +119,17 @@ export default function Profile() {
           <p>Account ID</p>
           <p>Activity</p>
           <p>Favorites</p>
-        </div>
-
-        {/* Settings Section */}
-        <div style={{ background: "#1a1d2e", padding: "20px", borderRadius: "12px", marginTop: "30px" }}>
-          <h3>Account Settings</h3>
-          <button
-            style={{
-              marginTop: "15px",
-              padding: "12px",
-              borderRadius: "8px",
-              background: "#7f8cff",
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
-            Edit Profile
-          </button>
+          <p>Change location</p>
+          <p>Change email</p>
+          <div className="TransactionHistory">
+            <button>Transaction History</button>
+          </div>
+          <div>
+            <button>Download all your account info</button>
+          </div>
+          <div className="DeleteAcccountButton">
+            <button>Delete Account</button>
+          </div>
           <button
             style={{
               marginTop: "15px",
@@ -146,10 +144,27 @@ export default function Profile() {
             Logout
           </button>
         </div>
+
+        {/* Settings Section */}
+        {/* <div style={{ background: "#1a1d2e", padding: "20px", borderRadius: "12px", marginTop: "30px" }}>
+          <h3>Account Settings</h3>
+          <button
+            style={{
+              marginTop: "15px",
+              padding: "12px",
+              borderRadius: "8px",
+              background: "#7f8cff",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            Edit Profile
+          </button>
+        </div> */}
       </div>
 
       {/* Right Sidebar */}
-      <aside
+      {/* <aside
         style={{
           width: "300px",
           background: "#11131f",
@@ -166,7 +181,7 @@ export default function Profile() {
           <p style={{ marginTop: "15px" }}>Last Login</p>
           <div style={{ background: "#1a1d2e", padding: "10px", borderRadius: "8px" }}>10 Dec 2025</div>
         </div>
-      </aside>
+      </aside> */}
     </div>
   );
 }

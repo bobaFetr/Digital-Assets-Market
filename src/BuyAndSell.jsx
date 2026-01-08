@@ -224,7 +224,7 @@ export default function BuyAndSell() {
       </div>
 
       {/* Right Sidebar */}
-      <aside className="crypto-right-sidebar">
+      {/* <aside className="crypto-right-sidebar">
         <div className="balance-card">
           <div className="balance-title">Total Balance</div>
           <h1 className="balance-amount">$37.4343</h1>
@@ -268,7 +268,7 @@ export default function BuyAndSell() {
             </footer>
           </div>
         </div>
-      </aside>
+      </aside> */}
     </div>
   );
 }

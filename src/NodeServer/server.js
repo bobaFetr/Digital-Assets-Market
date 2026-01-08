@@ -31,6 +31,33 @@ app.get('/api/bitcoin/history', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch historical data' });
   }
 });
+
+app.get('/api/Bnb/history', async (req, res) => {
+  try {
+    const response = await axios.get(
+      'https://api.binance.com/api/v3/klines?symbol=BNBUSDT&interval=1m&limit=60'
+    );
+    const formatted = response.data.map(item => ({
+      time: item[0],
+      price: parseFloat(item[4]),
+    }));
+    res.json(formatted);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch historical BNB data' });
+  }
+});
+
+app.get('/api/Bnb/', async (req, res) => {
+  try {
+    const response = await axios.get(
+      'https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT'
+    );
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch BNB data' });
+  }
+});
+
 app.get('/api/bitcoin/orders', async (req, res) => {
   try {
     const response = await axios.get(
@@ -44,7 +71,17 @@ app.get('/api/bitcoin/orders', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
-
+///////////BTC PERCENTAGE
+app.get('/api/bitcoin/percentage', async (req, res) => {
+  try {
+    const response = await axios.get(
+      'https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT'
+    );
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch BTC percentage data' });
+  }
+});
 /////////10.12.25
 app.get('/api/bitcoincash', async (req, res) => {
   try {

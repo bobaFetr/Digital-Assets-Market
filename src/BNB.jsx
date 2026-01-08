@@ -34,8 +34,8 @@ function BitcoinChart() {
   });
 
   const fetchData = async () => {
-    try {
-      const res = await axios.get('http://localhost:3001/api/bitcoin/history');
+    try {//http://localhost:3001/api/Bnb/history
+      const res = await axios.get('http://localhost:3001/api/Bnb/history');
       const labels = res.data.map(item =>
         new Date(item.time).toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' })
       );
@@ -45,7 +45,7 @@ function BitcoinChart() {
         labels,
         datasets: [
           {
-            label: 'Цена на BTC (в USD)',
+            label: 'Цена на BNB (в USD)',
             data: prices,
             borderColor: '#357859ff',
             backgroundColor: 'rgba(0, 255, 204, 0.1)',
@@ -74,7 +74,7 @@ function BitcoinChart() {
         type: 'category',
         title: {
           display: true,
-          text: 'Time',
+          text: 'Време',
         },
         ticks: {
           color: '#f0f0f0',
@@ -87,7 +87,7 @@ function BitcoinChart() {
         type: 'linear',
         title: {
           display: true,
-          text: 'Price of  BTC  (USD)',
+          text: 'Цена на BTC (в USD)',
         },
         ticks: {
           color: '#f0f0f0',
@@ -118,7 +118,6 @@ function BitcoinChart() {
       <Line data={chartData} options={options} />
     </div>
   );
-  // function OrderBook() {}////////////////////////////////////////
 }
 
 export default BitcoinChart;

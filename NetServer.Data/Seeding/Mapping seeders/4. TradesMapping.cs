@@ -4,8 +4,8 @@ using System.Text;
 
 namespace NetServer.Data.Seeding.Mapping_seeders
 {
-    public class OrderMapping
+    public static class TradesMapping
     {
-
+        
     }
 }
