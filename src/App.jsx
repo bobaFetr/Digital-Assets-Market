@@ -8,12 +8,12 @@ import Chat from "./Chat";
 import Profile from "./Profile";
 import WithDraw from "./WithdrawPage.jsx";
 import BuyAndSell from "./BuyAndSell";
-
+import BCrypto from "./BCrypto.jsx";
 import VerifyIdentityPage from "./VerifyIdentityPage";
 import VerificationEmailPage from "./VerificationEmailPage";
 import SentSMSToNumberPage from "./SentSMSToNumberPage";
 
-import logo from "./assets/Copilot_20251008_144326.png";
+import logo from "./assets/Gemini_Generated_Image_sb5zszsb5zszsb5z.png";
 import SignUpPage from "./SignUp.jsx";
 import SignInPage from "./Login.jsx";
 
@@ -21,18 +21,23 @@ import "./App.css";
 import Admin from "./AdminMainPage.jsx";
 import { div } from "framer-motion/client";
 
-
 function Home() {
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [theme, setTheme] = useState("dark");
+
+  const toggleTheme = () => {
+    setTheme((prevTheme) => (prevTheme === "dark" ? "light" : "dark"));
+  };
   return (
-    <div className="crypto-layout">
+    <div className={`crypto-layout ${theme === "light" ? "light-mode" : ""}`}>
       {/* Sidebar */}
       <aside className="crypto-sidebar">
         {/* <h2 className="brand-title">Name</h2> */}
         <img src={logo} alt="Logo" style={{ width: "100%", maxWidth: "150px", marginBottom: "30px" }} />
         <nav className="nav-links">
-          {["Pay", "Social-->", "More--->", "Profile Settings","Crypto--->", "Tools--->", "Temp--->", "Sign Up", "Sign In"].map((item) => {
-            if(item === "Profile Settings"){
+          {["Pay", "Social-->", "More--->", "Profile Settings", "Crypto--->", "Tools--->", "Temp--->", "Sign Up", "Sign In"].map((item) => {
+            if (item === "Profile Settings") {
               return (
                 <Link to="/profile" className="nav-item nav-item-link" style={{ marginTop: "16px", color: "#7f8cff" }}>
                   Profile Settings
@@ -52,9 +57,9 @@ function Home() {
                     <div className="nav-dropdown-menu">
                       <div className="nav-dropdown-item">Tutorial for beginners</div>
                       <div className="nav-dropdown-item">Crypto Education</div>
-                      <div className="nav-dropdown-item">Trending</div>                      
-                      <div className="nav-dropdown-item">Favorites</div>      
-                      <div className="nav-dropdown-item">Another Assets</div>                
+                      <div className="nav-dropdown-item">Trending</div>
+                      <div className="nav-dropdown-item">Favorites</div>
+                      <div className="nav-dropdown-item">Another Assets</div>
                       {/* <div className="nav-dropdown-item">Settings</div> */}
                       <div className="nav-dropdown-item">Help</div>
                     </div>
@@ -96,11 +101,11 @@ function Home() {
                       <Link to="/chat" className="nav-dropdown-item">Chat</Link>
                       <div className="nav-dropdown-item">News</div>
                       <div className="nav-dropdown-item">Posts</div>
-                      <div className="nav-dropdown-item">FAQ</div>                      
+                      <div className="nav-dropdown-item">FAQ</div>
                     </div>
                   )}
                 </div>
-              );  
+              );
             }
             if (item === "Crypto--->") {
               return (
@@ -115,7 +120,7 @@ function Home() {
                     <div className="nav-dropdown-menu">
                       <Link to="/BitcoinChart" className="nav-dropdown-item">BTC</Link>
                       <Link to="/BNBChart" className="nav-dropdown-item">BNB</Link>
-                      <div className="nav-dropdown-item"></div>
+                      <Link to="/BCrypto" className="nav-dropdown-item">BCrypto</Link>
                       <Link to="/withdraw" className="nav-dropdown-item"></Link>
                     </div>
                   )}
@@ -157,10 +162,27 @@ function Home() {
           })}
         </nav>
       </aside>
-          
-      {/* Main Content */}
-      <div className="crypto-main">
 
+      {/* Main Content */}
+
+
+      <div className="crypto-main">
+        <div className="top-bar">
+          <div className="search-container">
+            <span className="search-icon">🔍</span>
+            <input
+              type="text"
+              placeholder="Search assets, markets, or news..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="top-search-input"
+            />
+          </div>
+
+          <button className="theme-toggle-btn" onClick={toggleTheme} title="Toggle Theme">
+            {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
+        </div>
         {/* Recommended Coins */}
         {/* <div className="cards-grid">
           {[
@@ -194,55 +216,13 @@ function Home() {
           <div style={{ height: "280px", background: "#0d0f1a", marginTop: "20px", borderRadius: "10px" }}></div>
         </div>
         <div className="footer">
-            <footer>
-              <Link>Instagram</Link>
-              <Link>Facebook</Link>
-              <Link>Twitter</Link>
-            </footer>
-          </div>
+          <footer>
+            <Link>Instagram</Link>
+            <Link>Facebook</Link>
+            <Link>Twitter</Link>
+          </footer>
+        </div>
       </div>
-      
-      {/* Right Sidebar */}
-      {/* <aside className="crypto-right-sidebar">
-        <div className="balance-card">
-          <div className="balance-title">Total Balance</div>
-          <h1 className="balance-amount">$37.4343</h1>
-        </div>
-
-        <div className="exchange-section">
-          <p className="exchange-label">You Sell</p>
-          <div className="currency-box">
-            <span>BTC</span>
-            <span>0.00</span>
-          </div>
-          <p className="exchange-label">You Get</p>
-          <div className="currency-box">
-            <span>BTH</span>
-            <span>0.00</span>
-          </div>
-          <button className="btn-primary">
-            Exchange Now
-          </button>
-        </div>
-
-        <div>
-          <h3 className="chart-header">Market</h3>
-          <div className="market-list">
-            {[
-              { code: "BTC", change: "+12.34%" },
-              { code: "ACA", change: "-2.34%" },
-              { code: "ALGO", change: "-12.34%" },
-              { code: "BTH", change: "+12.34%" },
-              { code: "BTL", change: "+12.34%" },
-            ].map((m) => (
-              <div key={m.code} className="market-item">
-                <span className="market-code">{m.code}</span>
-                <span className={m.change.startsWith("-") ? "rate-down" : "rate-up"}>{m.change}</span>
-              </div>
-            ))}
-          </div>          
-        </div>
-      </aside> */}
     </div>
   );
 }
@@ -264,6 +244,8 @@ export default function App() {
       <Route path="/BNBChart" element={<BNBChart />} />
 
       <Route path="/Admin/*" element={<Admin />} />
+      {/* <Route path="/BCrypto/*" element={<BCrypto />} /> */}
+      <Route path="/BCrypto" element={<BCrypto assets={[]} />} />
 
     </Routes>
   );

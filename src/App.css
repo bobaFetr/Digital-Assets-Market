@@ -250,6 +250,44 @@ li {
   --glass-border: rgba(127, 140, 255, 0.1);
 }
 
+.light-mode {
+  --bg-color: #f3f4f6;
+  --sidebar-bg: #ffffff;
+  --card-bg: #ffffff;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --glass-border: rgba(0, 0, 0, 0.1);
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.theme-toggle-btn {
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  padding: 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  min-width: 48px;
+  min-height: 48px;
+}
+
+.theme-toggle-btn:hover {
+  background: var(--accent-blue);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
 .crypto-layout {
   display: flex;
   height: 100vh;
@@ -312,6 +350,46 @@ li {
   padding: 30px;
   overflow-y: auto;
   position: relative;
+}
+
+/* Search Bar */
+.search-container {
+  display: flex;
+  align-items: center;
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 12px 20px;
+  /* margin-bottom: 30px; Removed margin-bottom as it's now handled by top-bar */
+  flex: 1; /* Allow search to take available space */
+  max-width: 600px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.search-container:focus-within {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 2px rgba(127, 140, 255, 0.2);
+}
+
+.search-icon {
+  font-size: 18px;
+  color: var(--text-secondary);
+  margin-right: 12px;
+}
+
+.top-search-input {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 16px;
+  width: 100%;
+  outline: none;
+  font-family: inherit;
+}
+
+.top-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .header-greeting {
