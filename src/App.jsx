@@ -19,7 +19,12 @@ import SignInPage from "./Login.jsx";
 
 import "./App.css";
 import Admin from "./AdminMainPage.jsx";
-import { div } from "framer-motion/client";
+
+import Education from "./Education.jsx";
+import News from "./News.jsx";
+import Posts from "./Posts.jsx";
+import FAQ from "./FAQ.jsx";
+import RugPull from "./RugPull.jsx";
 
 function Home() {
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -98,10 +103,11 @@ function Home() {
                   </div>
                   {activeDropdown === "Social-->" && (
                     <div className="nav-dropdown-menu">
-                      <Link to="/chat" className="nav-dropdown-item">Chat</Link>
-                      <div className="nav-dropdown-item">News</div>
-                      <div className="nav-dropdown-item">Posts</div>
-                      <div className="nav-dropdown-item">FAQ</div>
+                      <Link to="/news" className="nav-dropdown-item">News</Link>
+                      <Link to="/posts" className="nav-dropdown-item">Posts</Link>
+                      <Link to="/education" className="nav-dropdown-item">Education</Link>
+                      <Link to="/rug-pull" className="nav-dropdown-item">Rug Pull</Link>
+                      <Link to="/faq" className="nav-dropdown-item">FAQ</Link>
                     </div>
                   )}
                 </div>
@@ -246,6 +252,12 @@ export default function App() {
       <Route path="/Admin/*" element={<Admin />} />
       {/* <Route path="/BCrypto/*" element={<BCrypto />} /> */}
       <Route path="/BCrypto" element={<BCrypto assets={[]} />} />
+
+      <Route path="/news" element={<News />} />
+      <Route path="/posts" element={<Posts />} />
+      <Route path="/education" element={<Education />} />
+      <Route path="/rug-pull" element={<RugPull />} />
+      <Route path="/faq" element={<FAQ />} />
 
     </Routes>
   );
