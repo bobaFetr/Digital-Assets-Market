@@ -1,0 +1,6 @@
+@NetServer.Data_HostAddress = http://localhost:5043
+
+GET {{NetServer.Data_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
