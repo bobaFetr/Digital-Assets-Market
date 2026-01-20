@@ -18,7 +18,7 @@ import SignUpPage from "./SignUp.jsx";
 import SignInPage from "./Login.jsx";
 
 import "./App.css";
-import Admin from "./AdminMainPage.jsx";
+import Admin from "./ADMIN/AdminMainPage.jsx";
 
 import Education from "./Education.jsx";
 import News from "./News.jsx";
@@ -187,6 +187,9 @@ function Home() {
 
           <button className="theme-toggle-btn" onClick={toggleTheme} title="Toggle Theme">
             {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
+          <button className="theme-toggle-btn" onClick={toggleTheme} title="Announcements">
+            {'📢'}
           </button>
         </div>
         {/* Recommended Coins */}

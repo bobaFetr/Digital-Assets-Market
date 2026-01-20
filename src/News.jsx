@@ -1,56 +1,116 @@
-import React from 'react';
-import './App.css'; // Reusing App.css for basic layout
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import logo from "./assets/Copilot_20251008_144326.png";
 
-function News() {
-    const newsItems = [
-        {
-            id: 1,
-            title: "Bitcoin Surges Past $100k",
-            summary: "Bitcoin has reached an all-time high, breaking the psychological barrier of $100,000.",
-            source: "CryptoDaily",
-            date: "2025-10-24"
-        },
-        {
-            id: 2,
-            title: "Ethereum 3.0 Upgrades Announced",
-            summary: "Vitalik Buterin outlines the roadmap for Ethereum 3.0, promising faster transactions.",
-            source: "EthNews",
-            date: "2025-10-23"
-        },
-        {
-            id: 3,
-            title: "New Regulations for DeFi",
-            summary: "Global regulators are proposing new frameworks for Decentralized Finance protocols.",
-            source: "RegulatoryWatch",
-            date: "2025-10-22"
-        }
+export default function News() {
+    const [activeDropdown, setActiveDropdown] = useState(null);
+
+    // Mock data for news articles
+    const newsArticles = [
+        { id: 1, title: "Bitcoin Hits New High", category: "Market", time: "2h ago", summary: "The leading cryptocurrency has surpassed key resistance levels..." },
+        { id: 2, title: "Ethereum 2.0 Update", category: "Tech", time: "5h ago", summary: "Developers announce new scaling solutions for the network..." },
+        { id: 3, title: "Global Regulation News", category: "Policy", time: "1d ago", summary: "New frameworks are being established for digital assets worldwide..." },
+        { id: 4, title: "AI in DeFi", category: "Innovation", time: "3d ago", summary: "How artificial intelligence is reshaping automated market makers..." }
     ];
 
     return (
         <div className="crypto-layout">
-            <Sidebar />
-            <div className="crypto-main">
-                <h1 style={{ marginBottom: '20px' }}>Crypto News</h1>
-                <div style={{ display: 'grid', gap: '20px' }}>
-                    {newsItems.map(item => (
-                        <div key={item.id} style={{
-                            background: '#1a1d2e',
-                            padding: '20px',
-                            borderRadius: '12px',
-                            border: '1px solid #22283a'
-                        }}>
-                            <h2 style={{ fontSize: '1.2rem', marginBottom: '10px' }}>{item.title}</h2>
-                            <p style={{ color: '#aaa', marginBottom: '10px' }}>{item.summary}</p>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#7f8cff' }}>
-                                <span>{item.source}</span>
-                                <span>{item.date}</span>
+            {/* Sidebar - Retained from your original logic */}
+            <aside className="crypto-sidebar">
+                <img src={logo} alt="Logo" style={{ width: "100%", maxWidth: "150px", marginBottom: "30px" }} />
+                <nav className="nav-links">
+                    {["Pay", "Social", "More", "Stacking Calculator", "Profile Settings", "Crypto", "Sign Up", "Sign In"].map((item) => {
+                        if (["More", "Social", "Crypto"].includes(item)) {
+                            return (
+                                <div key={item} className="nav-item-dropdown-container">
+                                    <div
+                                        className={`nav-item ${activeDropdown === item ? "active" : ""}`}
+                                        onClick={() => setActiveDropdown(activeDropdown === item ? null : item)}
+                                    >
+                                        {item}
+                                    </div>
+                                    {activeDropdown === item && (
+                                        <div className="nav-dropdown-menu">
+                                            <div className="nav-dropdown-item">{item} Item 1</div>
+                                            <div className="nav-dropdown-item">{item} Item 2</div>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        }
+                        return <div key={item} className="nav-item">{item}</div>;
+                    })}
+                </nav>
+            </aside>
+
+            {/* Main Content Area */}
+            <main className="crypto-main">
+                {/* News Header using your specific CSS colors */}
+                <header style={{ position: 'relative', width: '100%', marginBottom: '40px' }}>
+                    <h1 style={{ color: '#EBA667', textAlign: 'left', fontSize: '2.5rem' }}>Crypto News</h1>
+                    <div className="search-container">
+                        <span className="search-icon">🔍</span>
+                        <input type="text" placeholder="Search latest updates..." className="top-search-input" />
+                    </div>
+                </header>
+
+                <section>
+                    <h2 className="header-greeting">Trending Stories</h2>
+
+                    {/* Using your cards-grid class for the news layout */}
+                    <div className="cards-grid">
+                        {newsArticles.map((article) => (
+                            <div key={article.id} className="coin-card" style={{ minHeight: '200px', cursor: 'pointer' }}>
+                                <div className="coin-header">
+                                    <span className="reward-label" style={{ color: '#7f8cff' }}>{article.category}</span>
+                                    <h4>{article.title}</h4>
+                                </div>
+                                <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', margin: '15px 0' }}>
+                                    {article.summary}
+                                </p>
+                                <div className="coin-rate" style={{ fontSize: '12px', color: '#4dff88' }}>
+                                    {article.time}
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
+                </section>
+
+                {/* Example of a List-style News section using your <li> styles */}
+                <section style={{ marginTop: '40px' }}>
+                    <h3>Recent Updates</h3>
+                    <ul style={{ padding: 0 }}>
+                        <li style={{ borderRadius: '8px', marginBottom: '10px' }}>
+                            <strong>Market Alert:</strong> Volatility expected in the next 24 hours due to CPI data.
+                        </li>
+                        <li style={{ borderRadius: '8px', marginBottom: '10px' }}>
+                            <strong>New Listing:</strong> "Solana Ecosystem" tokens added to favorites.
+                        </li>
+                    </ul>
+                </section>
+            </main>
+
+            {/* Right Sidebar - Re-purposed for Market Quick-View */}
+            <aside className="crypto-right-sidebar">
+                <div className="balance-card">
+                    <p className="balance-title">Market Sentiment</p>
+                    <p className="balance-amount" style={{ color: '#4dff88' }}>Bullish</p>
                 </div>
-            </div>
+
+                <div className="exchange-section">
+                    <h4 style={{ marginBottom: '15px' }}>Quick Market</h4>
+                    <div className="market-list">
+                        <div className="market-item">
+                            <span className="market-code">BTC</span>
+                            <span className="rate-up">+2.4%</span>
+                        </div>
+                        <div className="market-item">
+                            <span className="market-code">ETH</span>
+                            <span className="rate-down">-1.2%</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
         </div>
     );
 }
-
-export default News;
