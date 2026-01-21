@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NetServer.Data\NetServer.Data.csproj" />
+    <ProjectReference Include="..\NetServer.DAta1\NetServer.DAta1.csproj" />
   </ItemGroup>
 
 </Project>
