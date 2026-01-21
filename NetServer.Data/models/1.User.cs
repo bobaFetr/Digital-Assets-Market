@@ -17,19 +17,19 @@ namespace NetServer.Data.Models
             CreatedAt = DateTime.UtcNow;
             Status = 0;
         }
-        // public User(Guid id, DateTime createdAt)
-        // {
-        //     Id = id;
-        //     Wallets = new HashSet<WalletTable>();
-        //     Orders = new HashSet<OrdersTable>();
-        //     Sessions = new HashSet<SessionTable>();
-        //     KycDocuments = new HashSet<KycDocument>();
-        //     AuditLogs = new HashSet<AuditLog>();
-        //     ExchangeTransaction = new HashSet<ExchangeTransaction>();
-        //     ReferralsMade = new HashSet<Referral>();
-        //     ReferralsReceived = new HashSet<Referral>();
-        //     CreatedAt = createdAt;
-        // }
+        public User(Guid id, DateTime createdAt)
+        {
+            Id = id;
+            // Wallets = new HashSet<WalletTable>();
+            // Orders = new HashSet<OrdersTable>();
+            // Sessions = new HashSet<SessionTable>();
+            // KycDocuments = new HashSet<KycDocument>();
+            // AuditLogs = new HashSet<AuditLog>();
+            // ExchangeTransaction = new HashSet<ExchangeTransaction>();
+            // ReferralsMade = new HashSet<Referral>();
+            // ReferralsReceived = new HashSet<Referral>();
+            CreatedAt = createdAt;
+        }
         [Key]
         public Guid Id { get; set; }
         [Required]

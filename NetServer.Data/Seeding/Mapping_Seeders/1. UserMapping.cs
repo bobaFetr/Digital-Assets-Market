@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using static NetServer.Data.Seeding.Constants.DataSeedingConstants;
+using NetServer.Data.Seeding;
+ using NetServer.Data.Seeding.Constants;
+//using static NetServer.Data.Seeding.Constants.DataSeedingConstants;
 namespace NetServer.Data.Models.Mapping_seeders
 {
     public  static class UserMapping
@@ -10,12 +12,11 @@ namespace NetServer.Data.Models.Mapping_seeders
         {
             ICollection<User> users = new HashSet<User>()
             {
-                new User()
+                new User(DataSeedingConstants.UserConstants.User1Id, DataSeedingConstants.UserConstants.CreatedAt1),
+                new User(DataSeedingConstants.UserConstants.User1Id, DataSeedingConstants.UserConstants.CreatedAt1),
+                new User(DataSeedingConstants.UserConstants.User1Id, DataSeedingConstants.UserConstants.CreatedAt1)
             };
+            return UserSeeding.GenerateUsers();//last edit here. github back end walllet seeding file 2
         }
-        //ICollection<User> users = new HashSet<User>()
-        //{
-            
-        //}
     }
-}
+}//CREATE DATABASE DIAGRAM
