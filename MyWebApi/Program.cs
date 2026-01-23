@@ -1,6 +1,11 @@
+// using Microsoft.EntityFrameworkCore;
+// using NetServer.Data;
+using Microsoft.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using NetServer.Data;
 
+//using NetServer.Data;
+using NetServer.DAta1;
 internal class Program
 {
     private static void Main(string[] args)
@@ -11,7 +16,7 @@ internal class Program
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
-        builder.Services.AddDbContext<AppDbContext>(options =>
+        builder.Services.AddDbContext<AppDbContext>(options =>//the reference from he old project was reoved
             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
         var app = builder.Build();

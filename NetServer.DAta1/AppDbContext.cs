@@ -91,7 +91,11 @@ namespace NetServer.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.EnableSensitiveDataLogging();
+            //optionsBuilder.EnableSensitiveDataLogging();
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.EnableSensitiveDataLogging();
+            }
         }
     }
 }
