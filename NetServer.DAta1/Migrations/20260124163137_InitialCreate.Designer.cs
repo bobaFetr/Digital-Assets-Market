@@ -12,8 +12,8 @@ using NetServer.Data;
 namespace NetServer.DAta1.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260121172414_Db_Create")]
-    partial class Db_Create
+    [Migration("20260124163137_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -55,6 +55,18 @@ namespace NetServer.DAta1.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
+                            CreatedAt = new DateTime(2025, 11, 28, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "Alice@email.com",
+                            IsBanned = false,
+                            PasswordHash = "Password",
+                            Status = 1,
+                            UserName = "Alice"
+                        });
                 });
 #pragma warning restore 612, 618
         }

@@ -52,6 +52,18 @@ namespace NetServer.DAta1.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
+                            CreatedAt = new DateTime(2025, 11, 28, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "Alice@email.com",
+                            IsBanned = false,
+                            PasswordHash = "Password",
+                            Status = 1,
+                            UserName = "Alice"
+                        });
                 });
 #pragma warning restore 612, 618
         }

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace NetServer.DAta1.Migrations
 {
     /// <inheritdoc />
-    public partial class Db_Create : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -27,6 +27,11 @@ namespace NetServer.DAta1.Migrations
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
                 });
+
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "Id", "CreatedAt", "Email", "IsBanned", "PasswordHash", "Status", "UserName" },
+                values: new object[] { new Guid("a1b2c3d4-e5f6-7890-abcd-ef1234567890"), new DateTime(2025, 11, 28, 0, 0, 0, 0, DateTimeKind.Unspecified), "Alice@email.com", false, "Password", 1, "Alice" });
         }
 
         /// <inheritdoc />

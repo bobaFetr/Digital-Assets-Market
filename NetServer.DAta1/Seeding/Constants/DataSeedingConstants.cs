@@ -25,6 +25,7 @@ namespace NetServer.Data.Seeding.Constants
             //public  CreatedAt = 
         }
 
+        
         //2
         // public static class WalletConstants
         // {

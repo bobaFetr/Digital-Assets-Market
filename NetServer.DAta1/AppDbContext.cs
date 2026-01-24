@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using NetServer.Data.Models;
 using NetServer.Data.Seeding;
+using System.Reflection;
+using NetServer.Data.Configurations;
+
 namespace NetServer.Data
 {
     public class AppDbContext : DbContext
@@ -31,11 +34,12 @@ namespace NetServer.Data
 
 
             // Apply IEntityTypeConfiguration<T> implementations
-            //modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
             // Example explicit keys
 
             modelBuilder.Entity<User>().HasKey(u => u.Id);
+            
             // modelBuilder.Entity<WalletTable>().HasKey(w => w.WalletID);
             // modelBuilder.Entity<KycDocument>().HasKey(k => k.DocId);
             // modelBuilder.Entity<AuditLog>().HasKey(a => a.LogId);

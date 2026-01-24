@@ -15,8 +15,11 @@ namespace NetServer.Data.Configurations
 
         public void Configure(EntityTypeBuilder<User> builder)
         {
-            builder.HasKey(w => w.Id);
-            builder.HasData(UserSeeding.GenerateUsers);
+            // builder.HasKey(w => w.Id);
+            // builder.HasData(UserSeeding.GenerateUsers);
+            builder.HasKey(u => u.Id);
+
+            builder.HasData(UserSeeding.GenerateUsers());
         }
     }
 }
