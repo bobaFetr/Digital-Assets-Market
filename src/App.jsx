@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { Routes, Route, Link } from "react-router-dom";
 import BitcoinChart from "./BitcoinChart";
 import BNBChart from "./BNB";
-import Chat from "./Chat";
 import Profile from "./Profile";
 import WithDraw from "./WithdrawPage.jsx";
 import BuyAndSell from "./BuyAndSell";
@@ -22,8 +21,6 @@ import Admin from "./ADMIN/AdminMainPage.jsx";
 
 import Education from "./Education.jsx";
 import News from "./News.jsx";
-import Posts from "./Posts.jsx";
-import FAQ from "./FAQ.jsx";
 import RugPull from "./RugPull.jsx";
 
 function Home() {
@@ -64,7 +61,6 @@ function Home() {
                       <div className="nav-dropdown-item">Crypto Education</div>
                       <div className="nav-dropdown-item">Trending</div>
                       <div className="nav-dropdown-item">Favorites</div>
-                      <div className="nav-dropdown-item">Another Assets</div>
                       {/* <div className="nav-dropdown-item">Settings</div> */}
                       <div className="nav-dropdown-item">Help</div>
                     </div>
@@ -83,7 +79,6 @@ function Home() {
                   </div>
                   {activeDropdown === "Tools--->" && (
                     <div className="nav-dropdown-menu">
-                      <div className="nav-dropdown-item">AI Assistant</div>
                       <Link to="/buy-sell" className="nav-dropdown-item">Buy and Sell</Link>
                       <div className="nav-dropdown-item">Deposit</div>
                       <Link to="/withdraw" className="nav-dropdown-item">Withdraw</Link>
@@ -104,7 +99,6 @@ function Home() {
                   {activeDropdown === "Social-->" && (
                     <div className="nav-dropdown-menu">
                       <Link to="/news" className="nav-dropdown-item">News</Link>
-                      <Link to="/posts" className="nav-dropdown-item">Posts</Link>
                       <Link to="/education" className="nav-dropdown-item">Education</Link>
                       <Link to="/rug-pull" className="nav-dropdown-item">Rug Pull</Link>
                       <Link to="/faq" className="nav-dropdown-item">FAQ</Link>
@@ -171,7 +165,6 @@ function Home() {
 
       {/* Main Content */}
 
-
       <div className="crypto-main">
         <div className="top-bar">
           <div className="search-container">
@@ -192,26 +185,6 @@ function Home() {
             {'📢'}
           </button>
         </div>
-        {/* Recommended Coins */}
-        {/* <div className="cards-grid">
-          {[
-            { name: "Ethereum", code: "ETH", rate: "+12.34%" },
-            { name: "Bitcoin", code: "BTC", rate: "+12.34%" },
-            { name: "Bitcoin Cash", code: "BTH", rate: "+11.34%" },
-            { name: "Algorand", code: "ALGO", rate: "-12.34%" },
-          ].map((coin) => (
-            <div key={coin.code} className="coin-card">
-              <div className="coin-header">
-                <h4>{coin.name} ({coin.code})</h4>
-              </div>
-              <p className="reward-label">Reward Rate</p>
-              <h3 className={`coin-rate ${coin.rate.startsWith("-") ? "rate-down" : "rate-up"}`}>
-                {coin.rate}
-              </h3>
-            </div>
-          ))}
-        </div> */}
-
         {/* Bitcoin Live Chart */}
         <div className="chart-container">
           <h3 className="chart-header">Bitcoin Live Chart</h3>
@@ -235,12 +208,10 @@ function Home() {
     </div>
   );
 }
-
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/chat" element={<Chat />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/withdraw" element={<WithDraw />} />
       <Route path="/buy-sell" element={<BuyAndSell />} />
@@ -253,15 +224,11 @@ export default function App() {
       <Route path="/BNBChart" element={<BNBChart />} />
 
       <Route path="/Admin/*" element={<Admin />} />
-      {/* <Route path="/BCrypto/*" element={<BCrypto />} /> */}
       <Route path="/BCrypto" element={<BCrypto assets={[]} />} />
 
       <Route path="/news" element={<News />} />
-      <Route path="/posts" element={<Posts />} />
       <Route path="/education" element={<Education />} />
       <Route path="/rug-pull" element={<RugPull />} />
-      <Route path="/faq" element={<FAQ />} />
-
     </Routes>
   );
 }

@@ -18,7 +18,6 @@ namespace NetServer.Data.Configurations
             // builder.HasKey(w => w.Id);
             // builder.HasData(UserSeeding.GenerateUsers);
             builder.HasKey(u => u.Id);
-
             builder.HasData(UserSeeding.GenerateUsers());
         }
     }

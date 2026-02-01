@@ -155,18 +155,11 @@ namespace NetServer.Data.Seeding.Constants
         //     public static readonly DateTime Timestamp1 = new(2025, 12, 5);
         // }
 
-        //13
-        // public static class ChatConstants 
-        // {
-        //     public const string Chat1Id = "m1n2o3p4-q5r6-7890-abcd-ef1234567890";
-        //     public const string SenderId1 = DataSeedingConstants.UserConstants.User1Id;
-        //     public const string ReceiverId1 = "n1o2p3q4-r5s6-7890-abcd-ef1234567890";
-        //     public const string Message1 = "Hello, how can I help you?";
-        //     public static readonly DateTime Timestamp1 = new(2025, 11, 28);
-        //     public static readonly DateTime MessageSendDate = new(2025, 11, 29);
-        //     public static readonly DateTime MessageEdit = new(2025, 11, 29);
-        //     public static readonly DateTime MessageDeleted = new(2025, 11, 29);
-        // }
+
+
+        
+
+
         //14
         // public static class NewsConstants
         // {
@@ -182,14 +175,9 @@ namespace NetServer.Data.Seeding.Constants
         //     public const string DeletedBy1 = "Moderator";
         //     public static readonly DateTime DeletedOn1 = new(2025, 12, 1);
         // }
-        //15
-        // public static class FAQConstants
-        // {
-        //     public const string FAQ1Id = "o1p2q3r4-s5t6-7890-abcd-ef1234567890";
-        //     public const string Question1 = "How to create an account?";
-        //     public const string Answer1 = "To create an account, click on the Sign Up button and fill in the required details...";
-        //     public static readonly DateTime CreatedAt1 = new(2025, 11, 28);
-        //     public static readonly DateTime UpdatedAt1 = new(2025, 11, 29);
-        // }
+
+
+        
+        
     }
 }

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "./assets/Copilot_20251008_144326.png";
-import profilePicture from "/Users/Lenovo/Desktop/Windows-10-user-icon-big.png";
+//import profilePicture from "/Users/Lenovo/Desktop/Windows-10-user-icon-big.png";
 export default function Profile() {
   const [activeDropdown, setActiveDropdown] = useState(null);
   return (
