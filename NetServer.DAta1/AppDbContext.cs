@@ -39,13 +39,23 @@ namespace NetServer.Data
             // Example explicit keys
 
             modelBuilder.Entity<User>().HasKey(u => u.Id);
-            
+            modelBuilder.Entity<WalletTable>().HasKey(w => w.WalletID);
             // modelBuilder.Entity<WalletTable>().HasKey(w => w.WalletID);
             // modelBuilder.Entity<KycDocument>().HasKey(k => k.DocId);
             // modelBuilder.Entity<AuditLog>().HasKey(a => a.LogId);
             // modelBuilder.Entity<Fee>().HasKey(f => f.FeeId);
 
             // // Relationships
+            modelBuilder.Entity<User>()
+                .HasMany<WalletTable>()
+                .WithOne()
+                .HasForeignKey(w => w.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<WalletTable>()
+                .HasOne<User>()
+                .WithMany()
+                .HasForeignKey(w => w.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
             // modelBuilder.Entity<TradesTable>()
             //     .HasOne(t => t.BuyOrder)
             //     .WithMany(o => o.TradesAsBuyOrder)

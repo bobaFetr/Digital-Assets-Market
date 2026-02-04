@@ -9,14 +9,12 @@ using System.Text;
 
 namespace NetServer.Data.Configurations
 {
-    public class UserConfiguration : IEntityTypeConfiguration<User>
+    public class WalletConfiguration : IEntityTypeConfiguration<WalletTable>
     {
-        //private object modelBuilder;
-
-        public void Configure(EntityTypeBuilder<User> builder)
+        public void Configure(EntityTypeBuilder<WalletTable> builder)
         {
-            builder.HasKey(u => u.Id);
-            builder.HasData(UserSeeding.GenerateUsers());
+            builder.HasKey(w => w.WalletID);
+            builder.HasData(WalletSeeding.GenerateWallets());
         }
     }
 }

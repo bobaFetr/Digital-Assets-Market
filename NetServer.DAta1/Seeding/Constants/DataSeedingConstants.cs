@@ -27,16 +27,17 @@ namespace NetServer.Data.Seeding.Constants
 
         
         //2
-        // public static class WalletConstants
-        // {
-        //     public const string Wallet1Id = "b1c2d3e4-f5g6-7890-abcd-ef1234567890";
-        //     public const string User1Id = DataSeedingConstants.UserConstants.User1Id;
-        //     public const string Currency1 = "BTC";
-        //     public const decimal Balance1 = 1.5m;
-        //     public const string Address1 = "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa";
-        //     public const string Status1 = "Active";
-        //     public static readonly DateTime CreatedAt1 = new(2025, 11, 28);
-        // }
+        public static class WalletConstants
+        {
+            //"a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+            public static readonly Guid Wallet1Id = Guid.Parse("3249fc5e-7cd9-49ab-87db-c581a24f0938");
+            public static readonly Guid User1Id = DataSeedingConstants.UserConstants.User1Id;
+            public const string Currency1 = "BTC";
+            public const decimal Balance1 = 1.5m;
+            public const string Address1 = "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa";
+            public const string Status1 = "Active";
+            public static readonly DateTime CreatedAt1 = new(2025, 11, 28);
+        }
 
         // //3
         // public static class OrderConstants
