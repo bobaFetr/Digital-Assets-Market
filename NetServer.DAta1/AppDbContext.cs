@@ -13,7 +13,9 @@ namespace NetServer.Data
         // DbSets
 
         public DbSet<User> Users { get; set; } = null!;
-        // public DbSet<WalletTable> Wallets { get; set; } = null!;
+        public DbSet<WalletTable> Wallets { get; set; } = null!;
+
+        public DbSet<OrdersTable> Orders { get; set; } = null!;
         // public DbSet<OrdersTable> OrdersTable { get; set; } = null!;
         // public DbSet<TradesTable> TradesTable { get; set; } = null!;
         // public DbSet<OrderBook> OrderBookTable { get; set; } = null!;
@@ -40,6 +42,7 @@ namespace NetServer.Data
 
             modelBuilder.Entity<User>().HasKey(u => u.Id);
             modelBuilder.Entity<WalletTable>().HasKey(w => w.WalletID);
+            modelBuilder.Entity<OrdersTable>().HasKey(o => o.OrderId);
             // modelBuilder.Entity<WalletTable>().HasKey(w => w.WalletID);
             // modelBuilder.Entity<KycDocument>().HasKey(k => k.DocId);
             // modelBuilder.Entity<AuditLog>().HasKey(a => a.LogId);
@@ -55,6 +58,12 @@ namespace NetServer.Data
                 .HasOne<User>()
                 .WithMany()
                 .HasForeignKey(w => w.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<OrdersTable>()
+                .HasOne<User>()
+                .WithMany()
+                .HasForeignKey(o => o.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
             // modelBuilder.Entity<TradesTable>()
             //     .HasOne(t => t.BuyOrder)

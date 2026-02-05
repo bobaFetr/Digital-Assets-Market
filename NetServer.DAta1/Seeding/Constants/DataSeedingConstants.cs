@@ -40,17 +40,17 @@ namespace NetServer.Data.Seeding.Constants
         }
 
         // //3
-        // public static class OrderConstants
-        // {
-        //     public const string Order1Id = "c1d2e3f4-g5h6-7890-abcd-ef1234567890";
-        //     public const string User1Id = DataSeedingConstants.UserConstants.User1Id;
-        //     public const string OrderType1 = "Buy";
-        //     public const string Symbol1 = "BTCUSD";
-        //     public const decimal Price1 = 50000.0m;
-        //     public const decimal Amount1 = 0.1m;
-        //     public const string OrderStatus1 = "Open";
-        //     public static readonly DateTime TimeStamp1 = new(2025, 11, 28);
-        // }
+        public static class OrderConstants
+        {
+            public static readonly Guid Order1Id = Guid.Parse("23279bc0-3f81-4bbd-b44e-b61b92b01ba4");
+            public static readonly Guid User1Id = DataSeedingConstants.UserConstants.User1Id;
+            public const OrderType OrderType1 = OrderType.Buy;
+            public const string Symbol1 = "BTCUSD";
+            public const decimal Price1 = 50000.0m;
+            public const decimal Amount1 = 0.1m;
+            public const OrderStatus OrderStatus1 = OrderStatus.Open;
+            public static readonly DateTime TimeStamp1 = new(2025, 8, 28);
+        }
 
         //4
         // public static class TradeConstants
