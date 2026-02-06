@@ -53,17 +53,17 @@ namespace NetServer.Data.Seeding.Constants
         }
 
         //4
-        // public static class TradeConstants
-        // {
-        //     public const string Trade1Id = "d1e2f3g4-h5i6-7890-abcd-ef1234567890";
-        //     public const string BuyOrderId1 = DataSeedingConstants.OrderConstants.Order1Id;
-        //     public const string SellOrderId1 = "e1f2g3h4-i5j6-7890-abcd-ef1234567890";
-        //     public const OrderBook Sellorder = null!;
-        //     public const OrderBook Buyorder = null!;
-        //     public const decimal Price1 = 50000.0m;
-        //     public const double Amount1 = 0.1;
-        //     public static readonly DateTime TimeStamp1 = new(2025, 11, 28);
-        // }
+        public static class TradeConstants
+        {
+            public static readonly Guid Trade1Id = Guid.Parse("f3c9a1b2-4d5e-6789-abcd-0123456789ab");
+            public static readonly Guid BuyOrderId1 = DataSeedingConstants.OrderConstants.Order1Id;
+            //public static readonly OrderBook SellOrder = 
+            //public const OrderBook Sellorder = null!;
+            //public const OrderBook Buyorder = null!;
+            public const decimal Price1 = 70000.0m;
+            public const double Amount1 = 0.5;
+            public static readonly DateTime TimeStamp1 = new(2025, 11, 28);
+        }
 
         //5
         // public static class OrderBookConstants
