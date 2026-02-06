@@ -77,18 +77,16 @@ namespace NetServer.Data.Seeding.Constants
 
 
         //6
-        // public static class KycDocumentConstants
-        // {
-        //     public  const string Doc1Id = "f1g2h3i4-j5k6-7890-abcd-ef1234567890";
-        //     public const string User1Id = DataSeedingConstants.UserConstants.User1Id;
-        //     public const string Type1 = "Passport";
-        //     public const string FilePath1 = "/path/to/document1.pdf";
-        //     public const string DocumentNumber1 = "A12345678";
-        //     public static readonly DateTime ExpiryDate1 = new(2030, 11, 28);
-        //     public const string Status1 = "Pending";
-        //     public static readonly DateTime SubmittedAt1 = new(2025, 11, 28);
-        //     public static readonly DateTime SubmittedAt2 = new(2025, 12, 5);
-        // }
+        public static class KycDocumentConstants
+        {
+            public static readonly Guid Doc1Id = DataSeedingConstants.UserConstants.User1Id;
+            public const string Type1 = "Passport";
+            public const string FilePath1 = "/path/to/document1.pdf";
+            public const string DocumentNumber1 = "A12345678";
+            public static readonly DateTime ExpiryDate1 = new(2030, 11, 28);
+            public const string Status1 = "Pending";
+            public static readonly DateTime UploadedAt1 = new(2025, 11, 28);
+        }
 
         //7
         // public static class SessionConstants

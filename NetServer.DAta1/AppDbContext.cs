@@ -87,6 +87,13 @@ namespace NetServer.Data
             .HasForeignKey<OrderBook>(ob => ob.OrderId)
             .OnDelete(DeleteBehavior.Restrict);
 
+            
+
+            modelBuilder.Entity<KycDocument>()
+            .HasOne(k => k.User)
+            .WithMany()
+            .HasForeignKey(k => k.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
             // modelBuilder.Entity<TradesTable>()
             //     .HasOne(t => t.BuyOrder)
             //     .WithMany(o => o.TradesAsBuyOrder)
