@@ -18,19 +18,17 @@ namespace NetServer.Data.Models
     public class OrdersTable
     {
         [Key]
-        public Guid OrderId { get; set; }
-        [ForeignKey("User")]
+    public Guid OrderId { get; set; }
 
-        public Guid UserId  { get; set; }
+    public Guid UserId { get; set; }
 
-        public OrderType TypeOfOrder { get; set; }
+    public OrderType TypeOfOrder { get; set; }
+    public string Symbol { get; set; } = string.Empty;
+    public decimal Price { get; set; }
+    public decimal Amount { get; set; }
+    public OrderStatus OrderStatus { get; set; }
+    public DateTime CreatedAt { get; set; }
 
-        public string Symbol { get; set; } = string.Empty;
-
-        public decimal Price { get; set; }
-        public decimal Amount { get; set; }
-
-        public OrderStatus OrderStatus { get; set; }
-        public DateTime CreatedAt { get; set; }
+    public OrderBook OrderBook { get; set; } = null!;
     }
 }

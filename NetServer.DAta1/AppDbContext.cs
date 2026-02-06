@@ -17,9 +17,10 @@ namespace NetServer.Data
 
         public DbSet<OrdersTable> Orders { get; set; } = null!;
         public DbSet<TradesTable> TradesTable { get; set; } = null!;
+        public DbSet<OrderBook> OrderBookTable { get; set; } = null!;
         // public DbSet<OrdersTable> OrdersTable { get; set; } = null!;
         
-        // public DbSet<OrderBook> OrderBookTable { get; set; } = null!;
+        
         // public DbSet<KycDocument> KycDocuments { get; set; } = null!;
         // public DbSet<SessionTable> Sessions { get; set; } = null!;
         // public DbSet<AuditLog> AuditLogs { get; set; } = null!;
@@ -80,6 +81,11 @@ namespace NetServer.Data
             .HasForeignKey(t => t.SellOrderId)
             .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<OrderBook>()
+            .HasOne(ob => ob.Order)
+            .WithOne(o => o.OrderBook)
+            .HasForeignKey<OrderBook>(ob => ob.OrderId)
+            .OnDelete(DeleteBehavior.Restrict);
 
             // modelBuilder.Entity<TradesTable>()
             //     .HasOne(t => t.BuyOrder)

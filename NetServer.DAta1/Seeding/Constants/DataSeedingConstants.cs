@@ -66,14 +66,14 @@ namespace NetServer.Data.Seeding.Constants
         }
 
         //5
-        // public static class OrderBookConstants
-        // {
-        //     public const string OrderBook1Id = "e1f2g3h4-i5j6-7890-abcd-ef1234567890";
-        //     public const string Symbol1 = "BTCUSD";
-        //     public const decimal Price1 = 50000.0m;
-        //     public const decimal Amount1 = 0.1m;
-        //     public static readonly DateTime TimeStamp1 = new(2025, 11, 28);
-        // }
+        public static class OrderBookConstants
+        {
+            public static readonly Guid OrderBook1Id = DataSeedingConstants.OrderConstants.Order1Id;
+            public const string Symbol1 = "BTCUSD";
+            public const decimal Price1 = 50000.0m;
+            public const decimal Amount1 = 0.1m;
+            public static readonly DateTime TimeStamp1 = new(2025, 11, 28);
+        }
 
 
         //6
