@@ -66,9 +66,10 @@ namespace NetServer.Data.Seeding.Constants
         }
 
         //5
+                //5
         public static class OrderBookConstants
         {
-            public static readonly Guid OrderBook1Id = DataSeedingConstants.OrderConstants.Order1Id;
+            public static readonly Guid OrderBook1Id = Guid.Parse("9be10ead-9897-4083-aa15-6fbabd8ff701");
             public const string Symbol1 = "BTCUSD";
             public const decimal Price1 = 50000.0m;
             public const decimal Amount1 = 0.1m;
@@ -89,16 +90,17 @@ namespace NetServer.Data.Seeding.Constants
         }
 
         //7
-        // public static class SessionConstants
-        // {
-        //     public const string Session1Id = "g1h2i3j4-k5l6-7890-abcd-ef1234567890";
-        //     public const string User1Id = DataSeedingConstants.UserConstants.User1Id;
-        //     public const string Token = "sample_token";
-        //     public const string IpAddress1 = "";
-        //     public const string DeviceInfo1 = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3";
-        //     public static readonly DateTime CreatedAt1 = new(2025, 11, 28);
-        //     public static readonly DateTime ExpiresAt1 = new(2025, 11, 29);
-        // }
+        public static class SessionConstants
+        {
+            //DataSeedingConstants.UserConstants.User1Id;
+            public static readonly Guid Session1Id = Guid.Parse("c0733dc5-908b-42fd-8623-8cba9e9b1b7b");
+            public static readonly Guid User1Id = DataSeedingConstants.UserConstants.User1Id;
+            public const string Token = "sample_token";
+            public const string IpAddress1 = "89234.98324.2394.2948";
+            public const string DeviceInfo1 = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3";
+            public static readonly DateTime CreatedAt1 = new(2025, 11, 28);
+            public static readonly DateTime ExpiresAt1 = new(2025, 11, 29);
+        }
 
         //8
         // public static class AuditLogConstants

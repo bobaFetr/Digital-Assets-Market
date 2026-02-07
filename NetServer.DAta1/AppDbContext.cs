@@ -18,11 +18,13 @@ namespace NetServer.Data
         public DbSet<OrdersTable> Orders { get; set; } = null!;
         public DbSet<TradesTable> TradesTable { get; set; } = null!;
         public DbSet<OrderBook> OrderBookTable { get; set; } = null!;
+
+        public DbSet<KycDocument> KycDocuments { get; set; } = null!;
+        public DbSet<SessionTable> Sessions { get; set; } = null!;
         // public DbSet<OrdersTable> OrdersTable { get; set; } = null!;
         
         
-        // public DbSet<KycDocument> KycDocuments { get; set; } = null!;
-        // public DbSet<SessionTable> Sessions { get; set; } = null!;
+        
         // public DbSet<AuditLog> AuditLogs { get; set; } = null!;
         // public DbSet<BlockchainEvent> BlockchainEvents { get; set; } = null!;
         // public DbSet<ExchangeTransaction> Transactions { get; set; } = null!;
@@ -93,6 +95,12 @@ namespace NetServer.Data
             .HasOne(k => k.User)
             .WithMany()
             .HasForeignKey(k => k.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<SessionTable>()
+            .HasOne(s => s.User)
+            .WithMany()
+            .HasForeignKey(s => s.UserId)
             .OnDelete(DeleteBehavior.Cascade);
             // modelBuilder.Entity<TradesTable>()
             //     .HasOne(t => t.BuyOrder)
