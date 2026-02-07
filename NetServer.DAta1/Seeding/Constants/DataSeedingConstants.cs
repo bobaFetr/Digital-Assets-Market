@@ -103,14 +103,14 @@ namespace NetServer.Data.Seeding.Constants
         }
 
         //8
-        // public static class AuditLogConstants
-        // {
-        //     public const string Log1Id = "h1i2j3k4-l5m6-7890-abcd-ef1234567890";
-        //     public const string User1Id = DataSeedingConstants.UserConstants.User1Id;
-        //     public const string Action1 = "User Login";
-        //     public const string Details1 = "User Alice logged in successfully.";
-        //     public static readonly DateTime Timestamp1 = new(2025, 11, 28);
-        // }
+        public static class AuditLogConstants
+        {
+            public static readonly Guid Log1Id = Guid.Parse("23116bf4-42b9-4d37-8569-f8a21e4b5265");
+            public static readonly Guid User1Id = DataSeedingConstants.UserConstants.User1Id;
+            public const string Action1 = "User Login";
+            public const string Details1 = "User Alice logged in successfully.";
+            public static readonly DateTime Timestamp1 = new(2025, 11, 28);
+        }
 
         //9
         // public static class BlockChainEventtConstants

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetServer.Data;
 
@@ -11,13 +12,15 @@ using NetServer.Data;
 namespace NetServer.DAta1.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260207162637_AddAuditLogTable")]
+    partial class AddAuditLogTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.2")
+                .HasAnnotation("ProductVersion", "8.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -47,16 +50,6 @@ namespace NetServer.DAta1.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("AuditLogs");
-
-                    b.HasData(
-                        new
-                        {
-                            LogId = new Guid("23116bf4-42b9-4d37-8569-f8a21e4b5265"),
-                            Action = "User Login",
-                            Details = "User Alice logged in successfully.",
-                            Timestamp = new DateTime(2025, 11, 28, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            UserId = new Guid("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
-                        });
                 });
 
             modelBuilder.Entity("NetServer.Data.Models.KycDocument", b =>
@@ -140,7 +133,7 @@ namespace NetServer.DAta1.Migrations
                         {
                             OrderId = new Guid("23279bc0-3f81-4bbd-b44e-b61b92b01ba4"),
                             Amount = 0.1m,
-                            OrderBookId = new Guid("8649db70-89d7-4f5b-a76a-80e71ae2e874"),
+                            OrderBookId = new Guid("11b06dc3-27cc-4f23-b730-7f9ab56788e4"),
                             Price = 50000.0m,
                             Symbol = "BTCUSD",
                             Timestamp = new DateTime(2025, 8, 28, 0, 0, 0, 0, DateTimeKind.Unspecified)
