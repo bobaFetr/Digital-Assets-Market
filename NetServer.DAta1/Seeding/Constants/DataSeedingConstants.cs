@@ -113,27 +113,28 @@ namespace NetServer.Data.Seeding.Constants
         }
 
         //9
-        // public static class BlockChainEventtConstants
-        // {
-        //     public const string Event1Id = "i1j2k3l4-m5n6-7890-abcd-ef1234567890";
-        //     public const string TxHash1 = "0000000000000000000a7b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4";
-        //     public const string EventType1 = "Deposit";
-        //     public const string Status1 = "Confirmed";
-        //     public static readonly DateTime Timestamp1 = new(2025, 11, 28);
-        // }
+        public static class BlockChainEventConstants
+        {
+            public static readonly Guid Event1Id = Guid.Parse("9651ad0b-80cc-4993-90d5-611317255952");
+            public static readonly Guid ExchangeTransactionId = Guid.Parse(DataSeedingConstants.ExchangeTransactionConstants.Transaction1Id);
+            public const string TxHash1 = "2d6ea11f-071b-45db-8cc1-e4a31e7ae808";
+            public const string EventType1 = "Deposit";
+            public const string Status1 = "Confirmed";
+            public static readonly DateTime Timestamp1 = new(2025, 11, 28);
+        }
 
         //10
-        // public static class ExchangeTransactionConstants
-        // {
-        //     public const string Transaction1Id = "j1k2l3m4-n5o6-7890-abcd-ef1234567890";
-        //     public const string User1Id = DataSeedingConstants.UserConstants.User1Id;
-        //     public const string TypeOfTransaction1 = "Deposit";
-        //     public const string Currency1 = "BTC";
-        //     public const decimal Amount1 = 0.5m;
-        //     public const string Status1 = "Completed";
-        //     public const string BlockchainTransactionHash1 = "0000000000000000000a7b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4";
-        //     public static readonly DateTime TimeStamp1 = new(2025, 11, 28);
-        // }
+        public static class ExchangeTransactionConstants
+        {
+            public const string Transaction1Id = "1a2b3c4d-5e6f-7890-abcd-ef1234567890";
+            public static readonly Guid User1Id = DataSeedingConstants.UserConstants.User1Id;
+            public const string TypeOfTransaction1 = "Deposit";
+            public const string Currency1 = "BTC";
+            public const decimal Amount1 = 0.5m;
+            public const string Status1 = "Completed";
+            public const string BlockchainTransactionHash1 = "0000000000000000000a7b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4";
+            public static readonly DateTime TimeStamp1 = new(2025, 11, 28);
+        }
 
         //11
         // public static class FeeConstants 

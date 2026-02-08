@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetServer.Data;
 
@@ -11,13 +12,15 @@ using NetServer.Data;
 namespace NetServer.DAta1.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260208130015_AddBlockChainEventTable")]
+    partial class AddBlockChainEventTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.2")
+                .HasAnnotation("ProductVersion", "8.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -88,17 +91,6 @@ namespace NetServer.DAta1.Migrations
                     b.HasIndex("ExchangeTransactionId");
 
                     b.ToTable("BlockchainEvent");
-
-                    b.HasData(
-                        new
-                        {
-                            EventId = new Guid("9651ad0b-80cc-4993-90d5-611317255952"),
-                            EventType = "Deposit",
-                            ExchangeTransactionId = new Guid("1a2b3c4d-5e6f-7890-abcd-ef1234567890"),
-                            Status = "Confirmed",
-                            Timestamp = new DateTime(2025, 11, 28, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            TxHash = "2d6ea11f-071b-45db-8cc1-e4a31e7ae808"
-                        });
                 });
 
             modelBuilder.Entity("NetServer.Data.Models.ExchangeTransaction", b =>
@@ -134,22 +126,7 @@ namespace NetServer.DAta1.Migrations
 
                     b.HasKey("TransactionID");
 
-                    b.HasIndex("UserID");
-
-                    b.ToTable("Transactions");
-
-                    b.HasData(
-                        new
-                        {
-                            TransactionID = new Guid("1a2b3c4d-5e6f-7890-abcd-ef1234567890"),
-                            Amount = 0.5m,
-                            BlockchainTransactionHash = "0000000000000000000a7b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4",
-                            Currency = "BTC",
-                            Status = "Completed",
-                            TimeStamp = new DateTime(2025, 11, 28, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            TypeOfTransaction = "Deposit",
-                            UserID = new Guid("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
-                        });
+                    b.ToTable("ExchangeTransaction");
                 });
 
             modelBuilder.Entity("NetServer.Data.Models.KycDocument", b =>
@@ -233,7 +210,7 @@ namespace NetServer.DAta1.Migrations
                         {
                             OrderId = new Guid("23279bc0-3f81-4bbd-b44e-b61b92b01ba4"),
                             Amount = 0.1m,
-                            OrderBookId = new Guid("26a803ca-5da4-49d4-8e03-0cbed1a566bc"),
+                            OrderBookId = new Guid("966c82e0-13c4-4dff-8b20-53421ffda218"),
                             Price = 50000.0m,
                             Symbol = "BTCUSD",
                             Timestamp = new DateTime(2025, 8, 28, 0, 0, 0, 0, DateTimeKind.Unspecified)
@@ -489,15 +466,6 @@ namespace NetServer.DAta1.Migrations
                         .IsRequired();
 
                     b.Navigation("ExchangeTransaction");
-                });
-
-            modelBuilder.Entity("NetServer.Data.Models.ExchangeTransaction", b =>
-                {
-                    b.HasOne("NetServer.Data.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("NetServer.Data.Models.KycDocument", b =>

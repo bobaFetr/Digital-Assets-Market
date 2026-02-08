@@ -29,7 +29,7 @@ namespace NetServer.Data
         
         
         // public DbSet<BlockchainEvent> BlockchainEvents { get; set; } = null!;
-        // public DbSet<ExchangeTransaction> Transactions { get; set; } = null!;
+        public DbSet<ExchangeTransaction> Transactions { get; set; } = null!;
         // public DbSet<Fee> Fees { get; set; } = null!;
         // public DbSet<Referral> Referrals { get; set; } = null!;
         // public DbSet<ChatTable> Messages { get; set; } = null!;
@@ -54,6 +54,7 @@ namespace NetServer.Data
             modelBuilder.Entity<KycDocument>().HasKey(k => k.DocId);
             modelBuilder.Entity<SessionTable>().HasKey(s => s.SessionId);
             modelBuilder.Entity<AuditLog>().HasKey(a => a.LogId);
+            modelBuilder.Entity<BlockchainEvent>().HasKey(b => b.EventId);
             // modelBuilder.Entity<WalletTable>().HasKey(w => w.WalletID);
             // modelBuilder.Entity<KycDocument>().HasKey(k => k.DocId);
             // modelBuilder.Entity<AuditLog>().HasKey(a => a.LogId);
@@ -113,6 +114,12 @@ namespace NetServer.Data
             .HasOne(a => a.User)
             .WithMany()
             .HasForeignKey(a => a.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<BlockchainEvent>()
+            .HasOne(b => b.ExchangeTransaction)
+            .WithMany()
+            .HasForeignKey(b => b.ExchangeTransactionId)
             .OnDelete(DeleteBehavior.Cascade);
             // modelBuilder.Entity<TradesTable>()
             //     .HasOne(t => t.BuyOrder)
