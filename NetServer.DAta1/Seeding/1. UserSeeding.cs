@@ -21,7 +21,7 @@ namespace NetServer.Data.Seeding
                 Id = DataSeedingConstants.UserConstants.User1Id,
                 UserName = DataSeedingConstants.UserConstants.Username1,
                 Email = DataSeedingConstants.UserConstants.Email,
-                PasswordHash = DataSeedingConstants.UserConstants.Password,
+                Password = DataSeedingConstants.UserConstants.Password,
                 CreatedAt = DataSeedingConstants.UserConstants.CreatedAt1,
                 Status = DataSeedingConstants.UserConstants.Status1,
                 IsBanned = DataSeedingConstants.UserConstants.IsBanned1

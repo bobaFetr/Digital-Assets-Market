@@ -12,7 +12,7 @@ namespace NetServer.Data.Models
         {
             Id = Guid.NewGuid();
             UserName = string.Empty;
-            PasswordHash = string.Empty;
+            Password = string.Empty;
             Email = string.Empty;
             CreatedAt = DateTime.UtcNow;
             Status = 0;
@@ -36,7 +36,8 @@ namespace NetServer.Data.Models
         public string UserName { get; set; } = string.Empty;
         [Required]
         public string Email { get; set; } = string.Empty;
-        public string PasswordHash { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string Role { get; set; } = "User";
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
