@@ -55,12 +55,16 @@ namespace NetServer.Data
             modelBuilder.Entity<SessionTable>().HasKey(s => s.SessionId);
             modelBuilder.Entity<AuditLog>().HasKey(a => a.LogId);
             modelBuilder.Entity<BlockchainEvent>().HasKey(b => b.EventId);
+            modelBuilder.Entity<ExchangeTransaction>().HasKey(et => et.TransactionID);
+            modelBuilder.Entity<FeeTable>().HasKey(f => f.FeeTableId);
             // modelBuilder.Entity<WalletTable>().HasKey(w => w.WalletID);
             // modelBuilder.Entity<KycDocument>().HasKey(k => k.DocId);
             // modelBuilder.Entity<AuditLog>().HasKey(a => a.LogId);
             // modelBuilder.Entity<Fee>().HasKey(f => f.FeeId);
 
             // // Relationships
+           
+
             modelBuilder.Entity<User>()
                 .HasMany<WalletTable>()
                 .WithOne()
@@ -121,6 +125,14 @@ namespace NetServer.Data
             .WithMany()
             .HasForeignKey(b => b.ExchangeTransactionId)
             .OnDelete(DeleteBehavior.Cascade);
+            
+             
+
+             modelBuilder.Entity<OrdersTable>()
+                .HasOne(o => o.FeeTable)
+                .WithMany(f => f.Orders)
+                .HasForeignKey(o => o.FeeTableId)
+                .OnDelete(DeleteBehavior.Restrict);
             // modelBuilder.Entity<TradesTable>()
             //     .HasOne(t => t.BuyOrder)
             //     .WithMany(o => o.TradesAsBuyOrder)

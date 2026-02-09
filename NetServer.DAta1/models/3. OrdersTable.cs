@@ -22,6 +22,8 @@ namespace NetServer.Data.Models
 
     public Guid UserId { get; set; }
 
+    public Guid? FeeTableId { get; set; }
+
     public OrderType TypeOfOrder { get; set; }
     public string Symbol { get; set; } = string.Empty;
     public decimal Price { get; set; }
@@ -30,5 +32,7 @@ namespace NetServer.Data.Models
     public DateTime CreatedAt { get; set; }
 
     public OrderBook OrderBook { get; set; } = null!;
+
+    public FeeTable? FeeTable { get; set; }
     }
 }

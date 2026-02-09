@@ -137,14 +137,16 @@ namespace NetServer.Data.Seeding.Constants
         }
 
         //11
-        // public static class FeeConstants 
-        // {
-        //     public const string Fee1Id = "k1l2m3n4-o5p6-7890-abcd-ef1234567890";
-        //     public const string Symbol1 = "BTCUSD";
-        //     public const decimal MakerFee1 = 0.1m;
-        //     public const decimal TakerFee1 = 0.2m;
-        //     public static readonly DateTime UpdatedAt1 = new(2025, 11, 28);
-        // }
+        public static class FeeConstants 
+        {
+            public static readonly Guid Fee1Id = Guid.Parse("b1c2d3e4-f5a6-7890-abcd-ef1234567890");
+
+            
+            public const string Symbol1 = "BTCUSD";
+            public const decimal MakerFee1 = 0.1m;
+            public const decimal TakerFee1 = 0.2m;
+            public static readonly DateTime UpdatedAt1 = new(2025, 11, 28);
+        }
 
         //12
         // public static class referralConstants
