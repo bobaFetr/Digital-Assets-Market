@@ -180,7 +180,7 @@ function Home() {
           </div>
 
           <button className="theme-toggle-btn" onClick={toggleTheme} title="Toggle Theme">
-            {theme === 'dark' ? '☀️' : '🌙'}
+            {theme === 'dark' ? 'Light Theme' : 'Dark Theme'}
           </button>
           <button className="theme-toggle-btn" onClick={toggleTheme} title="Announcements">
             {'📢'}
