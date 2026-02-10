@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './App.css';
+import Sidebar from "./Components/Sidebar";
 
 function Education() {
     const customModules = [
@@ -26,6 +27,7 @@ function Education() {
 
     return (
         <div className="crypto-layout">
+            <Sidebar />
             <div className="crypto-main">
                 <h1 style={{ marginBottom: '20px' }}>Crypto Education</h1>
                 <p style={{ color: '#aaa', marginBottom: '30px' }}>Master the market with our educational resources.</p>

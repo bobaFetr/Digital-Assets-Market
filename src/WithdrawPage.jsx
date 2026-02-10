@@ -1,95 +1,13 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import logo from "./assets/Copilot_20251008_144326.png";
+import Sidebar from "./Components/Sidebar";
 
 export default function WithDraw() {
-    const [activeDropdown, setActiveDropdown] = useState(null);
     const [selectedCoin, setSelectedCoin] = useState("BTC");
 
     return (
         <div className="crypto-layout">
             {/* Sidebar */}
-            <aside className="crypto-sidebar">
-                <img src={logo} alt="Logo" style={{ width: "100%", maxWidth: "150px", marginBottom: "30px" }} />
-                <nav className="nav-links">
-                    {["Pay", "Social", "More", "Stacking Calculator", "Profile Settings", "Crypto", "Sign Up", "Sign In"].map((item) => {
-                        if (item === "More") {
-                            return (
-                                <div key={item} className="nav-item-dropdown-container">
-                                    <div
-                                        className={`nav-item ${activeDropdown === "More" ? "active" : ""}`}
-                                        onClick={() => setActiveDropdown(activeDropdown === "More" ? null : "More")}
-                                    >
-                                        {item}
-                                    </div>
-                                    {activeDropdown === "More" && (
-                                        <div className="nav-dropdown-menu">
-                                            <div className="nav-dropdown-item">Tutorial for beginners</div>
-                                            <div className="nav-dropdown-item">Another Assets</div>
-                                            <div className="nav-dropdown-item">Trending</div>
-                                            <div className="nav-dropdown-item">Settings</div>
-                                            <div className="nav-dropdown-item">Help</div>
-                                            <div className="nav-dropdown-item">Log Out</div>
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        }
-                        if (item === "Crypto") {
-                            return (
-                                <div key={item} className="nav-item-dropdown-container">
-                                    <div
-                                        className={`nav-item ${activeDropdown === "Crypto" ? "active" : ""}`}
-                                        onClick={() => setActiveDropdown(activeDropdown === "Crypto" ? null : "Crypto")}
-                                    >
-                                        {item}
-                                    </div>
-                                    {activeDropdown === "Crypto" && (
-                                        <div className="nav-dropdown-menu">
-                                            <div className="nav-dropdown-item">AI Assistant</div>
-                                            <div className="nav-dropdown-item">Buy and Sell</div>
-                                            <div className="nav-dropdown-item">Deposit</div>
-                                            <Link to="/withdraw" className="nav-dropdown-item">Withdraw</Link>
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        }
-                        if (item === "Social") {
-                            return (
-                                <div key={item} className="nav-item-dropdown-container">
-                                    <div
-                                        className={`nav-item ${activeDropdown === "Social" ? "active" : ""}`}
-                                        onClick={() => setActiveDropdown(activeDropdown === "Social" ? null : "Social")}
-                                    >
-                                        {item}
-                                    </div>
-                                    {activeDropdown === "Social" && (
-                                        <div className="nav-dropdown-menu">
-                                            <div className="nav-dropdown-item">News</div>
-                                            <div className="nav-dropdown-item">Posts</div>
-                                            <div className="nav-dropdown-item">FAQ</div>
-                                            <Link to="/chat" className="nav-dropdown-item">Chat</Link>
-                                            <Link to="/profile" className="nav-dropdown-item">Profile</Link>
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        }
-                        return (
-                            <div key={item} className="nav-item">
-                                {item}
-                            </div>
-                        );
-                    })}
-                    <Link to="/chat" className="nav-item nav-item-link" style={{ marginTop: "16px", color: "#7f8cff" }}>
-                        Chat
-                    </Link>
-                    <Link to="/profile" className="nav-item nav-item-link" style={{ marginTop: "16px", color: "#7f8cff" }}>
-                        Profile
-                    </Link>
-                </nav>
-            </aside>
+            <Sidebar />
 
             {/* Main Content */}
             <div className="crypto-main">

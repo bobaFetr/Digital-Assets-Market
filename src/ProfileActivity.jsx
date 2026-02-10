@@ -1,28 +1,11 @@
 import React from "react";
+import Sidebar from "./Components/Sidebar";
 
 export default function Profile() {
   return (
     <div style={{ display: "flex", height: "100vh", background: "#0d0f1a", color: "#fff", fontFamily: "Arial" }}>
       {/* Sidebar */}
-      <aside style={{ width: "220px", background: "#11131f", padding: "20px" }}>
-        <h2 style={{ marginBottom: "20px" }}>CryptoMatrix</h2>
-        <nav>
-          {[
-            "Dashboard",
-            "Portfolio",
-            "Asset",
-            "Wallet",
-            "More",
-            "Data API",
-            "Stacking Calculator",
-            "Profile Settings",
-          ].map((item) => (
-            <div key={item} style={{ padding: "12px 0", opacity: 0.7, cursor: "pointer" }}>
-              {item}
-            </div>
-          ))}
-        </nav>
-      </aside>
+      <Sidebar />
 
       {/* Main Content */}
       <div style={{ flex: 1, padding: "20px", overflowY: "auto" }}>

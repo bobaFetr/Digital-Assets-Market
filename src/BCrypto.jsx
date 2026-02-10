@@ -70,6 +70,7 @@
 // export default BCrypto;
 import React, { useState } from 'react';
 import { Line } from "react-chartjs-2";
+import Sidebar from "./Components/Sidebar";
 import {
   Chart as ChartJS,
   LineElement,
@@ -86,23 +87,6 @@ ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip,
 // 1. Added a default empty array for 'assets' to prevent .map() crashes
 function BCrypto({ assets = [] }) {
   const [log, setLog] = useState([]);
-
-  // 2. Safety Check: If assets is empty, show a "Waiting" state instead of a broken chart
-  if (!assets || assets.length === 0) {
-    return (
-      <div style={{ 
-        padding: "50px", 
-        textAlign: "center", 
-        color: "#7f8cff", 
-        background: "#0d0f1a", 
-        borderRadius: "12px",
-        margin: "20px" 
-      }}>
-        <h2>Waiting for Market Data...</h2>
-        <p>The chart will appear once crypto prices are received.</p>
-      </div>
-    );
-  }
 
   const handleBuy = () => {
     const latest = assets[assets.length - 1];
@@ -145,7 +129,19 @@ function BCrypto({ assets = [] }) {
     }
   };
 
-  return (
+  const content = (!assets || assets.length === 0) ? (
+    <div style={{ 
+      padding: "50px", 
+      textAlign: "center", 
+      color: "#7f8cff", 
+      background: "#0d0f1a", 
+      borderRadius: "12px",
+      margin: "20px" 
+    }}>
+      <h2>Waiting for Market Data...</h2>
+      <p>The chart will appear once crypto prices are received.</p>
+    </div>
+  ) : (
     <div style={{ width: "95%", maxWidth: "900px", margin: "20px auto", color: "white" }}>
       <h2 style={{ marginBottom: "20px" }}>Live Trading: {assets[0]?.symbol || "BCrypto"}</h2>
       
@@ -178,6 +174,15 @@ function BCrypto({ assets = [] }) {
             {entry}
           </div>
         ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="crypto-layout">
+      <Sidebar />
+      <div className="crypto-main">
+        {content}
       </div>
     </div>
   );

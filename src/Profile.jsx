@@ -1,106 +1,47 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import logo from "./assets/Copilot_20251008_144326.png";
-//import profilePicture from "/Users/Lenovo/Desktop/Windows-10-user-icon-big.png";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getProfile, logoutUser } from "./Services/auth";
+import Sidebar from "./Components/Sidebar";
 export default function Profile() {
-  const [activeDropdown, setActiveDropdown] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadProfile = async () => {
+      try {
+        const data = await getProfile();
+        if (isMounted) {
+          setProfile(data);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(err.message || "Unable to load profile.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadProfile();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleLogout = () => {
+    logoutUser();
+    navigate("/sign-in");
+  };
   return (
     <div style={{ display: "flex", height: "100vh", background: "#0d0f1a", color: "#fff", fontFamily: "Arial" }}>
       {/* Sidebar */}
-      <aside className="crypto-sidebar">
-        {/* <h2 className="brand-title">Name</h2> */}
-        <img src={logo} alt="Logo" style={{ width: "100%", maxWidth: "150px", marginBottom: "30px" }} />
-        <nav className="nav-links">
-          {["Pay", "Social", "More", "Stacking Calculator", "Profile Settings", "Crypto", "Sign Up", "Sign In"].map((item) => {
-            if (item === "More") {
-              return (
-                <div key={item} className="nav-item-dropdown-container">
-                  <div
-                    className={`nav-item ${activeDropdown === "More" ? "active" : ""}`}
-                    onClick={() => setActiveDropdown(activeDropdown === "More" ? null : "More")}
-                  >
-                    {item}
-                  </div>
-                  {activeDropdown === "More" && (
-                    <div className="nav-dropdown-menu">
-                      <div className="nav-dropdown-item">Tutorial for beginners</div>
-                      <div className="nav-dropdown-item">Crypto Education</div>
-                      <div className="nav-dropdown-item">Another Assets</div>
-                      <div className="nav-dropdown-item">Favorites</div>
-                      <div className="nav-dropdown-item">Trending</div>
-                      <div className="nav-dropdown-item">Settings</div>
-                      <div className="nav-dropdown-item">Help</div>
-                    </div>
-                  )}
-                </div>
-              );
-            }
-            if (item === "Crypto") {
-              return (
-                <div key={item} className="nav-item-dropdown-container">
-                  <div
-                    className={`nav-item ${activeDropdown === "Crypto" ? "active" : ""}`}
-                    onClick={() => setActiveDropdown(activeDropdown === "Crypto" ? null : "Crypto")}
-                  >
-                    {item}
-                  </div>
-                  {activeDropdown === "Crypto" && (
-                    <div className="nav-dropdown-menu">
-                      <div className="nav-dropdown-item">AI Assistant</div>
-                      <div className="nav-dropdown-item">Buy and Sell</div>
-                      <div className="nav-dropdown-item">Deposit</div>
-                      <Link to="/withdraw" className="nav-dropdown-item">Withdraw</Link>
-                    </div>
-                  )}
-                </div>
-              );
-            }
-            if (item === "Social") {
-              return (
-                <div key={item} className="nav-item-dropdown-container">
-                  <div
-                    className={`nav-item ${activeDropdown === "Social" ? "active" : ""}`}
-                    onClick={() => setActiveDropdown(activeDropdown === "Social" ? null : "Social")}
-                  >
-                    {item}
-                  </div>
-                  {activeDropdown === "Social" && (
-                    <div className="nav-dropdown-menu">
-                      <div className="nav-dropdown-item">News</div>
-                      <div className="nav-dropdown-item">Posts</div>
-                      <div className="nav-dropdown-item">FAQ</div>
-                      <Link to="/chat" className="nav-dropdown-item">Chat</Link>
-                    </div>
-                  )}
-                </div>
-              );
-            }
-            if (item === "Sign Up") {
-              return (
-                <Link to="/sign-up" className="nav-item nav-item-link" style={{ marginTop: "16px", color: "#7f8cff" }}>
-                  Sign Up
-                </Link>
-              );
-            }
-            if (item === "Sign In") {
-              return (
-                <Link to="/sign-in" className="nav-dropdown-item">Sign In</Link>
-              );
-            }
-            return (
-              <div key={item} className="nav-item">
-                {item}
-              </div>
-            );
-          })}
-          <Link to="/chat" className="nav-item nav-item-link" style={{ marginTop: "16px", color: "#7f8cff" }}>
-            Chat
-          </Link>
-          <Link to="/profile" className="nav-item nav-item-link" style={{ marginTop: "16px", color: "#7f8cff" }}>
-            Profile
-          </Link>
-        </nav>
-      </aside>
+      <Sidebar />
 
 
       {/* Main Content */}
@@ -109,18 +50,32 @@ export default function Profile() {
 
         {/* User Info Section */}
         <div style={{ background: "#1a1d2e", padding: "20px", borderRadius: "12px", marginTop: "20px" }}>
-          <div className="Profile_Picture">
-            <img src={profilePicture} alt="Profile" style={{ width: "100px", borderRadius: "50%" }} />
+          <div
+            className="Profile_Picture"
+            style={{
+              width: "100px",
+              height: "100px",
+              borderRadius: "50%",
+              background: "#2a2f4a",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "32px",
+              fontWeight: "bold",
+              color: "#7f8cff",
+            }}
+          >
+            {(profile?.email || "U").slice(0, 1).toUpperCase()}
           </div>
           <h3>User Information</h3>
-          <p style={{ marginTop: "10px" }}>Name</p>
-          <p>Email </p>
-          <p>Account Balance</p>
-          <p>Account ID</p>
-          <p>Activity</p>
-          <p>Favorites</p>
-          <p>Change location</p>
-          <p>Change email</p>
+          {isLoading && <p style={{ marginTop: "10px" }}>Loading profile...</p>}
+          {error && <p style={{ marginTop: "10px", color: "#ff8d8d" }}>{error}</p>}
+          {!isLoading && !error && (
+            <>
+              <p style={{ marginTop: "10px" }}>Email: {profile?.email}</p>
+              <p>Role: {profile?.role}</p>
+            </>
+          )}
           <div className="TransactionHistory">
             <button>Transaction History</button>
           </div>
@@ -140,6 +95,7 @@ export default function Profile() {
               cursor: "pointer",
               marginLeft: "10px",
             }}
+            onClick={handleLogout}
           >
             Logout
           </button>

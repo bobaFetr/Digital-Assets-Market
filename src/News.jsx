@@ -1,10 +1,7 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import logo from "./assets/Copilot_20251008_144326.png";
+import React from "react";
+import Sidebar from "./Components/Sidebar";
 
 export default function News() {
-    const [activeDropdown, setActiveDropdown] = useState(null);
-
     // Mock data for news articles
     const newsArticles = [
         { id: 1, title: "Bitcoin Hits New High", category: "Market", time: "2h ago", summary: "The leading cryptocurrency has surpassed key resistance levels..." },
@@ -16,32 +13,7 @@ export default function News() {
     return (
         <div className="crypto-layout">
             {/* Sidebar - Retained from your original logic */}
-            <aside className="crypto-sidebar">
-                <img src={logo} alt="Logo" style={{ width: "100%", maxWidth: "150px", marginBottom: "30px" }} />
-                <nav className="nav-links">
-                    {["Pay", "Social", "More", "Stacking Calculator", "Profile Settings", "Crypto", "Sign Up", "Sign In"].map((item) => {
-                        if (["More", "Social", "Crypto"].includes(item)) {
-                            return (
-                                <div key={item} className="nav-item-dropdown-container">
-                                    <div
-                                        className={`nav-item ${activeDropdown === item ? "active" : ""}`}
-                                        onClick={() => setActiveDropdown(activeDropdown === item ? null : item)}
-                                    >
-                                        {item}
-                                    </div>
-                                    {activeDropdown === item && (
-                                        <div className="nav-dropdown-menu">
-                                            <div className="nav-dropdown-item">{item} Item 1</div>
-                                            <div className="nav-dropdown-item">{item} Item 2</div>
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        }
-                        return <div key={item} className="nav-item">{item}</div>;
-                    })}
-                </nav>
-            </aside>
+            <Sidebar />
 
             {/* Main Content Area */}
             <main className="crypto-main">

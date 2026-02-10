@@ -7,6 +7,7 @@ using System.Text;
 using BCrypt.Net;
 using NetServer.Data; // Added Namespace
 using NetServer.Data.Models; // Added Namespace
+using System.ComponentModel.DataAnnotations;
 
 [ApiController]
 [Route("api/auth")]
@@ -23,15 +24,23 @@ public class AuthController : ControllerBase
 
     // REGISTER
     [HttpPost("register")]
-    public IActionResult Register(User user)
+    public IActionResult Register([FromBody] RegisterRequest request)
     {
-        if (_db.Users.Any(u => u.Email == user.Email))
+        if (_db.Users.Any(u => u.Email == request.Email))
         {
              return BadRequest("User already exists.");
         }
 
-        if (string.IsNullOrWhiteSpace(user.UserName))
+        if (string.IsNullOrWhiteSpace(request.UserName))
             return BadRequest("UserName is required.");
+
+        var user = new User
+        {
+            UserName = request.UserName.Trim(),
+            Email = request.Email.Trim(),
+            Password = request.Password,
+            Role = string.IsNullOrWhiteSpace(request.Role) ? "User" : request.Role
+        };
 
         user.Role = string.IsNullOrWhiteSpace(user.Role) ? "User" : user.Role;
         user.CreatedAt = user.CreatedAt == default ? DateTime.UtcNow : user.CreatedAt;
@@ -68,12 +77,12 @@ public class AuthController : ControllerBase
 
     // LOGIN (returns JWT)
     [HttpPost("login")]
-    public IActionResult Login(User user)
+    public IActionResult Login([FromBody] LoginRequest request)
     {
         var existing = _db.Users
-            .FirstOrDefault(u => u.Email == user.Email);
+            .FirstOrDefault(u => u.Email == request.Email);
 
-        if (existing == null || !BCrypt.Net.BCrypt.Verify(user.Password, existing.Password))
+        if (existing == null || !BCrypt.Net.BCrypt.Verify(request.Password, existing.Password))
             return Unauthorized("Invalid credentials");
 
         if (existing.IsBanned)
@@ -190,4 +199,29 @@ public class AuthController : ControllerBase
 public class BanRequest
 {
     public string Email { get; set; } = "";
+}
+
+public class RegisterRequest
+{
+    [Required]
+    public string UserName { get; set; } = "";
+
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; } = "";
+
+    [Required]
+    public string Password { get; set; } = "";
+
+    public string? Role { get; set; }
+}
+
+public class LoginRequest
+{
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; } = "";
+
+    [Required]
+    public string Password { get; set; } = "";
 }

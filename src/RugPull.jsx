@@ -1,9 +1,11 @@
 import React from 'react';
 import './App.css';
+import Sidebar from "./Components/Sidebar";
 
 function RugPull() {
     return (
         <div className="crypto-layout">
+            <Sidebar />
             <div className="crypto-main" style={{ maxWidth: '900px' }}>
                 <h1 style={{ marginBottom: '20px', color: '#ff6b6b' }}>⚠️ What is a Rug Pull?</h1>
 
