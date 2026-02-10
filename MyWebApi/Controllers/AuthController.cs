@@ -25,11 +25,18 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public IActionResult Register(User user)
     {
-        // Check if user exists
         if (_db.Users.Any(u => u.Email == user.Email))
         {
              return BadRequest("User already exists.");
         }
+
+        if (string.IsNullOrWhiteSpace(user.UserName))
+            return BadRequest("UserName is required.");
+
+        user.Role = string.IsNullOrWhiteSpace(user.Role) ? "User" : user.Role;
+        user.CreatedAt = user.CreatedAt == default ? DateTime.UtcNow : user.CreatedAt;
+        user.Status = user.Status == default ? NetServer.Data.Models.User.StatusBit.Active : user.Status;
+        user.IsBanned = false;
 
         user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
         _db.Users.Add(user);
@@ -45,8 +52,15 @@ public class AuthController : ControllerBase
              return BadRequest("User already exists.");
         }
 
-        user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
+        if (string.IsNullOrWhiteSpace(user.UserName))
+            return BadRequest("UserName is required.");
+
         user.Role = "Admin";
+        user.CreatedAt = user.CreatedAt == default ? DateTime.UtcNow : user.CreatedAt;
+        user.Status = user.Status == default ? NetServer.Data.Models.User.StatusBit.Active : user.Status;
+        user.IsBanned = false;
+
+        user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
         _db.Users.Add(user);
         _db.SaveChanges();
         return Ok("Admin registered");
