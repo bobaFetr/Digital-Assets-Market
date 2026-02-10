@@ -149,15 +149,15 @@ namespace NetServer.Data.Seeding.Constants
         }
 
         //12
-        // public static class referralConstants
-        // {
-        //     public static string Referral1Id = "l1m2n3o4-p5q6-7890-abcd-ef1234567890";
-        //     public static string ReferrerId = DataSeedingConstants.UserConstants.User1Id;
-        //     public static string ReferredId = "m1n2o3p4-q5r6-7890-abcd-ef1234567890";
-        //     public const decimal BonusAmount1 = 50.0m;
-        //     //public const DateTime Timestamp1 = new(2025, 11, 28);
-        //     public static readonly DateTime Timestamp1 = new(2025, 12, 5);
-        // }
+        public static class ReferralConstants
+        {
+            public static readonly Guid Referral1Id = Guid.Parse("1a2b3c4d-5e6f-7890-abcd-ef1234567890");
+            public static readonly Guid ReferrerId = DataSeedingConstants.UserConstants.User1Id;
+            public static readonly Guid ReferredId = Guid.Parse("2b3c4d5e-6f70-8910-abcd-ef1234567890");
+            public const decimal BonusAmount1 = 50.0m;
+            //public const DateTime Timestamp1 = new(2025, 11, 28);
+            public static readonly DateTime Timestamp1 = new(2025, 12, 5);
+        }
 
 
 
