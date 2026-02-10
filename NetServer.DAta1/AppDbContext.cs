@@ -30,8 +30,9 @@ namespace NetServer.Data
         
         // public DbSet<BlockchainEvent> BlockchainEvents { get; set; } = null!;
         public DbSet<ExchangeTransaction> Transactions { get; set; } = null!;
-        // public DbSet<Fee> Fees { get; set; } = null!;
-        // public DbSet<Referral> Referrals { get; set; } = null!;
+        public DbSet<BlockchainEvent> BlockchainEvents { get; set; } = null!;
+        public DbSet<FeeTable> FeeTables { get; set; } = null!;
+        public DbSet<Referral> Referrals { get; set; } = null!;
         // public DbSet<ChatTable> Messages { get; set; } = null!;
         // public DbSet<NewsTable> News { get; set; } = null!;
         // public DbSet<FAQTable> FAQs { get; set; } = null!;
