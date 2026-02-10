@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import logo from "../assets/Gemini_Generated_Image_sb5zszsb5zszsb5z.png";
 
 const NAV_ITEMS = [
-  "Pay",
+//   "Pay",
   "Social-->",
   "More--->",
   "Profile Settings",
@@ -62,7 +62,6 @@ export default function Sidebar() {
                 {activeDropdown === "Tools--->" && (
                   <div className="nav-dropdown-menu">
                     <Link to="/buy-sell" className="nav-dropdown-item">Buy and Sell</Link>
-                    <div className="nav-dropdown-item">Deposit</div>
                     <Link to="/withdraw" className="nav-dropdown-item">Withdraw</Link>
                   </div>
                 )}
