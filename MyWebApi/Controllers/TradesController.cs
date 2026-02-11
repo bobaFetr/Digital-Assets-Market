@@ -17,40 +17,50 @@ public class TradesController : ApiControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetTrades([FromQuery] Guid? orderId)
+    public async Task<IActionResult> GetTrades([FromQuery] Guid? orderId, [FromQuery] string? symbol)
     {
         if (!TryGetUserId(out var currentUserId))
         {
             return Unauthorized();
         }
 
-        if (!IsAdmin())
-        {
-            if (!orderId.HasValue)
-            {
-                return Forbid();
-            }
-
-            var orderUserId = await _db.Orders.AsNoTracking()
-                .Where(o => o.OrderId == orderId.Value)
-                .Select(o => o.UserId)
-                .FirstOrDefaultAsync();
-
-            if (orderUserId == Guid.Empty || orderUserId != currentUserId)
-            {
-                return Forbid();
-            }
-        }
-
-        var query = _db.TradesTable.AsNoTracking();
+        var tradesQuery = _db.TradesTable.AsNoTracking();
 
         if (orderId.HasValue)
         {
-            query = query.Where(t => t.BuyOrderId == orderId.Value || t.SellOrderId == orderId.Value);
+            tradesQuery = tradesQuery.Where(t => t.BuyOrderId == orderId.Value || t.SellOrderId == orderId.Value);
         }
 
-        var trades = await query.Select(t => ToDto(t)).ToListAsync();
-        return Ok(trades);
+        if (!string.IsNullOrWhiteSpace(symbol))
+        {
+            var orderIds = _db.Orders.AsNoTracking()
+                .Where(o => o.Symbol == symbol)
+                .Select(o => o.OrderId);
+            tradesQuery = tradesQuery.Where(t => orderIds.Contains(t.BuyOrderId)
+                || (t.SellOrderId.HasValue && orderIds.Contains(t.SellOrderId.Value)));
+        }
+
+        if (!IsAdmin() && !orderId.HasValue && string.IsNullOrWhiteSpace(symbol))
+        {
+            var userOrderIds = _db.Orders.AsNoTracking()
+                .Where(o => o.UserId == currentUserId)
+                .Select(o => o.OrderId);
+            tradesQuery = tradesQuery.Where(t => userOrderIds.Contains(t.BuyOrderId)
+                || (t.SellOrderId.HasValue && userOrderIds.Contains(t.SellOrderId.Value)));
+        }
+
+        var trades = await tradesQuery.ToListAsync();
+        var orderIdsForSymbol = trades
+            .SelectMany(t => new[] { t.BuyOrderId, t.SellOrderId ?? Guid.Empty })
+            .Where(id => id != Guid.Empty)
+            .Distinct()
+            .ToList();
+        var orderMap = await _db.Orders.AsNoTracking()
+            .Where(o => orderIdsForSymbol.Contains(o.OrderId))
+            .ToDictionaryAsync(o => o.OrderId, o => o.Symbol);
+
+        var dtos = trades.Select(t => ToDto(t, orderMap)).ToList();
+        return Ok(dtos);
     }
 
     [HttpGet("{id:guid}")]
@@ -137,7 +147,7 @@ public class TradesController : ApiControllerBase
         return NoContent();
     }
 
-    private static TradeDto ToDto(TradesTable trade)
+    private static TradeDto ToDto(TradesTable trade, IReadOnlyDictionary<Guid, string>? symbolMap = null)
     {
         return new TradeDto
         {
@@ -146,7 +156,10 @@ public class TradesController : ApiControllerBase
             SellOrderId = trade.SellOrderId,
             Price = trade.Price,
             Amount = trade.Amount,
-            TimeStamp = trade.TimeStamp
+            TimeStamp = trade.TimeStamp,
+            Symbol = symbolMap != null && symbolMap.TryGetValue(trade.BuyOrderId, out var symbol)
+                ? symbol
+                : string.Empty
         };
     }
 }

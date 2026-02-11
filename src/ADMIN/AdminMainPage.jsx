@@ -1,6 +1,7 @@
 import React from "react";
 import { NavLink, Routes, Route } from "react-router-dom";
 import "./Admin.css";
+import UserSidebar from "../Components/Sidebar";
 
 const quickMetrics = [
   { label: "24h Volume", value: "$48.2M", trend: "+12.4%", tone: "success" },
@@ -572,8 +573,11 @@ function AdminHeader() {
 /* ===== Admin Layout ===== */
 export default function Admin() {
   return (
-    <div className="admin-shell">
+    <div className="admin-shell admin-shell--dual">
       <div className="admin-backdrop" />
+      <div className="admin-user-sidebar">
+        <UserSidebar />
+      </div>
       <Sidebar />
       <main className="admin-content">
         <AdminHeader />

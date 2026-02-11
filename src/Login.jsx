@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Login.css"; // create this file with the styles below
-import { loginUser } from "./Services/auth";
+import { getProfile, loginUser } from "./Services/auth";
 import Sidebar from "./Components/Sidebar";
 
 export default function Login() {
@@ -25,7 +25,12 @@ export default function Login() {
     setIsSubmitting(true);
     try {
       await loginUser({ email: form.email, password: form.password }, form.remember);
-      navigate("/profile");
+      const profile = await getProfile();
+      if (profile?.role === "Admin") {
+        navigate("/Admin");
+      } else {
+        navigate("/profile");
+      }
     } catch (err) {
       setError(err.message || "Sign in failed.");
     } finally {

@@ -181,6 +181,40 @@ li {
   background: #444;
 }
 
+.binance-tabs {
+  display: flex;
+  gap: 6px;
+  background: #0b0e11;
+  border: 1px solid #1f2630;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.binance-tab {
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  color: #9aa3ff;
+}
+
+.binance-tab.buy.active {
+  background: #1f8f5b;
+  color: #ffffff;
+}
+
+.binance-tab.sell.active {
+  background: #b8493a;
+  color: #ffffff;
+}
+
+.binance-panel {
+  margin-top: 10px;
+  border: 1px solid #1f2630;
+}
+
 
 .dropdown-container {
   position: relative;

@@ -23,7 +23,8 @@ import Admin from "./ADMIN/AdminMainPage.jsx";
 import Education from "./Education.jsx";
 import News from "./News.jsx";
 import RugPull from "./RugPull.jsx";
-
+//////// Error page for testing 404 handling
+import ErorPage1 from "./ErorPage1.jsx";
 function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [theme, setTheme] = useState("dark");
@@ -124,6 +125,8 @@ export default function App() {
       <Route path="/news" element={<News />} />
       <Route path="/education" element={<Education />} />
       <Route path="/rug-pull" element={<RugPull />} />
+      ///////////////
+      <Route path="*" element={<ErorPage1 />} />
     </Routes>
   );
 }

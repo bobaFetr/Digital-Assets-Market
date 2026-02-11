@@ -14,6 +14,7 @@ import {
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import axios from 'axios';
+import { getToken } from './Services/auth';
 import './App.css';
 
 // ✅ Register required components
@@ -27,25 +28,52 @@ ChartJS.register(
   Legend
 );
 
-function BitcoinChart() {
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5149";
+
+function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
   const [chartData, setChartData] = useState({
     labels: [],
     datasets: [],
   });
+  const [meta, setMeta] = useState({ count: 0, lastPrice: null, lastTime: null });
 
   const fetchData = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/api/bitcoin/history');
-      const labels = res.data.map(item =>
-        new Date(item.time).toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' })
+      const token = getToken();
+      if (!token) {
+        setChartData({ labels: [], datasets: [] });
+        return;
+      }
+
+      const res = await axios.get(`${API_BASE}/api/trades`, {
+        params: { symbol },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const sorted = [...res.data].sort(
+        (a, b) => new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime()
       );
-      const prices = res.data.map(item => item.price);
+      const labels = sorted.map(item =>
+        new Date(item.timeStamp).toLocaleTimeString('bg-BG', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        })
+      );
+      const prices = sorted.map(item => item.price);
+
+      const last = sorted[sorted.length - 1];
+      setMeta({
+        count: sorted.length,
+        lastPrice: last?.price ?? null,
+        lastTime: last?.timeStamp ?? null
+      });
 
       setChartData({
         labels,
         datasets: [
           {
-            label: 'Цена на BTC (в USD)',
+            label: `Price ${symbol}`,
             data: prices,
             borderColor: '#357859ff',
             backgroundColor: 'rgba(0, 255, 204, 0.1)',
@@ -65,7 +93,7 @@ function BitcoinChart() {
     fetchData();
     const interval = setInterval(fetchData, 10000); // update every 10 seconds
     return () => clearInterval(interval);
-  }, []);
+  }, [symbol, refreshKey]);
 
   const options = {
     responsive: true,
@@ -106,7 +134,7 @@ function BitcoinChart() {
       },
       title: {
         display: true,
-        text: 'BTC PRICE LAST 60 MINUTES',
+        text: `${symbol} PRICE (RECENT)`,
         color: '#f0f0f0',
       },
     },
@@ -116,6 +144,11 @@ function BitcoinChart() {
     <div className="container">
       {/* <h1>Графика на цената</h1> */}
       <Line data={chartData} options={options} />
+      <div style={{ marginTop: "10px", color: "#9aa3ff", fontSize: "12px" }}>
+        {meta.count === 0
+          ? "No data points yet."
+          : `Points: ${meta.count} | Last: ${meta.lastPrice} @ ${new Date(meta.lastTime).toLocaleTimeString()}`}
+      </div>
     </div>
   );
   // function OrderBook() {}////////////////////////////////////////

@@ -1,19 +1,169 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import BitcoinChart from "./BitcoinChart";
 import Sidebar from "./Components/Sidebar";
+import { getToken } from "./Services/auth";
+
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5149";
 
 export default function BuyAndSell() {
   const [fromCurrency, setFromCurrency] = useState("BTC");
-  const [toCurrency, setToCurrency] = useState("ETH");
-  const [amount, setAmount] = useState(0);
+  const [toCurrency, setToCurrency] = useState("USD");
+  const [amountCrypto, setAmountCrypto] = useState(0);
+  const [amountQuote, setAmountQuote] = useState(0);
+  const [lastEdited, setLastEdited] = useState("crypto");
+  const [available, setAvailable] = useState(null);
+  const [quoteRate, setQuoteRate] = useState(24.5);
+  const [statusMessage, setStatusMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderType, setOrderType] = useState("Sell");
+  const [orderKind, setOrderKind] = useState("Market");
+  const [limitPrice, setLimitPrice] = useState("");
+  const [chartRefreshTick, setChartRefreshTick] = useState(0);
 
-  const handleSwap = () => {
-    setFromCurrency((prev) => {
-      const old = prev;
-      setFromCurrency(toCurrency);
-      setToCurrency(old);
-      return toCurrency;
-    });
+  const symbolMap = {
+    USD: {
+      BTC: "BTCUSD",
+      ETH: "ETHUSD",
+      BNB: "BNBUSD",
+      ALGO: "ALGOUSD",
+    },
+    EUR: {
+      BTC: "BTCEUR",
+      ETH: "ETHEUR",
+      BNB: "BNBEUR",
+      ALGO: "ALGOEUR",
+    },
+  };
+  const mappedSymbol = symbolMap[toCurrency]?.[fromCurrency] || "BTCUSD";
+  const pairSymbol = mappedSymbol;
+  const chartSymbol = mappedSymbol;
+  const balanceCurrency = orderType === "Buy" ? toCurrency : fromCurrency;
+
+  useEffect(() => {
+    const loadWallets = async () => {
+      const token = getToken();
+      if (!token) {
+        setAvailable(null);
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/wallets`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error(await res.text());
+        }
+
+        const data = await res.json();
+        const total = data
+          .filter((wallet) => wallet.currency === balanceCurrency)
+          .reduce((sum, wallet) => sum + Number(wallet.balance || 0), 0);
+        setAvailable(total);
+      } catch (error) {
+        console.error("Error loading wallets:", error);
+        setAvailable(null);
+      }
+    };
+
+    loadWallets();
+  }, [balanceCurrency]);
+
+  useEffect(() => {
+    const loadQuote = async () => {
+      const token = getToken();
+      if (!token) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/trades?symbol=${mappedSymbol}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error(await res.text());
+        }
+
+        const data = await res.json();
+        if (!data.length) {
+          return;
+        }
+
+        const sorted = [...data].sort(
+          (a, b) => new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime()
+        );
+        const latest = sorted[sorted.length - 1];
+        if (latest?.price) {
+          setQuoteRate(Number(latest.price));
+          if (orderKind === "Limit" && !limitPrice) {
+            setLimitPrice(String(latest.price));
+          }
+          if (lastEdited === "crypto") {
+            setAmountQuote(Number(amountCrypto) * Number(latest.price));
+          } else {
+            setAmountCrypto(Number(amountQuote) / Number(latest.price));
+          }
+        }
+      } catch (error) {
+        console.error("Error loading quote:", error);
+      }
+    };
+
+    loadQuote();
+  }, [mappedSymbol, orderKind, limitPrice, lastEdited, amountCrypto, amountQuote]);
+
+  const handleConfirmExchange = async () => {
+    setStatusMessage("");
+
+    const amountValue = Number(amountCrypto);
+    if (!amountValue || amountValue <= 0) {
+      setStatusMessage("Enter a valid amount.");
+      return;
+    }
+
+    const token = getToken();
+    if (!token) {
+      setStatusMessage("Please log in to place an order.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/orders`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          typeOfOrder: orderType === "Buy" ? 0 : 1,
+          orderKind,
+          symbol: pairSymbol,
+          price: orderKind === "Limit" ? Number(limitPrice) || 0 : 0,
+          amount: amountValue,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(await res.text());
+      }
+
+      setStatusMessage("Order placed successfully.");
+      setAmountCrypto(0);
+      setAmountQuote(0);
+      setChartRefreshTick((tick) => tick + 1);
+    } catch (error) {
+      console.error("Error placing order:", error);
+      setStatusMessage(error?.message || "Failed to place order.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -26,7 +176,9 @@ export default function BuyAndSell() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h2 className="chart-header">Buy & Sell</h2>
           <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-            <div style={{ color: "#9aa3ff" }}>Available: <strong>0.000 BTC</strong></div>
+            <div style={{ color: "#9aa3ff" }}>
+              Available: <strong>{available == null ? "--" : `${available.toFixed(6)} ${balanceCurrency}`}</strong>
+            </div>
             <button className="btn-primary">Deposit</button>
           </div>
         </div>
@@ -52,43 +204,112 @@ export default function BuyAndSell() {
 
         <div className="chart-container" style={{ marginTop: "18px" }}>
           <h3 className="chart-header">Market Chart</h3>
-          <BitcoinChart />
+          <BitcoinChart symbol={chartSymbol} refreshKey={chartRefreshTick} />
         </div>
 
         {/* Buy/Sell Exchange Box */}
         <div className="chart-container" style={{ marginTop: "18px" }}>
-          <h3 className="chart-header">Exchange</h3>
-          <div style={{ background: "#0d0f1a", padding: "18px", borderRadius: "10px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <h3 className="chart-header">Exchange</h3>
+            <div className="binance-tabs">
+              <button
+                className={`binance-tab buy ${orderType === "Buy" ? "active" : ""}`}
+                onClick={() => setOrderType("Buy")}
+              >
+                Buy
+              </button>
+              <button
+                className={`binance-tab sell ${orderType === "Sell" ? "active" : ""}`}
+                onClick={() => setOrderType("Sell")}
+              >
+                Sell
+              </button>
+            </div>
+          </div>
+          <div className="binance-panel" style={{ background: "#0d0f1a", padding: "18px", borderRadius: "10px" }}>
+            <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+              <button
+                className={`binance-tab ${orderKind === "Market" ? "active" : ""}`}
+                onClick={() => setOrderKind("Market")}
+              >
+                Market
+              </button>
+              <button
+                className={`binance-tab ${orderKind === "Limit" ? "active" : ""}`}
+                onClick={() => setOrderKind("Limit")}
+              >
+                Limit
+              </button>
+            </div>
             <div style={{ display: "flex", gap: "12px", alignItems: "center", marginBottom: "12px" }}>
-              <label style={{ minWidth: "80px" }}>Sell</label>
+              <label style={{ minWidth: "80px" }}>{orderType}</label>
               <select value={fromCurrency} onChange={(e) => setFromCurrency(e.target.value)}>
                 <option>BTC</option>
                 <option>ETH</option>
                 <option>BNB</option>
                 <option>ALGO</option>
               </select>
-              <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Amount" style={{ flex: 1 }} />
+              <input
+                type="number"
+                value={amountCrypto}
+                onChange={(e) => {
+                  setLastEdited("crypto");
+                  setAmountCrypto(e.target.value);
+                  if (Number(quoteRate) > 0) {
+                    setAmountQuote(Number(e.target.value) * Number(quoteRate));
+                  }
+                }}
+                placeholder="Crypto amount"
+                style={{ flex: 1 }}
+              />
             </div>
 
-            <div style={{ display: "flex", justifyContent: "center", marginBottom: "12px" }}>
-              <button className="btn-primary" onClick={handleSwap} style={{ padding: "8px 12px" }}>Swap</button>
-            </div>
+            {orderKind === "Limit" && (
+              <div style={{ display: "flex", gap: "12px", alignItems: "center", marginBottom: "12px" }}>
+                <label style={{ minWidth: "80px" }}>Price</label>
+                <input
+                  type="number"
+                  value={limitPrice}
+                  onChange={(e) => setLimitPrice(e.target.value)}
+                  placeholder={`Price in ${toCurrency}`}
+                  style={{ flex: 1 }}
+                />
+              </div>
+            )}
 
             <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-              <label style={{ minWidth: "80px" }}>Buy</label>
-              <select value={toCurrency} onChange={(e) => setToCurrency(e.target.value)}>
-                <option>ETH</option>
-                <option>BTC</option>
-                <option>BNB</option>
-                <option>ALGO</option>
+              <label style={{ minWidth: "80px" }}>Pay</label>
+              <select value={toCurrency} onChange={(e) => setToCurrency(e.target.value)} style={{ width: "120px" }}>
+                <option>USD</option>
+                <option>EUR</option>
               </select>
               <div style={{ flex: 1 }}>
-                <input type="text" value={amount ? `${(amount * 24.5).toFixed(4)} ${toCurrency}` : ""} readOnly style={{ width: "100%" }} />
+                <input
+                  type="number"
+                  value={amountQuote}
+                  onChange={(e) => {
+                    setLastEdited("quote");
+                    setAmountQuote(e.target.value);
+                    if (Number(quoteRate) > 0) {
+                      setAmountCrypto(Number(e.target.value) / Number(quoteRate));
+                    }
+                  }}
+                  placeholder={`Amount in ${toCurrency}`}
+                  style={{ width: "100%" }}
+                />
               </div>
             </div>
 
+            {statusMessage && (
+              <div style={{ marginTop: "12px", color: "#9aa3ff" }}>
+                {statusMessage}
+              </div>
+            )}
+
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "16px" }}>
-              <button className="btn-primary">Confirm Exchange</button>
+              <button className="btn-primary" onClick={handleConfirmExchange} disabled={isSubmitting}>
+                {isSubmitting ? "Submitting..." : "Confirm Exchange"}
+              </button>
             </div>
           </div>
         </div>

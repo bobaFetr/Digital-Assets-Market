@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "../assets/Gemini_Generated_Image_sb5zszsb5zszsb5z.png";
+import { getToken } from "../Services/auth";
 
 const NAV_ITEMS = [
 //   "Pay",
@@ -16,10 +17,13 @@ const NAV_ITEMS = [
 
 export default function Sidebar() {
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const isAuthenticated = useMemo(() => Boolean(getToken()), []);
 
   return (
     <aside className="crypto-sidebar">
-      <img src={logo} alt="Logo" style={{ width: "100%", maxWidth: "150px", marginBottom: "30px" }} />
+      <Link to="/" aria-label="Go to home page" style={{ display: "inline-block", marginBottom: "30px" }}>
+        <img src={logo} alt="Logo" style={{ width: "100%", maxWidth: "150px" }} />
+      </Link>
       <nav className="nav-links">
         {NAV_ITEMS.map((item) => {
           if (item === "Profile Settings") {
@@ -131,6 +135,9 @@ export default function Sidebar() {
             );
           }
           if (item === "Sign Up") {
+            if (isAuthenticated) {
+              return null;
+            }
             return (
               <Link key={item} to="/sign-up" className="nav-item nav-item-link" style={{ marginTop: "16px", color: "#7f8cff" }}>
                 Sign Up
@@ -138,6 +145,9 @@ export default function Sidebar() {
             );
           }
           if (item === "Sign In") {
+            if (isAuthenticated) {
+              return null;
+            }
             return (
               <Link key={item} to="/sign-in" className="nav-dropdown-item">Sign In</Link>
             );
