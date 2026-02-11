@@ -4,12 +4,12 @@ import logo from "../assets/Gemini_Generated_Image_sb5zszsb5zszsb5z.png";
 
 const NAV_ITEMS = [
 //   "Pay",
-  "Social-->",
-  "More--->",
+  "Social",
+  "More",
   "Profile Settings",
-  "Crypto--->",
-  "Tools--->",
-  "Temp--->",
+  "Crypto",
+  "Tools",
+  "Temp",
   "Sign Up",
   "Sign In",
 ];
@@ -29,16 +29,16 @@ export default function Sidebar() {
               </Link>
             );
           }
-          if (item === "More--->") {
+          if (item === "More") {
             return (
               <div key={item} className="nav-item-dropdown-container">
                 <div
-                  className={`nav-item ${activeDropdown === "More--->" ? "active" : ""}`}
-                  onClick={() => setActiveDropdown(activeDropdown === "More--->" ? null : "More--->")}
+                  className={`nav-item ${activeDropdown === "More" ? "active" : ""}`}
+                  onClick={() => setActiveDropdown(activeDropdown === "More" ? null : "More")}
                 >
-                  {item}
+                  {item} <span>{activeDropdown === "More" ? "▲" : "▼"}</span>
                 </div>
-                {activeDropdown === "More--->" && (
+                {activeDropdown === "More" && (
                   <div className="nav-dropdown-menu">
                     <div className="nav-dropdown-item">Tutorial for beginners</div>
                     <div className="nav-dropdown-item">Crypto Education</div>
@@ -50,34 +50,36 @@ export default function Sidebar() {
               </div>
             );
           }
-          if (item === "Tools--->") {
+          if (item === "Tools") {
             return (
               <div key={item} className="nav-item-dropdown-container">
                 <div
-                  className={`nav-item ${activeDropdown === "Tools--->" ? "active" : ""}`}
-                  onClick={() => setActiveDropdown(activeDropdown === "Tools--->" ? null : "Tools--->")}
+                  className={`nav-item ${activeDropdown === "Tools" ? "active" : ""}`}
+                  onClick={() => setActiveDropdown(activeDropdown === "Tools" ? null : "Tools")}
                 >
-                  {item}
+                  {item} <span>{activeDropdown === "Tools" ? "▲" : "▼"}</span>
                 </div>
-                {activeDropdown === "Tools--->" && (
+                {activeDropdown === "Tools" && (
                   <div className="nav-dropdown-menu">
                     <Link to="/buy-sell" className="nav-dropdown-item">Buy and Sell</Link>
                     <Link to="/withdraw" className="nav-dropdown-item">Withdraw</Link>
+
+                    {/* <Link to="/*" className="nav-dropdown-item">ErrorPage1</Link> */}
                   </div>
                 )}
               </div>
             );
           }
-          if (item === "Social-->") {
+          if (item === "Social") {
             return (
               <div key={item} className="nav-item-dropdown-container">
                 <div
-                  className={`nav-item ${activeDropdown === "Social-->" ? "active" : ""}`}
-                  onClick={() => setActiveDropdown(activeDropdown === "Social-->" ? null : "Social-->")}
+                  className={`nav-item ${activeDropdown === "Social" ? "active" : ""}`}
+                  onClick={() => setActiveDropdown(activeDropdown === "Social" ? null : "Social")}
                 >
-                  {item}
+                  {item} <span>{activeDropdown === "Social" ? "▲" : "▼"}</span>
                 </div>
-                {activeDropdown === "Social-->" && (
+                {activeDropdown === "Social" && (
                   <div className="nav-dropdown-menu">
                     <Link to="/news" className="nav-dropdown-item">News</Link>
                     <Link to="/education" className="nav-dropdown-item">Education</Link>
@@ -88,16 +90,16 @@ export default function Sidebar() {
               </div>
             );
           }
-          if (item === "Crypto--->") {
+          if (item === "Crypto") {
             return (
               <div key={item} className="nav-item-dropdown-container">
                 <div
-                  className={`nav-item ${activeDropdown === "Crypto--->" ? "active" : ""}`}
-                  onClick={() => setActiveDropdown(activeDropdown === "Crypto--->" ? null : "Crypto--->")}
+                  className={`nav-item ${activeDropdown === "Crypto" ? "active" : ""}`}
+                  onClick={() => setActiveDropdown(activeDropdown === "Crypto" ? null : "Crypto")}
                 >
-                  {item}
+                  {item} <span>{activeDropdown === "Crypto" ? "▲" : "▼"}</span>
                 </div>
-                {activeDropdown === "Crypto--->" && (
+                {activeDropdown === "Crypto" && (
                   <div className="nav-dropdown-menu">
                     <Link to="/BitcoinChart" className="nav-dropdown-item">BTC</Link>
                     <Link to="/BNBChart" className="nav-dropdown-item">BNB</Link>
@@ -108,16 +110,16 @@ export default function Sidebar() {
               </div>
             );
           }
-          if (item === "Temp--->") {
+          if (item === "Temp") {
             return (
               <div key={item} className="nav-item-dropdown-container">
                 <div
-                  className={`nav-item ${activeDropdown === "Temp--->" ? "active" : ""}`}
-                  onClick={() => setActiveDropdown(activeDropdown === "Temp--->" ? null : "Temp--->")}
+                  className={`nav-item ${activeDropdown === "Temp" ? "active" : ""}`}
+                  onClick={() => setActiveDropdown(activeDropdown === "Temp" ? null : "Temp")}
                 >
-                  {item}
+                  {item} <span>{activeDropdown === "Temp" ? "▲" : "▼"}</span>
                 </div>
-                {activeDropdown === "Temp--->" && (
+                {activeDropdown === "Temp" && (
                   <div className="nav-dropdown-menu">
                     <Link to="/VerifyIdentityPage" className="nav-dropdown-item">VerifyIdentity</Link>
                     <Link to="/VerificationEmailPage" className="nav-dropdown-item">Verify Email</Link>
