@@ -6,7 +6,7 @@ import { getToken } from "../Services/auth";
 const NAV_ITEMS = [
 //   "Pay",
   "Social",
-  "More",
+  //"More",
   "Profile Settings",
   "Crypto",
   "Tools",
