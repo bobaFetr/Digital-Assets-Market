@@ -66,13 +66,18 @@ internal class Program
         }
 
         app.UseHttpsRedirection();
-
+        /////
+        app.UseDefaultFiles();   // serves index.html automatically
+        app.UseStaticFiles();    // enables wwwroot
+        /////
         app.UseCors("DevCors");
 
         app.UseAuthentication(); // Add this
         app.UseAuthorization(); // Add this
         app.MapControllers(); // Add this
-
+        ///
+        app.MapFallbackToFile("index.html");
+        ////
         app.Run();
     }
 }
