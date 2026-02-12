@@ -28,7 +28,8 @@ const request = async (path, options = {}) => {
 
   if (!response.ok) {
     const message = await response.text();
-    throw new Error(message || "Request failed");
+    const details = message ? `: ${message}` : "";
+    throw new Error(`Request failed (${response.status})${details}`);
   }
 
   const contentType = response.headers.get("content-type") || "";
@@ -78,3 +79,32 @@ export const logoutUser = () => {
 };
 
 export const getToken = () => getCookie(TOKEN_COOKIE);
+
+export const getKycStatus = () => {
+  const token = getCookie(TOKEN_COOKIE);
+  if (!token) {
+    return Promise.reject(new Error("Not authenticated"));
+  }
+
+  return request("/api/kyc-documents/status", {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+export const submitKycVerification = (payload) => {
+  const token = getCookie(TOKEN_COOKIE);
+  if (!token) {
+    return Promise.reject(new Error("Not authenticated"));
+  }
+
+  return request("/api/kyc-documents", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+};

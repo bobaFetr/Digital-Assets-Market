@@ -2,25 +2,95 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "./Login.css";
 import Sidebar from "./Components/Sidebar";
+import { getToken, submitKycVerification } from "./Services/auth";
 
 export default function VerifyIdentityPage() {
-  const [form, setForm] = useState({ email: "", fullName: "", idNumber: "", dob: "" });
+  const [form, setForm] = useState({
+    email: "",
+    fullName: "",
+    idNumber: "",
+    dob: "",
+    expiryDate: "",
+    country: "",
+    documentType: "Passport",
+  });
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fileName, setFileName] = useState("");
+
+  const handleFileChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      setFileName("");
+      return;
+    }
+
+    setFileName(file.name);
+    if (file.name.toLowerCase().endsWith(".txt")) {
+      parseIdentityFile(file);
+    }
+  };
+
+  const parseIdentityFile = (file) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = String(event.target?.result || "");
+      const parsed = parseIdentityText(content);
+      if (!parsed) {
+        return;
+      }
+
+      setForm((prev) => ({
+        ...prev,
+        ...Object.fromEntries(
+          Object.entries(parsed).filter(([, value]) => Boolean(value))
+        ),
+      }));
+    };
+    reader.readAsText(file);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((p) => ({ ...p, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.email || !form.fullName || !form.idNumber) {
+    if (!getToken()) {
+      setError("Please sign in before submitting verification.");
+      return;
+    }
+    if (!form.fullName || !form.idNumber || !form.dob || !form.expiryDate || !form.country) {
       setError("Please complete all required fields.");
       return;
     }
+
+    const age = getAge(form.dob);
+    if (Number.isNaN(age) || age < 18) {
+      setError("You must be at least 18 years old to verify your identity.");
+      return;
+    }
+
     setError("");
-    // Simulate sending verification email or next step
-    alert("Identity verification request submitted. Check your email for the verification link.");
+    setIsSubmitting(true);
+    try {
+      await submitKycVerification({
+        type: form.documentType,
+        filePath: fileName,
+        documentNumber: form.idNumber,
+        fullName: form.fullName,
+        dateOfBirth: form.dob,
+        countryOfResidence: form.country,
+        expiryDate: form.expiryDate,
+        status: "Verified",
+      });
+      alert("Identity verification completed. You now have access to all features.");
+    } catch (submitError) {
+      setError(submitError.message || "Verification failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -64,25 +134,45 @@ export default function VerifyIdentityPage() {
                 </label>
 
                 <label>
+                  Document type
+                  <select name="documentType" value={form.documentType} onChange={handleChange}>
+                    <option value="Passport">Passport</option>
+                    <option value="National ID">National ID</option>
+                    <option value="Driver License">Driver License</option>
+                  </select>
+                </label>
+
+                <label>
                   Date of birth
                   <input type="date" name="dob" value={form.dob} onChange={handleChange} />
                 </label>
 
                 <label>
+                  Document expiry date
+                  <input type="date" name="expiryDate" value={form.expiryDate} onChange={handleChange} />
+                </label>
+
+                <label>
                   Upload ID (optional)
-                  <input type="file" accept="image/*,.pdf" />
+                  <input
+                    type="file"
+                    accept="image/*,.pdf,.txt"
+                    onChange={handleFileChange}
+                  />
                 </label>
 
                 <label>
                   Country of residence
-                  <input type="date" name="dob" value={form.dob} onChange={handleChange} />
+                  <input name="country" value={form.country} onChange={handleChange} placeholder="Country" />
                 </label>
 
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
                     <Link to="/sign-in" className="link-button">Back to sign in</Link>
                   </div>
-                  <button type="submit" className="login-submit">Start verification</button>
+                  <button type="submit" className="login-submit" disabled={isSubmitting}>
+                    {isSubmitting ? "Submitting..." : "Start verification"}
+                  </button>
                 </div>
               </form>
             </div>
@@ -92,3 +182,53 @@ export default function VerifyIdentityPage() {
     </div>
   );
 }
+
+const getAge = (dateOfBirth) => {
+  const dob = new Date(dateOfBirth);
+  if (Number.isNaN(dob.getTime())) return NaN;
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const monthDiff = today.getMonth() - dob.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+    age -= 1;
+  }
+  return age;
+};
+
+const parseIdentityText = (text) => {
+  const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  if (!lines.length) return null;
+  const lookup = {};
+  lines.forEach((line) => {
+    const parts = line.split(":");
+    if (parts.length < 2) return;
+    const key = parts[0].trim().toLowerCase();
+    const value = parts.slice(1).join(":").trim();
+    lookup[key] = value;
+  });
+
+  const dobRaw = lookup["date of birth"];
+  const expiryRaw = lookup["document expiry date"];
+
+  return {
+    fullName: lookup["full name"] || "",
+    dob: normalizeDate(dobRaw),
+    idNumber: lookup["id number"] || "",
+    documentType: lookup["document type"] || "Passport",
+    country: lookup["country of residence"] || "",
+    expiryDate: normalizeDate(expiryRaw),
+  };
+};
+
+const normalizeDate = (value) => {
+  if (!value) return "";
+  const dotMatch = value.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+  if (dotMatch) {
+    return `${dotMatch[3]}-${dotMatch[2]}-${dotMatch[1]}`;
+  }
+  const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (isoMatch) {
+    return value;
+  }
+  return "";
+};

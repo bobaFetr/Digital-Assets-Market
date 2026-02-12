@@ -18,7 +18,10 @@ export default function BuyAndSell() {
   const [orderType, setOrderType] = useState("Sell");
   const [orderKind, setOrderKind] = useState("Market");
   const [limitPrice, setLimitPrice] = useState("");
+  const [isLimitPriceTouched, setIsLimitPriceTouched] = useState(false);
   const [chartRefreshTick, setChartRefreshTick] = useState(0);
+  const [orderBook, setOrderBook] = useState([]);
+  const [orderBookError, setOrderBookError] = useState("");
 
   const symbolMap = {
     USD: {
@@ -101,7 +104,7 @@ export default function BuyAndSell() {
         const latest = sorted[sorted.length - 1];
         if (latest?.price) {
           setQuoteRate(Number(latest.price));
-          if (orderKind === "Limit" && !limitPrice) {
+          if (orderKind === "Limit" && !isLimitPriceTouched && !limitPrice) {
             setLimitPrice(String(latest.price));
           }
           if (lastEdited === "crypto") {
@@ -116,7 +119,47 @@ export default function BuyAndSell() {
     };
 
     loadQuote();
-  }, [mappedSymbol, orderKind, limitPrice, lastEdited, amountCrypto, amountQuote]);
+  }, [mappedSymbol, orderKind, limitPrice, lastEdited, amountCrypto, amountQuote, isLimitPriceTouched]);
+
+  useEffect(() => {
+    if (orderKind !== "Limit") {
+      setIsLimitPriceTouched(false);
+      setLimitPrice("");
+    }
+  }, [orderKind]);
+
+  useEffect(() => {
+    const loadOrderBook = async () => {
+      const token = getToken();
+      if (!token) {
+        setOrderBook([]);
+        setOrderBookError("");
+        return;
+      }
+
+      try {
+        setOrderBookError("");
+        const res = await fetch(`${API_BASE}/api/orderbook?symbol=${mappedSymbol}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error(await res.text());
+        }
+
+        const data = await res.json();
+        const sorted = [...data].sort((a, b) => Number(b.price) - Number(a.price));
+        setOrderBook(sorted.slice(0, 12));
+      } catch (error) {
+        console.error("Error loading order book:", error);
+        setOrderBookError(error?.message || "Failed to load order book.");
+      }
+    };
+
+    loadOrderBook();
+  }, [mappedSymbol, chartRefreshTick]);
 
   const handleConfirmExchange = async () => {
     setStatusMessage("");
@@ -207,6 +250,27 @@ export default function BuyAndSell() {
           <BitcoinChart symbol={chartSymbol} refreshKey={chartRefreshTick} />
         </div>
 
+        <div className="orderbook-section" style={{ marginTop: "18px" }}>
+          <h3>Order Book ({pairSymbol})</h3>
+          {orderBookError && (
+            <div style={{ color: "#ff9a9a", fontSize: "13px", marginBottom: "8px" }}>
+              {orderBookError}
+            </div>
+          )}
+          {!orderBookError && orderBook.length === 0 && (
+            <div style={{ color: "#9aa3ff", fontSize: "13px" }}>No order book entries yet.</div>
+          )}
+          <ul>
+            {orderBook.map((entry) => (
+              <li key={entry.orderBookId} style={{ display: "flex", justifyContent: "space-between" }}>
+                <span>{Number(entry.price).toFixed(4)}</span>
+                <span>{Number(entry.amount).toFixed(4)}</span>
+                <span>{new Date(entry.timestamp).toLocaleTimeString()}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
         {/* Buy/Sell Exchange Box */}
         <div className="chart-container" style={{ marginTop: "18px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -270,7 +334,10 @@ export default function BuyAndSell() {
                 <input
                   type="number"
                   value={limitPrice}
-                  onChange={(e) => setLimitPrice(e.target.value)}
+                  onChange={(e) => {
+                    setIsLimitPriceTouched(true);
+                    setLimitPrice(e.target.value);
+                  }}
                   placeholder={`Price in ${toCurrency}`}
                   style={{ flex: 1 }}
                 />

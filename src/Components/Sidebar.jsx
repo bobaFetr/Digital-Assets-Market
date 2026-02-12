@@ -17,7 +17,22 @@ const NAV_ITEMS = [
 
 export default function Sidebar() {
   const [activeDropdown, setActiveDropdown] = useState(null);
-  const isAuthenticated = useMemo(() => Boolean(getToken()), []);
+  const token = getToken();
+  const claims = useMemo(() => {
+    if (!token) return null;
+    try {
+      const payload = token.split(".")[1];
+      if (!payload) return null;
+      const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+      return JSON.parse(atob(normalized));
+    } catch {
+      return null;
+    }
+  }, [token]);
+  const isAuthenticated = Boolean(token);
+  const isAdmin =
+    claims?.role === "Admin" ||
+    claims?.["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] === "Admin";
 
   return (
     <aside className="crypto-sidebar">
@@ -25,6 +40,16 @@ export default function Sidebar() {
         <img src={logo} alt="Logo" style={{ width: "100%", maxWidth: "150px" }} />
       </Link>
       <nav className="nav-links">
+        {isAdmin && (
+          <Link to="/Admin" className="nav-item nav-item-link" style={{ marginBottom: "12px", color: "#7f8cff" }}>
+            Admin Panel
+          </Link>
+        )}
+        {isAuthenticated && (
+          <Link to="/VerifyIdentityPage" className="nav-item nav-item-link" style={{ marginBottom: "12px", color: "#7f8cff" }}>
+            Verify Identity
+          </Link>
+        )}
         {NAV_ITEMS.map((item) => {
           if (item === "Profile Settings") {
             return (
@@ -128,7 +153,9 @@ export default function Sidebar() {
                     <Link to="/VerifyIdentityPage" className="nav-dropdown-item">VerifyIdentity</Link>
                     <Link to="/VerificationEmailPage" className="nav-dropdown-item">Verify Email</Link>
                     <Link to="/SentSMSToNumberPage" className="nav-dropdown-item">Sent SMS</Link>
-                    <Link to="/Admin" className="nav-dropdown-item">Admin</Link>
+                    {isAdmin && (
+                      <Link to="/Admin" className="nav-dropdown-item">Admin</Link>
+                    )}
                   </div>
                 )}
               </div>

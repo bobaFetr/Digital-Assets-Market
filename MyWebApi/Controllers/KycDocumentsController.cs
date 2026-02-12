@@ -42,6 +42,20 @@ public class KycDocumentsController : ApiControllerBase
         return Ok(docs);
     }
 
+    [HttpGet("status")]
+    public async Task<IActionResult> GetStatus()
+    {
+        if (!TryGetUserId(out var currentUserId))
+        {
+            return Unauthorized();
+        }
+
+        var isVerified = await _db.KycDocuments.AsNoTracking().AnyAsync(d =>
+            d.UserId == currentUserId && d.Status == "Verified");
+
+        return Ok(new { verified = isVerified });
+    }
+
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetDocument(Guid id)
     {
@@ -72,6 +86,16 @@ public class KycDocumentsController : ApiControllerBase
             return Unauthorized();
         }
 
+        if (request.DateOfBirth == default)
+        {
+            return BadRequest("Date of birth is required.");
+        }
+
+        if (!IsAtLeast18(request.DateOfBirth))
+        {
+            return BadRequest("User must be at least 18 years old.");
+        }
+
         var targetUserId = request.UserId ?? currentUserId;
         if (!IsAdmin() && targetUserId != currentUserId)
         {
@@ -85,8 +109,11 @@ public class KycDocumentsController : ApiControllerBase
             Type = request.Type,
             FilePath = request.FilePath,
             DocumentNumber = request.DocumentNumber,
+            FullName = request.FullName,
+            DateOfBirth = request.DateOfBirth,
+            CountryOfResidence = request.CountryOfResidence,
             ExpiryDate = request.ExpiryDate,
-            Status = request.Status,
+            Status = string.IsNullOrWhiteSpace(request.Status) ? "Verified" : request.Status,
             UploadedAt = DateTime.UtcNow
         };
 
@@ -128,6 +155,26 @@ public class KycDocumentsController : ApiControllerBase
         if (request.DocumentNumber != null)
         {
             doc.DocumentNumber = request.DocumentNumber;
+        }
+
+        if (request.FullName != null)
+        {
+            doc.FullName = request.FullName;
+        }
+
+        if (request.DateOfBirth.HasValue)
+        {
+            if (!IsAtLeast18(request.DateOfBirth.Value))
+            {
+                return BadRequest("User must be at least 18 years old.");
+            }
+
+            doc.DateOfBirth = request.DateOfBirth.Value;
+        }
+
+        if (request.CountryOfResidence != null)
+        {
+            doc.CountryOfResidence = request.CountryOfResidence;
         }
 
         if (request.ExpiryDate.HasValue)
@@ -177,9 +224,24 @@ public class KycDocumentsController : ApiControllerBase
             Type = doc.Type,
             FilePath = doc.FilePath,
             DocumentNumber = doc.DocumentNumber,
+            FullName = doc.FullName,
+            DateOfBirth = doc.DateOfBirth,
+            CountryOfResidence = doc.CountryOfResidence,
             ExpiryDate = doc.ExpiryDate,
             Status = doc.Status,
             UploadedAt = doc.UploadedAt
         };
+    }
+
+    private static bool IsAtLeast18(DateTime dateOfBirth)
+    {
+        var today = DateTime.UtcNow.Date;
+        var age = today.Year - dateOfBirth.Year;
+        if (dateOfBirth.Date > today.AddYears(-age))
+        {
+            age--;
+        }
+
+        return age >= 18;
     }
 }

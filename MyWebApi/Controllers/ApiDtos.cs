@@ -125,6 +125,9 @@ public class KycDocumentDto
     public string Type { get; set; } = string.Empty;
     public string FilePath { get; set; } = string.Empty;
     public string DocumentNumber { get; set; } = string.Empty;
+    public string FullName { get; set; } = string.Empty;
+    public DateTime DateOfBirth { get; set; }
+    public string CountryOfResidence { get; set; } = string.Empty;
     public DateTime ExpiryDate { get; set; }
     public string Status { get; set; } = string.Empty;
     public DateTime UploadedAt { get; set; }
@@ -136,6 +139,9 @@ public class CreateKycDocumentRequest
     public string Type { get; set; } = string.Empty;
     public string FilePath { get; set; } = string.Empty;
     public string DocumentNumber { get; set; } = string.Empty;
+    public string FullName { get; set; } = string.Empty;
+    public DateTime DateOfBirth { get; set; }
+    public string CountryOfResidence { get; set; } = string.Empty;
     public DateTime ExpiryDate { get; set; }
     public string Status { get; set; } = string.Empty;
 }
@@ -145,6 +151,9 @@ public class UpdateKycDocumentRequest
     public string? Type { get; set; }
     public string? FilePath { get; set; }
     public string? DocumentNumber { get; set; }
+    public string? FullName { get; set; }
+    public DateTime? DateOfBirth { get; set; }
+    public string? CountryOfResidence { get; set; }
     public DateTime? ExpiryDate { get; set; }
     public string? Status { get; set; }
 }

@@ -1,7 +1,7 @@
 
 
-import React, { useState } from "react";
-import { Routes, Route, Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Routes, Route, Link, useLocation, useNavigate } from "react-router-dom";
 import BitcoinChart from "./BitcoinChart";
 import BNBChart from "./BNB";
 import Profile from "./Profile";
@@ -10,6 +10,7 @@ import WithDraw from "./WithdrawPage.jsx";
 import BuyAndSell from "./BuyAndSell";
 import BCrypto from "./BCrypto.jsx";
 import VerifyIdentityPage from "./VerifyIdentityPage";
+import { getKycStatus, getToken } from "./Services/auth";
 import VerificationEmailPage from "./VerificationEmailPage";
 import SentSMSToNumberPage from "./SentSMSToNumberPage";
 
@@ -106,27 +107,64 @@ function BNBChartPage() {
 }
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/profile" element={<Profile />} />
-      <Route path="/withdraw" element={<WithDraw />} />
-      <Route path="/buy-sell" element={<BuyAndSell />} />
-      <Route path="/VerifyIdentityPage" element={<VerifyIdentityPage />} />
-      <Route path="/VerificationEmailPage" element={<VerificationEmailPage />} />
-      <Route path="/SentSMSToNumberPage" element={<SentSMSToNumberPage />} />
-      <Route path="/sign-in" element={<SignInPage />} />
-      <Route path="/sign-up" element={<SignUpPage />} />
-      <Route path="/BitcoinChart" element={<BitcoinChartPage />} />
-      <Route path="/BNBChart" element={<BNBChartPage />} />
+    <KycGate>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/withdraw" element={<WithDraw />} />
+        <Route path="/buy-sell" element={<BuyAndSell />} />
+        <Route path="/VerifyIdentityPage" element={<VerifyIdentityPage />} />
+        <Route path="/VerificationEmailPage" element={<VerificationEmailPage />} />
+        <Route path="/SentSMSToNumberPage" element={<SentSMSToNumberPage />} />
+        <Route path="/sign-in" element={<SignInPage />} />
+        <Route path="/sign-up" element={<SignUpPage />} />
+        <Route path="/BitcoinChart" element={<BitcoinChartPage />} />
+        <Route path="/BNBChart" element={<BNBChartPage />} />
 
-      <Route path="/Admin/*" element={<Admin />} />
-      <Route path="/BCrypto" element={<BCrypto assets={[]} />} />
+        <Route path="/Admin/*" element={<Admin />} />
+        <Route path="/BCrypto" element={<BCrypto assets={[]} />} />
 
-      <Route path="/news" element={<News />} />
-      <Route path="/education" element={<Education />} />
-      <Route path="/rug-pull" element={<RugPull />} />
-      ///////////////
-      <Route path="*" element={<ErorPage1 />} />
-    </Routes>
+        <Route path="/news" element={<News />} />
+        <Route path="/education" element={<Education />} />
+        <Route path="/rug-pull" element={<RugPull />} />
+        ///////////////
+        <Route path="*" element={<ErorPage1 />} />
+      </Routes>
+    </KycGate>
   );
+}
+function KycGate({ children }) {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = getToken();
+    if (!token) {
+      return;
+    }
+
+    const allowList = new Set(["/VerifyIdentityPage", "/sign-in", "/sign-up"]);
+    if (allowList.has(location.pathname)) {
+      return;
+    }
+
+    let isActive = true;
+    getKycStatus()
+      .then((status) => {
+        if (!isActive) return;
+        if (!status?.verified) {
+          navigate("/VerifyIdentityPage", { replace: true });
+        }
+      })
+      .catch(() => {
+        if (!isActive) return;
+        navigate("/VerifyIdentityPage", { replace: true });
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [location.pathname, navigate]);
+
+  return children;
 }

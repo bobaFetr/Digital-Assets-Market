@@ -18,6 +18,10 @@ namespace NetServer.Data.Models
         public string FilePath { get; set; }
         public string DocumentNumber { get; set; } = string.Empty;
 
+        public string FullName { get; set; } = string.Empty;
+        public DateTime DateOfBirth { get; set; }
+        public string CountryOfResidence { get; set; } = string.Empty;
+
         public DateTime ExpiryDate { get; set; }
         public string Status { get; set; }
         public DateTime UploadedAt { get; set; }

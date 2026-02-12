@@ -81,9 +81,13 @@ namespace NetServer.Data.Seeding.Constants
         public static class KycDocumentConstants
         {
             public static readonly Guid Doc1Id = DataSeedingConstants.UserConstants.User1Id;
+            public static readonly Guid User1Id = DataSeedingConstants.UserConstants.User1Id;
             public const string Type1 = "Passport";
             public const string FilePath1 = "/path/to/document1.pdf";
             public const string DocumentNumber1 = "A12345678";
+            public const string FullName1 = "Alice Example";
+            public static readonly DateTime DateOfBirth1 = new(1994, 5, 20);
+            public const string CountryOfResidence1 = "BG";
             public static readonly DateTime ExpiryDate1 = new(2030, 11, 28);
             public const string Status1 = "Pending";
             public static readonly DateTime UploadedAt1 = new(2025, 11, 28);
