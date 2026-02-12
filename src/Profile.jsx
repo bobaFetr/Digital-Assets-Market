@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getProfile, logoutUser } from "./Services/auth";
 import Sidebar from "./Components/Sidebar";
+
 export default function Profile() {
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState("");
@@ -99,6 +100,25 @@ export default function Profile() {
           >
             Logout
           </button>
+        </div>
+
+        {/* Account Options */}
+        <div style={{ background: "#1a1d2e", padding: "20px", borderRadius: "12px", marginTop: "30px" }}>
+          <h3>Account Options</h3>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px", marginTop: "15px" }}>
+            <button>Security Settings</button>
+            <button>Two-Factor Authentication</button>
+            <button>Change Password</button>
+            <button>Identity Verification (KYC)</button>
+            <button>Device Management</button>
+            <button>API Management</button>
+            <button>Payment Methods</button>
+            <button>Withdrawal Addresses</button>
+            <button>Notifications</button>
+            <button>Preferences</button>
+            <button>Linked Accounts</button>
+            <button>Referral Program</button>
+          </div>
         </div>
 
         {/* Settings Section */}
