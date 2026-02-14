@@ -163,7 +163,18 @@ namespace NetServer.Data.Seeding.Constants
             public static readonly DateTime Timestamp1 = new(2025, 12, 5);
         }
 
-
+        //13
+        public static class FAQConstants
+        {
+            public static readonly Guid Faq1Id = Guid.Parse("1a2b3c4d-5e6f-7890-abcd-ef1234567890");
+            public const string Question1 = "How to create an account?";
+            public const string Answer1 = "To create an account, click on the Sign Up button and fill in the required information.";
+            public static readonly DateTime CreatedAt1 = new(2025, 11, 28);
+            public static readonly DateTime UpdatedAt1 = new(2025, 11, 29);
+            public static readonly Guid CategoryId1 = Guid.Parse("12345678-90ab-cdef-1234-567890abcdef");
+            public static readonly Guid AuthorId1 = DataSeedingConstants.UserConstants.User1Id;
+            public static readonly DateTime PublishedAt1 = new(2025, 11, 30);
+        }
 
         
 

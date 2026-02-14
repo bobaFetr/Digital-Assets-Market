@@ -33,9 +33,11 @@ namespace NetServer.Data
         public DbSet<BlockchainEvent> BlockchainEvents { get; set; } = null!;
         public DbSet<FeeTable> FeeTables { get; set; } = null!;
         public DbSet<Referral> Referrals { get; set; } = null!;
+
+        public DbSet<FAQ> FAQs { get; set; } = null!;
         // public DbSet<ChatTable> Messages { get; set; } = null!;
         // public DbSet<NewsTable> News { get; set; } = null!;
-        // public DbSet<FAQTable> FAQs { get; set; } = null!;
+         
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -45,7 +47,7 @@ namespace NetServer.Data
             // Apply IEntityTypeConfiguration<T> implementations
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
-            // Example explicit keys
+            
 
             modelBuilder.Entity<User>().HasKey(u => u.Id);
             modelBuilder.Entity<WalletTable>().HasKey(w => w.WalletID);
@@ -133,6 +135,13 @@ namespace NetServer.Data
                 .HasOne(o => o.FeeTable)
                 .WithMany(f => f.Orders)
                 .HasForeignKey(o => o.FeeTableId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+             modelBuilder.Entity<FAQ>()
+                .HasOne<User>()
+                .WithMany()
+                .HasForeignKey(f => f.AuthorId)
                 .OnDelete(DeleteBehavior.Restrict);
             // modelBuilder.Entity<TradesTable>()
             //     .HasOne(t => t.BuyOrder)
