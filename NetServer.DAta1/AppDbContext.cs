@@ -143,6 +143,35 @@ namespace NetServer.Data
                 .WithMany()
                 .HasForeignKey(f => f.AuthorId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<NewsTable>()
+                .HasOne<User>()
+                .WithMany()
+                .HasForeignKey(n => n.Author)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<NewsTable>()
+                .HasOne<User>()
+                .WithMany()
+                .HasForeignKey(n => n.CreatedBy)
+                .OnDelete(DeleteBehavior.Restrict);
+
+                modelBuilder.Entity<NewsTable>()
+                .HasOne<User>()
+                .WithMany()
+                .HasForeignKey(n => n.EditedBy)
+                .OnDelete(DeleteBehavior.Restrict);
+                //updated, deleted
+
+                modelBuilder.Entity<NewsTable>()
+                .HasOne<User>()
+                .WithMany()
+                .HasForeignKey(n => n.DeletedBy)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // UpdatedAt and PublishedAt are timestamps, not user foreign keys.
+
+                
             // modelBuilder.Entity<TradesTable>()
             //     .HasOne(t => t.BuyOrder)
             //     .WithMany(o => o.TradesAsBuyOrder)

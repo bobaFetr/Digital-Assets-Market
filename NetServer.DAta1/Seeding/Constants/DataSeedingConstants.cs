@@ -180,20 +180,23 @@ namespace NetServer.Data.Seeding.Constants
 
 
         //14
-        // public static class NewsConstants
-        // {
-        //     public const string News1Id = "n1o2p3q4-r5s6-7890-abcd-ef1234567890";
-        //     public const string Title1 = "Exchange Launches New Trading Pairs";
-        //     public const string Content1 = "We are excited to announce the launch of new trading pairs on our exchange...";
-        //     public const string Author1 = "Admin";
-        //     public static readonly DateTime PublishedAt1 = new(2025, 11, 28);
-        //     public const int CategoryId1 = 1;
-        //     public const string CreatedBy1 = "Admin";
-        //     public const string EditedBy1 = "Editor";
-        //     public static readonly DateTime EditedOn1 = new(2025, 11, 29);
-        //     public const string DeletedBy1 = "Moderator";
-        //     public static readonly DateTime DeletedOn1 = new(2025, 12, 1);
-        // }
+        public static class NewsConstants
+        {
+            public static readonly Guid News1Id = Guid.Parse("1a2b3c4d-5e6f-7890-abcd-ef1234567890");
+            public const string Title1 = "New Feature Release: Margin Trading";
+            public const string Content1 = "We are excited to announce the release of margin trading on our platform. Users can now trade with leverage up to 5x on selected pairs.";
+            public static readonly Guid Author = UserConstants.User1Id;
+            public static readonly DateTime PublishedAt1 = new(2025, 11, 28);
+
+            public static readonly DateTime CreatedAt1 = new(2025, 11, 28);
+            public static readonly Guid CreatedBy = UserConstants.User1Id;
+            public static readonly Guid EditedBy = UserConstants.User1Id;
+            public static readonly DateTime EditedOn = new(2025, 11, 29);
+            public static readonly Guid DeletedBy = UserConstants.User1Id;
+            public static readonly DateTime DeletedOn = new(2025, 11, 30);
+            public static readonly DateTime UpdatedAt1 = new(2025, 11, 29); 
+            
+        }
 
 
         
