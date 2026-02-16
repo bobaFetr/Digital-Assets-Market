@@ -1,0 +1,126 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Lenovo\\Desktop\\diplomna\\dam\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{DD978FD3-958F-5B8E-A66C-0A90E88F4496}|NetServer\\NetServer.csproj|c:\\users\\lenovo\\desktop\\diplomna\\dam\\netserver\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{DD978FD3-958F-5B8E-A66C-0A90E88F4496}|NetServer\\NetServer.csproj|solutionrelative:netserver\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{82546D0D-722D-4A29-A70E-D33C195E840A}|NetServer.Data\\NetServer.Data.csproj|c:\\users\\lenovo\\desktop\\diplomna\\dam\\netserver.data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{82546D0D-722D-4A29-A70E-D33C195E840A}|NetServer.Data\\NetServer.Data.csproj|solutionrelative:netserver.data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{82546D0D-722D-4A29-A70E-D33C195E840A}|NetServer.Data\\NetServer.Data.csproj|c:\\users\\lenovo\\desktop\\diplomna\\dam\\netserver.data\\seeding\\1. userseeding.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{82546D0D-722D-4A29-A70E-D33C195E840A}|NetServer.Data\\NetServer.Data.csproj|solutionrelative:netserver.data\\seeding\\1. userseeding.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{82546D0D-722D-4A29-A70E-D33C195E840A}|NetServer.Data\\NetServer.Data.csproj|c:\\users\\lenovo\\desktop\\diplomna\\dam\\netserver.data\\seeding\\mapping seeders\\3.ordermappingxxxx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{82546D0D-722D-4A29-A70E-D33C195E840A}|NetServer.Data\\NetServer.Data.csproj|solutionrelative:netserver.data\\seeding\\mapping seeders\\3.ordermappingxxxx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{82546D0D-722D-4A29-A70E-D33C195E840A}|NetServer.Data\\NetServer.Data.csproj|c:\\users\\lenovo\\desktop\\diplomna\\dam\\netserver.data\\seeding\\mapping seeders\\4. tradesmapping.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{82546D0D-722D-4A29-A70E-D33C195E840A}|NetServer.Data\\NetServer.Data.csproj|solutionrelative:netserver.data\\seeding\\mapping seeders\\4. tradesmapping.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{82546D0D-722D-4A29-A70E-D33C195E840A}|NetServer.Data\\NetServer.Data.csproj|c:\\users\\lenovo\\desktop\\diplomna\\dam\\netserver.data\\migrations\\20251201124229_initial.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{82546D0D-722D-4A29-A70E-D33C195E840A}|NetServer.Data\\NetServer.Data.csproj|solutionrelative:netserver.data\\migrations\\20251201124229_initial.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 5,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "AppDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\Lenovo\\Desktop\\diplomna\\dam\\NetServer.Data\\AppDbContext.cs",
+              "RelativeDocumentMoniker": "NetServer.Data\\AppDbContext.cs",
+              "ToolTip": "C:\\Users\\Lenovo\\Desktop\\diplomna\\dam\\NetServer.Data\\AppDbContext.cs",
+              "RelativeToolTip": "NetServer.Data\\AppDbContext.cs",
+              "ViewState": "AgIAAEoAAAAAAAAAAAAIwFkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-19T07:43:35.936Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "4. TradesMapping.cs",
+              "DocumentMoniker": "C:\\Users\\Lenovo\\Desktop\\diplomna\\dam\\NetServer.Data\\Seeding\\Mapping seeders\\4. TradesMapping.cs",
+              "RelativeDocumentMoniker": "NetServer.Data\\Seeding\\Mapping seeders\\4. TradesMapping.cs",
+              "ToolTip": "C:\\Users\\Lenovo\\Desktop\\diplomna\\dam\\NetServer.Data\\Seeding\\Mapping seeders\\4. TradesMapping.cs",
+              "RelativeToolTip": "NetServer.Data\\Seeding\\Mapping seeders\\4. TradesMapping.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-07T16:16:16.664Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "3.OrderMappingXXXX.cs",
+              "DocumentMoniker": "C:\\Users\\Lenovo\\Desktop\\diplomna\\dam\\NetServer.Data\\Seeding\\Mapping seeders\\3.OrderMappingXXXX.cs",
+              "RelativeDocumentMoniker": "NetServer.Data\\Seeding\\Mapping seeders\\3.OrderMappingXXXX.cs",
+              "ToolTip": "C:\\Users\\Lenovo\\Desktop\\diplomna\\dam\\NetServer.Data\\Seeding\\Mapping seeders\\3.OrderMappingXXXX.cs",
+              "RelativeToolTip": "NetServer.Data\\Seeding\\Mapping seeders\\3.OrderMappingXXXX.cs",
+              "ViewState": "AgIAABIAAAAAAAAAAAAqwCIAAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-07T15:27:22.353Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "1. UserSeeding.cs",
+              "DocumentMoniker": "C:\\Users\\Lenovo\\Desktop\\diplomna\\dam\\NetServer.Data\\Seeding\\1. UserSeeding.cs",
+              "RelativeDocumentMoniker": "NetServer.Data\\Seeding\\1. UserSeeding.cs",
+              "ToolTip": "C:\\Users\\Lenovo\\Desktop\\diplomna\\dam\\NetServer.Data\\Seeding\\1. UserSeeding.cs",
+              "RelativeToolTip": "NetServer.Data\\Seeding\\1. UserSeeding.cs",
+              "ViewState": "AgIAADkAAAAAAAAAAAAQwEwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-01T14:21:37.015Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "20251201124229_Initial.cs",
+              "DocumentMoniker": "C:\\Users\\Lenovo\\Desktop\\diplomna\\dam\\NetServer.Data\\Migrations\\20251201124229_Initial.cs",
+              "RelativeDocumentMoniker": "NetServer.Data\\Migrations\\20251201124229_Initial.cs",
+              "ToolTip": "C:\\Users\\Lenovo\\Desktop\\diplomna\\dam\\NetServer.Data\\Migrations\\20251201124229_Initial.cs",
+              "RelativeToolTip": "NetServer.Data\\Migrations\\20251201124229_Initial.cs",
+              "ViewState": "AgIAAN0BAAAAAAAAAAAAwO0BAAA1AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-01T12:42:29.895Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Lenovo\\Desktop\\diplomna\\dam\\NetServer\\Program.cs",
+              "RelativeDocumentMoniker": "NetServer\\Program.cs",
+              "ToolTip": "C:\\Users\\Lenovo\\Desktop\\diplomna\\dam\\NetServer\\Program.cs",
+              "RelativeToolTip": "NetServer\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAGAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-01T12:40:23.411Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{56df62a4-05a3-4e5b-aa1a-99371ccfb997}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
