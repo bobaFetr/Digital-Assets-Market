@@ -6,7 +6,7 @@ using NetServer.Data.Models;
 
 [ApiController]
 [Route("api/news")]
-public class NewsController : ControllerBase
+public class NewsController : ApiControllerBase
 {
     private readonly AppDbContext _db;
 
@@ -42,6 +42,48 @@ public class NewsController : ControllerBase
         }
 
         return Ok(ToDto(item));
+    }
+
+    [HttpPost]
+    [Authorize]
+    public async Task<IActionResult> CreateNews([FromBody] CreateNewsRequest request)
+    {
+        if (!TryGetUserId(out var currentUserId))
+        {
+            return Unauthorized();
+        }
+
+        if (!IsAdmin())
+        {
+            return Forbid();
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Title) || string.IsNullOrWhiteSpace(request.Content))
+        {
+            return BadRequest("Title and content are required.");
+        }
+
+        var now = DateTime.UtcNow;
+        var news = new NewsTable
+        {
+            NewsId = Guid.NewGuid(),
+            Title = request.Title.Trim(),
+            Content = request.Content.Trim(),
+            Author = currentUserId,
+            PublishedAt = request.PublishedAt ?? now,
+            CreatedAt = now,
+            CreatedBy = currentUserId,
+            EditedBy = currentUserId,
+            EditedOn = now,
+            DeletedBy = currentUserId,
+            DeletedOn = DateTime.MinValue,
+            UpdatedAt = now
+        };
+
+        _db.News.Add(news);
+        await _db.SaveChangesAsync();
+
+        return CreatedAtAction(nameof(GetNewsItem), new { id = news.NewsId }, ToDto(news));
     }
 
     private static NewsDto ToDto(NewsTable news)

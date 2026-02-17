@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { NavLink, Routes, Route } from "react-router-dom";
 import "./Admin.css";
 import UserSidebar from "../Components/Sidebar";
+import { getToken } from "../Services/auth";
+
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5149";
 
 const quickMetrics = [
   { label: "24h Volume", value: "$48.2M", trend: "+12.4%", tone: "success" },
@@ -336,29 +339,139 @@ const Users = () => (
   </div>
 );
 
-const News = () => (
-  <div className="admin-page">
-    <div className="page-header">
-      <h2>Newsroom</h2>
-      <button className="btn btn-primary">Create Brief</button>
-    </div>
-    <div className="panel">
-      <div className="panel-header">
-        <h3>Announcements</h3>
-        <button className="btn btn-ghost">Publish</button>
+const News = () => {
+  const [items, setItems] = useState([]);
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [publishedAt, setPublishedAt] = useState("");
+  const [error, setError] = useState("");
+  const [status, setStatus] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    let isActive = true;
+    const loadNews = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/news`);
+        if (!res.ok) {
+          throw new Error(await res.text());
+        }
+        const data = await res.json();
+        if (!isActive) return;
+        setItems(Array.isArray(data) ? data : []);
+      } catch (fetchError) {
+        if (!isActive) return;
+        setError(fetchError?.message || "Failed to load news.");
+      }
+    };
+
+    loadNews();
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError("");
+    setStatus("");
+
+    if (!title.trim() || !content.trim()) {
+      setError("Title and content are required.");
+      return;
+    }
+
+    const token = getToken();
+    if (!token) {
+      setError("Please sign in as admin to add news.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        title: title.trim(),
+        content: content.trim(),
+        publishedAt: publishedAt ? new Date(publishedAt).toISOString() : null,
+      };
+
+      const res = await fetch(`${API_BASE}/api/news`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        throw new Error(await res.text());
+      }
+
+      const created = await res.json();
+      setItems((prev) => [created, ...prev]);
+      setTitle("");
+      setContent("");
+      setPublishedAt("");
+      setStatus("News item published.");
+    } catch (submitError) {
+      setError(submitError?.message || "Failed to publish news.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="admin-page">
+      <div className="page-header">
+        <h2>Newsroom</h2>
       </div>
-      <div className="cards-grid">
-        {announcements.map((item) => (
-          <article key={item.title} className="info-card">
-            <h4>{item.title}</h4>
-            <p>{item.detail}</p>
-            <button className="btn btn-ghost">Edit</button>
-          </article>
-        ))}
+      <div className="panel" style={{ marginBottom: "24px" }}>
+        <div className="panel-header">
+          <h3>Create news</h3>
+        </div>
+        {error && <div className="login-alert" style={{ marginBottom: "12px" }}>{error}</div>}
+        {status && <div className="login-alert" style={{ marginBottom: "12px", color: "#4dff88" }}>{status}</div>}
+        <form onSubmit={handleSubmit} className="login-form">
+          <label>
+            Title
+            <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Headline" />
+          </label>
+          <label>
+            Content
+            <textarea
+              value={content}
+              onChange={(event) => setContent(event.target.value)}
+              placeholder="Write the news update..."
+              rows={4}
+            />
+          </label>
+          <label>
+            Publish date (optional)
+            <input type="datetime-local" value={publishedAt} onChange={(event) => setPublishedAt(event.target.value)} />
+          </label>
+          <button className="btn btn-primary" type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Publishing..." : "Publish news"}
+          </button>
+        </form>
+      </div>
+      <div className="panel">
+        <div className="panel-header">
+          <h3>Published news</h3>
+        </div>
+        <div className="cards-grid">
+          {items.map((item) => (
+            <article key={item.newsId || item.title} className="info-card">
+              <h4>{item.title}</h4>
+              <p>{item.content}</p>
+              <span className="time">{formatAdminDate(item.publishedAt)}</span>
+            </article>
+          ))}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const Announcements = () => (
   <div className="admin-page">
@@ -595,3 +708,10 @@ export default function Admin() {
     </div>
   );
 }
+
+const formatAdminDate = (value) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString();
+};
