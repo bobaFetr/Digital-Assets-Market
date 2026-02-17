@@ -195,6 +195,33 @@ namespace NetServer.Data.Seeding.Constants
             public static readonly Guid DeletedBy = UserConstants.User1Id;
             public static readonly DateTime DeletedOn = new(2025, 11, 30);
             public static readonly DateTime UpdatedAt1 = new(2025, 11, 29); 
+
+            public static readonly Guid News2Id = Guid.Parse("2b3c4d5e-6f70-8910-abcd-ef1234567890");
+            public const string Title2 = "API Upgrade: Faster Order Book";
+            public const string Content2 = "Our trading API now delivers order book snapshots with lower latency and improved depth support for BTCUSD, ETHUSD, and BNBUSD.";
+            public static readonly DateTime PublishedAt2 = new(2025, 12, 2);
+            public static readonly DateTime CreatedAt2 = new(2025, 12, 2);
+            public static readonly DateTime EditedOn2 = new(2025, 12, 3);
+            public static readonly DateTime DeletedOn2 = new(2025, 12, 4);
+            public static readonly DateTime UpdatedAt2 = new(2025, 12, 3);
+
+            public static readonly Guid News3Id = Guid.Parse("3c4d5e6f-7081-9210-abcd-ef1234567890");
+            public const string Title3 = "Security Notice: New Withdrawal Safeguards";
+            public const string Content3 = "We added device-aware withdrawal checks and optional 2FA prompts for high-risk activity to better protect your account.";
+            public static readonly DateTime PublishedAt3 = new(2025, 12, 8);
+            public static readonly DateTime CreatedAt3 = new(2025, 12, 8);
+            public static readonly DateTime EditedOn3 = new(2025, 12, 9);
+            public static readonly DateTime DeletedOn3 = new(2025, 12, 10);
+            public static readonly DateTime UpdatedAt3 = new(2025, 12, 9);
+
+            public static readonly Guid News4Id = Guid.Parse("4d5e6f70-8192-a210-abcd-ef1234567890");
+            public const string Title4 = "New Listing: ALGO-EUR Spot";
+            public const string Content4 = "ALGO-EUR spot trading is now live. Review the listing details and start trading with tighter spreads.";
+            public static readonly DateTime PublishedAt4 = new(2025, 12, 15);
+            public static readonly DateTime CreatedAt4 = new(2025, 12, 15);
+            public static readonly DateTime EditedOn4 = new(2025, 12, 16);
+            public static readonly DateTime DeletedOn4 = new(2025, 12, 17);
+            public static readonly DateTime UpdatedAt4 = new(2025, 12, 16);
             
         }
 

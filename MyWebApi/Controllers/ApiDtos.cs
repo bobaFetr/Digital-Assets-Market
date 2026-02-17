@@ -309,3 +309,13 @@ public class UpdateReferralRequest
 {
     public decimal? BonusAmount { get; set; }
 }
+
+public class NewsDto
+{
+    public Guid NewsId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string Content { get; set; } = string.Empty;
+    public Guid Author { get; set; }
+    public DateTime PublishedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+}

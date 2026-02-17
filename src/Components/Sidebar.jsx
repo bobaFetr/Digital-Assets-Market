@@ -45,11 +45,6 @@ export default function Sidebar() {
             Admin Panel
           </Link>
         )}
-        {isAuthenticated && (
-          <Link to="/VerifyIdentityPage" className="nav-item nav-item-link" style={{ marginBottom: "12px", color: "#7f8cff" }}>
-            Verify Identity
-          </Link>
-        )}
         {NAV_ITEMS.map((item) => {
           if (item === "Profile Settings") {
             return (
@@ -150,7 +145,6 @@ export default function Sidebar() {
                 </div>
                 {activeDropdown === "Temp" && (
                   <div className="nav-dropdown-menu">
-                    <Link to="/VerifyIdentityPage" className="nav-dropdown-item">VerifyIdentity</Link>
                     <Link to="/VerificationEmailPage" className="nav-dropdown-item">Verify Email</Link>
                     <Link to="/SentSMSToNumberPage" className="nav-dropdown-item">Sent SMS</Link>
                     {isAdmin && (

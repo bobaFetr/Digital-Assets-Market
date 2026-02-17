@@ -1,14 +1,60 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Sidebar from "./Components/Sidebar";
+import { getToken } from "./Services/auth";
+
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5149";
 
 export default function News() {
-    // Mock data for news articles
-    const newsArticles = [
-        { id: 1, title: "Bitcoin Hits New High", category: "Market", time: "2h ago", summary: "The leading cryptocurrency has surpassed key resistance levels..." },
-        { id: 2, title: "Ethereum 2.0 Update", category: "Tech", time: "5h ago", summary: "Developers announce new scaling solutions for the network..." },
-        { id: 3, title: "Global Regulation News", category: "Policy", time: "1d ago", summary: "New frameworks are being established for digital assets worldwide..." },
-        { id: 4, title: "AI in DeFi", category: "Innovation", time: "3d ago", summary: "How artificial intelligence is reshaping automated market makers..." }
-    ];
+    const [articles, setArticles] = useState([]);
+    const [query, setQuery] = useState("");
+    const [error, setError] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        let isActive = true;
+        const loadNews = async () => {
+            setIsLoading(true);
+            setError("");
+            try {
+                const token = getToken();
+                const res = await fetch(`${API_BASE}/api/news`, {
+                    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+                });
+
+                if (!res.ok) {
+                    throw new Error(await res.text());
+                }
+
+                const data = await res.json();
+                if (!isActive) return;
+                setArticles(Array.isArray(data) ? data : []);
+            } catch (fetchError) {
+                if (!isActive) return;
+                setError(fetchError?.message || "Failed to load news.");
+                setArticles([]);
+            } finally {
+                if (!isActive) return;
+                setIsLoading(false);
+            }
+        };
+
+        loadNews();
+        return () => {
+            isActive = false;
+        };
+    }, []);
+
+    const filteredArticles = useMemo(() => {
+        if (!query.trim()) return articles;
+        const needle = query.toLowerCase();
+        return articles.filter((article) =>
+            String(article.title || "").toLowerCase().includes(needle) ||
+            String(article.content || "").toLowerCase().includes(needle)
+        );
+    }, [articles, query]);
+
+    const trendingArticles = filteredArticles.slice(0, 6);
+    const recentUpdates = filteredArticles.slice(0, 2);
 
     return (
         <div className="crypto-layout">
@@ -22,26 +68,50 @@ export default function News() {
                     <h1 style={{ color: '#EBA667', textAlign: 'left', fontSize: '2.5rem' }}>Crypto News</h1>
                     <div className="search-container">
                         <span className="search-icon">🔍</span>
-                        <input type="text" placeholder="Search latest updates..." className="top-search-input" />
+                        <input
+                            type="text"
+                            placeholder="Search latest updates..."
+                            className="top-search-input"
+                            value={query}
+                            onChange={(event) => setQuery(event.target.value)}
+                        />
                     </div>
                 </header>
 
                 <section>
                     <h2 className="header-greeting">Trending Stories</h2>
 
+                    {error && (
+                        <div className="login-alert" style={{ marginBottom: '16px' }}>
+                            {error}
+                        </div>
+                    )}
+
+                    {isLoading && (
+                        <div style={{ color: '#9aa3ff', fontSize: '13px', marginBottom: '16px' }}>
+                            Loading news...
+                        </div>
+                    )}
+
+                    {!isLoading && !error && trendingArticles.length === 0 && (
+                        <div style={{ color: '#9aa3ff', fontSize: '13px', marginBottom: '16px' }}>
+                            No news found.
+                        </div>
+                    )}
+
                     {/* Using your cards-grid class for the news layout */}
                     <div className="cards-grid">
-                        {newsArticles.map((article) => (
-                            <div key={article.id} className="coin-card" style={{ minHeight: '200px', cursor: 'pointer' }}>
+                        {trendingArticles.map((article) => (
+                            <div key={article.newsId || article.title} className="coin-card" style={{ minHeight: '200px', cursor: 'pointer' }}>
                                 <div className="coin-header">
-                                    <span className="reward-label" style={{ color: '#7f8cff' }}>{article.category}</span>
+                                    <span className="reward-label" style={{ color: '#7f8cff' }}>Update</span>
                                     <h4>{article.title}</h4>
                                 </div>
                                 <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', margin: '15px 0' }}>
-                                    {article.summary}
+                                    {truncateText(article.content, 140)}
                                 </p>
                                 <div className="coin-rate" style={{ fontSize: '12px', color: '#4dff88' }}>
-                                    {article.time}
+                                    {formatRelativeTime(article.publishedAt)}
                                 </div>
                             </div>
                         ))}
@@ -52,12 +122,11 @@ export default function News() {
                 <section style={{ marginTop: '40px' }}>
                     <h3>Recent Updates</h3>
                     <ul style={{ padding: 0 }}>
-                        <li style={{ borderRadius: '8px', marginBottom: '10px' }}>
-                            <strong>Market Alert:</strong> Volatility expected in the next 24 hours due to CPI data.
-                        </li>
-                        <li style={{ borderRadius: '8px', marginBottom: '10px' }}>
-                            <strong>New Listing:</strong> "Solana Ecosystem" tokens added to favorites.
-                        </li>
+                        {recentUpdates.map((article) => (
+                            <li key={article.newsId || article.title} style={{ borderRadius: '8px', marginBottom: '10px' }}>
+                                <strong>{article.title}:</strong> {truncateText(article.content, 120)}
+                            </li>
+                        ))}
                     </ul>
                 </section>
             </main>
@@ -86,3 +155,23 @@ export default function News() {
         </div>
     );
 }
+
+const truncateText = (value, maxLength) => {
+    const text = String(value || "");
+    if (text.length <= maxLength) return text;
+    return `${text.slice(0, maxLength).trim()}...`;
+};
+
+const formatRelativeTime = (timestamp) => {
+    if (!timestamp) return "";
+    const date = new Date(timestamp);
+    if (Number.isNaN(date.getTime())) return "";
+    const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+    if (seconds < 60) return "Just now";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
+};

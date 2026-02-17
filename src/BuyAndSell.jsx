@@ -22,6 +22,7 @@ export default function BuyAndSell() {
   const [chartRefreshTick, setChartRefreshTick] = useState(0);
   const [orderBook, setOrderBook] = useState([]);
   const [orderBookError, setOrderBookError] = useState("");
+  const [marketCards, setMarketCards] = useState([]);
 
   const symbolMap = {
     USD: {
@@ -41,6 +42,12 @@ export default function BuyAndSell() {
   const pairSymbol = mappedSymbol;
   const chartSymbol = mappedSymbol;
   const balanceCurrency = orderType === "Buy" ? toCurrency : fromCurrency;
+  const cardCoins = [
+    { name: "Ethereum", code: "ETH" },
+    { name: "Bitcoin", code: "BTC" },
+    { name: "Binance Coin", code: "BNB" },
+    { name: "Algorand", code: "ALGO" },
+  ];
 
   useEffect(() => {
     const loadWallets = async () => {
@@ -161,6 +168,67 @@ export default function BuyAndSell() {
     loadOrderBook();
   }, [mappedSymbol, chartRefreshTick]);
 
+  useEffect(() => {
+    const loadMarketCards = async () => {
+      const token = getToken();
+      if (!token) {
+        setMarketCards(cardCoins.map((coin) => ({ ...coin, rateText: "--", rateValue: null })));
+        return;
+      }
+
+      try {
+        const results = await Promise.all(
+          cardCoins.map(async (coin) => {
+            const symbol = symbolMap[toCurrency]?.[coin.code];
+            if (!symbol) {
+              return { ...coin, rateText: "--", rateValue: null };
+            }
+
+            const res = await fetch(`${API_BASE}/api/trades?symbol=${symbol}`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+
+            if (!res.ok) {
+              throw new Error(await res.text());
+            }
+
+            const data = await res.json();
+            if (!Array.isArray(data) || data.length < 2) {
+              return { ...coin, rateText: "--", rateValue: null };
+            }
+
+            const sorted = [...data].sort(
+              (a, b) => new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime()
+            );
+            const latest = Number(sorted[sorted.length - 1]?.price);
+            const previous = Number(sorted[sorted.length - 2]?.price);
+
+            if (!previous || !latest) {
+              return { ...coin, rateText: "--", rateValue: null };
+            }
+
+            const changePct = ((latest - previous) / previous) * 100;
+            const sign = changePct >= 0 ? "+" : "";
+            return {
+              ...coin,
+              rateText: `${sign}${changePct.toFixed(2)}%`,
+              rateValue: changePct,
+            };
+          })
+        );
+
+        setMarketCards(results);
+      } catch (error) {
+        console.error("Error loading market cards:", error);
+        setMarketCards(cardCoins.map((coin) => ({ ...coin, rateText: "--", rateValue: null })));
+      }
+    };
+
+    loadMarketCards();
+  }, [toCurrency]);
+
   const handleConfirmExchange = async () => {
     setStatusMessage("");
 
@@ -227,19 +295,16 @@ export default function BuyAndSell() {
         </div>
 
         <div className="cards-grid" style={{ marginTop: "18px" }}>
-          {[
-            { name: "Ethereum", code: "ETH", rate: "+12.34%" },
-            { name: "Bitcoin", code: "BTC", rate: "+12.34%" },
-            { name: "Bitcoin Cash", code: "BTH", rate: "+11.34%" },
-            { name: "Algorand", code: "ALGO", rate: "-12.34%" },
-          ].map((coin) => (
+          {marketCards.map((coin) => (
             <div key={coin.code} className="coin-card">
               <div className="coin-header">
                 <h4>{coin.name} ({coin.code})</h4>
               </div>
               <p className="reward-label">Reward Rate</p>
-              <h3 className={`coin-rate ${coin.rate.startsWith("-") ? "rate-down" : "rate-up"}`}>
-                {coin.rate}
+              <h3
+                className={`coin-rate ${coin.rateValue == null || coin.rateValue >= 0 ? "rate-up" : "rate-down"}`}
+              >
+                {coin.rateText}
               </h3>
             </div>
           ))}

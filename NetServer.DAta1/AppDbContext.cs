@@ -35,8 +35,8 @@ namespace NetServer.Data
         public DbSet<Referral> Referrals { get; set; } = null!;
 
         public DbSet<FAQ> FAQs { get; set; } = null!;
+        public DbSet<NewsTable> News { get; set; } = null!;
         // public DbSet<ChatTable> Messages { get; set; } = null!;
-        // public DbSet<NewsTable> News { get; set; } = null!;
          
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -143,6 +143,9 @@ namespace NetServer.Data
                 .WithMany()
                 .HasForeignKey(f => f.AuthorId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<NewsTable>()
+                .ToTable("NewsTable");
 
             modelBuilder.Entity<NewsTable>()
                 .HasOne<User>()
