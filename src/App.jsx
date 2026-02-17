@@ -23,12 +23,14 @@ import Admin from "./ADMIN/AdminMainPage.jsx";
 
 import Education from "./Education.jsx";
 import News from "./News.jsx";
+import NewsDetail from "./NewsDetail.jsx";
 import RugPull from "./RugPull.jsx";
 //////// Error page for testing 404 handling
 import ErorPage1 from "./ErorPage1.jsx";
 function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [theme, setTheme] = useState("dark");
+  const navigate = useNavigate();
 
   const toggleTheme = () => {
     setTheme((prevTheme) => (prevTheme === "dark" ? "light" : "dark"));
@@ -49,6 +51,15 @@ function Home() {
               placeholder="Search assets, markets, or news..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(event) => {
+                if (event.key !== "Enter") return;
+                const trimmed = searchQuery.trim();
+                if (!trimmed) {
+                  navigate("/news");
+                  return;
+                }
+                navigate(`/news?q=${encodeURIComponent(trimmed)}`);
+              }}
               className="top-search-input"
             />
           </div>
@@ -125,6 +136,7 @@ export default function App() {
         <Route path="/BCrypto" element={<BCrypto assets={[]} />} />
 
         <Route path="/news" element={<News />} />
+        <Route path="/news/:id" element={<NewsDetail />} />
         <Route path="/education" element={<Education />} />
         <Route path="/rug-pull" element={<RugPull />} />
         ///////////////

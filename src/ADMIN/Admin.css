@@ -352,6 +352,20 @@
   justify-self: end;
 }
 
+.user-table .table-row {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.user-table .table-row span:last-child {
+  justify-self: end;
+}
+
+.empty-row span {
+  grid-column: 1 / -1;
+  text-align: center;
+  justify-self: center;
+}
+
 .wide-panel .table-row {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
@@ -367,6 +381,47 @@
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.filter-active {
+  background: linear-gradient(120deg, rgba(52, 215, 255, 0.28), rgba(138, 247, 255, 0.08));
+  box-shadow: inset 0 0 0 1px rgba(138, 247, 255, 0.35);
+}
+
+.user-actions {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(160px, 220px) 1fr;
+  align-items: center;
+}
+
+.user-action-form {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.user-action-form input {
+  min-width: 220px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--admin-border);
+  background: rgba(10, 12, 22, 0.8);
+  color: var(--admin-text);
+  outline: none;
+}
+
+.user-action-status {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.empty-row {
+  justify-content: center;
+  color: rgba(244, 245, 255, 0.6);
 }
 
 .cards-grid {

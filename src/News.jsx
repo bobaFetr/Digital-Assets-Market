@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import Sidebar from "./Components/Sidebar";
 import { getToken } from "./Services/auth";
 
@@ -6,7 +7,8 @@ const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5149";
 
 export default function News() {
     const [articles, setArticles] = useState([]);
-    const [query, setQuery] = useState("");
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [query, setQuery] = useState(() => searchParams.get("q") || "");
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
@@ -44,6 +46,11 @@ export default function News() {
         };
     }, []);
 
+    useEffect(() => {
+        const currentQuery = searchParams.get("q") || "";
+        setQuery(currentQuery);
+    }, [searchParams]);
+
     const filteredArticles = useMemo(() => {
         if (!query.trim()) return articles;
         const needle = query.toLowerCase();
@@ -73,7 +80,17 @@ export default function News() {
                             placeholder="Search latest updates..."
                             className="top-search-input"
                             value={query}
-                            onChange={(event) => setQuery(event.target.value)}
+                            onChange={(event) => {
+                                const nextValue = event.target.value;
+                                setQuery(nextValue);
+                                const nextParams = new URLSearchParams(searchParams);
+                                if (nextValue.trim()) {
+                                    nextParams.set("q", nextValue);
+                                } else {
+                                    nextParams.delete("q");
+                                }
+                                setSearchParams(nextParams, { replace: true });
+                            }}
                         />
                     </div>
                 </header>
@@ -101,20 +118,40 @@ export default function News() {
 
                     {/* Using your cards-grid class for the news layout */}
                     <div className="cards-grid">
-                        {trendingArticles.map((article) => (
-                            <div key={article.newsId || article.title} className="coin-card" style={{ minHeight: '200px', cursor: 'pointer' }}>
-                                <div className="coin-header">
-                                    <span className="reward-label" style={{ color: '#7f8cff' }}>Update</span>
-                                    <h4>{article.title}</h4>
+                        {trendingArticles.map((article) => {
+                            const card = (
+                                <div className="coin-card" style={{ minHeight: '200px', cursor: 'pointer' }}>
+                                    <div className="coin-header">
+                                        <span className="reward-label" style={{ color: '#7f8cff' }}>Update</span>
+                                        <h4>{article.title}</h4>
+                                    </div>
+                                    <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', margin: '15px 0' }}>
+                                        {truncateText(article.content, 140)}
+                                    </p>
+                                    <div className="coin-rate" style={{ fontSize: '12px', color: '#4dff88' }}>
+                                        {formatRelativeTime(article.publishedAt)}
+                                    </div>
                                 </div>
-                                <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', margin: '15px 0' }}>
-                                    {truncateText(article.content, 140)}
-                                </p>
-                                <div className="coin-rate" style={{ fontSize: '12px', color: '#4dff88' }}>
-                                    {formatRelativeTime(article.publishedAt)}
-                                </div>
-                            </div>
-                        ))}
+                            );
+
+                            if (!article.newsId) {
+                                return (
+                                    <div key={article.title}>
+                                        {card}
+                                    </div>
+                                );
+                            }
+
+                            return (
+                                <Link
+                                    key={article.newsId}
+                                    to={`/news/${article.newsId}`}
+                                    style={{ textDecoration: 'none', color: 'inherit' }}
+                                >
+                                    {card}
+                                </Link>
+                            );
+                        })}
                     </div>
                 </section>
 
@@ -124,7 +161,15 @@ export default function News() {
                     <ul style={{ padding: 0 }}>
                         {recentUpdates.map((article) => (
                             <li key={article.newsId || article.title} style={{ borderRadius: '8px', marginBottom: '10px' }}>
-                                <strong>{article.title}:</strong> {truncateText(article.content, 120)}
+                                {article.newsId ? (
+                                    <Link to={`/news/${article.newsId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                        <strong>{article.title}:</strong> {truncateText(article.content, 120)}
+                                    </Link>
+                                ) : (
+                                    <>
+                                        <strong>{article.title}:</strong> {truncateText(article.content, 120)}
+                                    </>
+                                )}
                             </li>
                         ))}
                     </ul>

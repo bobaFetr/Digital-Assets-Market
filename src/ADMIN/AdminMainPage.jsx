@@ -165,7 +165,7 @@ const Dashboard = () => (
           <h3>KYC Review Queue</h3>
           <button className="btn btn-ghost">Open queue</button>
         </div>
-        <div className="table">
+        <div className="table user-table">
           <div className="table-row table-head">
             <span>User</span>
             <span>Tier</span>
@@ -280,64 +280,218 @@ const Transactions = () => (
   </div>
 );
 
-const Users = () => (
-  <div className="admin-page">
-    <div className="page-header">
-      <h2>Users</h2>
-      <div className="inline-actions">
-        <button className="btn btn-ghost">Segments</button>
-        <button className="btn btn-primary">Invite VIP</button>
+const Users = () => {
+  const [users, setUsers] = useState([]);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [identifier, setIdentifier] = useState("");
+  const [error, setError] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [actionUserId, setActionUserId] = useState("");
+
+  const loadUsers = async (nextStatus = statusFilter) => {
+    const token = getToken();
+    if (!token) {
+      setError("Admin authentication required.");
+      return;
+    }
+
+    setIsLoading(true);
+    setError("");
+    try {
+      const query = nextStatus === "all" ? "" : `?status=${nextStatus}`;
+      const response = await fetch(`${API_BASE}/api/users${query}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      const data = await response.json();
+      setUsers(Array.isArray(data) ? data : []);
+    } catch (fetchError) {
+      setError(fetchError?.message || "Failed to load users.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadUsers(statusFilter);
+  }, [statusFilter]);
+
+  const resolveIdentifierPayload = (value) => {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      throw new Error("Provide a user id or email.");
+    }
+
+    if (trimmed.includes("@")) {
+      return { email: trimmed };
+    }
+
+    const guidPattern = /^[0-9a-fA-F-]{36}$/;
+    if (!guidPattern.test(trimmed)) {
+      throw new Error("Enter a valid GUID or email address.");
+    }
+
+    return { id: trimmed };
+  };
+
+  const runUserAction = async (action, value, directId = false) => {
+    const token = getToken();
+    if (!token) {
+      setError("Admin authentication required.");
+      return;
+    }
+
+    setError("");
+    setStatusMessage("");
+
+    try {
+      const payload = directId ? { id: value } : resolveIdentifierPayload(value);
+      const response = await fetch(`${API_BASE}/api/users/${action}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      setStatusMessage(`User ${action === "ban" ? "banned" : "unbanned"}.`);
+      setIdentifier("");
+      await loadUsers(statusFilter);
+    } catch (actionError) {
+      setError(actionError?.message || "Action failed.");
+    }
+  };
+
+  const handleRowAction = async (user) => {
+    setActionUserId(user.id);
+    await runUserAction(user.isBanned ? "unban" : "ban", user.id, true);
+    setActionUserId("");
+  };
+
+  const userCountLabel = statusFilter === "all" ? "Total" : statusFilter === "banned" ? "Banned" : "Active";
+
+  return (
+    <div className="admin-page">
+      <div className="page-header">
+        <h2>Users</h2>
+        <div className="inline-actions">
+          <button
+            className={`btn btn-ghost ${statusFilter === "active" ? "filter-active" : ""}`}
+            onClick={() => setStatusFilter("active")}
+          >
+            Active
+          </button>
+          <button
+            className={`btn btn-ghost ${statusFilter === "banned" ? "filter-active" : ""}`}
+            onClick={() => setStatusFilter("banned")}
+          >
+            Banned
+          </button>
+          <button
+            className={`btn btn-ghost ${statusFilter === "all" ? "filter-active" : ""}`}
+            onClick={() => setStatusFilter("all")}
+          >
+            All
+          </button>
+          <button className="btn btn-primary" onClick={() => loadUsers(statusFilter)}>
+            Refresh
+          </button>
+        </div>
       </div>
-    </div>
-    <div className="split-grid">
-      <article className="panel">
-        <div className="panel-header">
-          <h3>VIP Watchlist</h3>
-          <button className="btn btn-ghost">Assign RM</button>
+
+      <div className="panel user-actions">
+        <div>
+          <p className="label">{userCountLabel} users</p>
+          <h3>{users.length}</h3>
         </div>
-        <div className="activity-list">
-          {activityFeed.slice(0, 3).map((item) => (
-            <div key={item.title} className={`activity-card tone-${item.tone}`}>
-              <div>
-                <h4>{item.title}</h4>
-                <p>{item.meta}</p>
-              </div>
-              <span className="time">{item.time}</span>
-            </div>
-          ))}
-        </div>
-      </article>
-      <article className="panel">
+        <form
+          className="user-action-form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            runUserAction("ban", identifier);
+          }}
+        >
+          <input
+            type="text"
+            placeholder="User id or email"
+            value={identifier}
+            onChange={(event) => setIdentifier(event.target.value)}
+          />
+          <button className="btn btn-ghost" type="submit">
+            Ban
+          </button>
+          <button
+            className="btn btn-primary"
+            type="button"
+            onClick={() => runUserAction("unban", identifier)}
+          >
+            Unban
+          </button>
+        </form>
+        {(error || statusMessage) && (
+          <div className="user-action-status">
+            {error && <span className="badge danger">{error}</span>}
+            {!error && statusMessage && <span className="badge success">{statusMessage}</span>}
+          </div>
+        )}
+      </div>
+
+      <div className="panel">
         <div className="panel-header">
-          <h3>Risk Flags</h3>
-          <button className="btn btn-ghost">Review</button>
+          <h3>Directory</h3>
+          <span className="label">{isLoading ? "Loading..." : `${users.length} records`}</span>
         </div>
         <div className="table">
           <div className="table-row table-head">
             <span>User</span>
-            <span>Reason</span>
-            <span>Priority</span>
+            <span>Email</span>
+            <span>Role</span>
+            <span>Status</span>
+            <span>Joined</span>
+            <span>Action</span>
           </div>
-          <div className="table-row">
-            <span>r.severin</span>
-            <span>Login anomaly</span>
-            <span className="badge danger">High</span>
-          </div>
-          <div className="table-row">
-            <span>n.liu</span>
-            <span>Large withdrawal</span>
-            <span className="badge warning">Medium</span>
-          </div>
-          <div className="table-row">
-            <span>m.artis</span>
-            <span>Multiple devices</span>
-            <span className="badge warning">Medium</span>
-          </div>
+          {users.map((user) => (
+            <div className="table-row" key={user.id}>
+              <span>{user.userName || "-"}</span>
+              <span>{user.email}</span>
+              <span>{user.role}</span>
+              <span className={`badge ${user.isBanned ? "danger" : "success"}`}>
+                {user.isBanned ? "Banned" : "Active"}
+              </span>
+              <span>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "-"}</span>
+              <span>
+                <button
+                  className={`btn ${user.isBanned ? "btn-primary" : "btn-ghost"}`}
+                  onClick={() => handleRowAction(user)}
+                  disabled={actionUserId === user.id}
+                >
+                  {user.isBanned ? "Unban" : "Ban"}
+                </button>
+              </span>
+            </div>
+          ))}
+          {!isLoading && users.length === 0 && (
+            <div className="table-row empty-row">
+              <span>No users found.</span>
+            </div>
+          )}
         </div>
-      </article>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const News = () => {
   const [items, setItems] = useState([]);

@@ -35,9 +35,28 @@ public class UsersController : ApiControllerBase
 
     [HttpGet]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] string? status)
     {
-        var users = await _db.Users.AsNoTracking().Select(u => ToDto(u)).ToListAsync();
+        IQueryable<User> query = _db.Users.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            var normalizedStatus = status.Trim().ToLowerInvariant();
+            if (normalizedStatus == "active")
+            {
+                query = query.Where(u => !u.IsBanned);
+            }
+            else if (normalizedStatus == "banned")
+            {
+                query = query.Where(u => u.IsBanned);
+            }
+            else
+            {
+                return BadRequest("Invalid status filter. Use 'active' or 'banned'.");
+            }
+        }
+
+        var users = await query.Select(u => ToDto(u)).ToListAsync();
         return Ok(users);
     }
 
@@ -54,6 +73,81 @@ public class UsersController : ApiControllerBase
         return Ok(ToDto(user));
     }
 
+    [HttpPost("ban")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> BanUser([FromBody] UserBanRequest request)
+    {
+        if (!HasIdentifier(request))
+        {
+            return BadRequest("Provide a user id or email.");
+        }
+
+        var user = await FindUserAsync(request);
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        if (!user.IsBanned)
+        {
+            user.IsBanned = true;
+            await _db.SaveChangesAsync();
+        }
+
+        return Ok(ToDto(user));
+    }
+
+    [HttpPost("unban")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UnbanUser([FromBody] UserBanRequest request)
+    {
+        if (!HasIdentifier(request))
+        {
+            return BadRequest("Provide a user id or email.");
+        }
+
+        var user = await FindUserAsync(request);
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        if (user.IsBanned)
+        {
+            user.IsBanned = false;
+            await _db.SaveChangesAsync();
+        }
+
+        return Ok(ToDto(user));
+    }
+
+    private static bool HasIdentifier(UserBanRequest request)
+    {
+        return request != null
+            && (request.Id.HasValue || !string.IsNullOrWhiteSpace(request.Email));
+    }
+
+    private async Task<User?> FindUserAsync(UserBanRequest request)
+    {
+        if (request == null)
+        {
+            return null;
+        }
+
+        if (request.Id.HasValue)
+        {
+            return await _db.Users.FirstOrDefaultAsync(u => u.Id == request.Id.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Email))
+        {
+            var normalizedEmail = request.Email.Trim().ToLowerInvariant();
+            return await _db.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == normalizedEmail);
+        }
+
+        return null;
+    }
+
     private static UserDto ToDto(User user)
     {
         return new UserDto
@@ -67,4 +161,10 @@ public class UsersController : ApiControllerBase
             IsBanned = user.IsBanned
         };
     }
+}
+
+public class UserBanRequest
+{
+    public Guid? Id { get; set; }
+    public string? Email { get; set; }
 }
