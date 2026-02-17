@@ -825,10 +825,6 @@ function AdminHeader() {
         <h2>Good evening, Admin</h2>
       </div>
       <div className="header-actions">
-        <div className="search-pill">
-          <span>Search</span>
-          <input placeholder="Users, orders, alerts..." />
-        </div>
         <button className="btn btn-ghost">Export</button>
         <button className="btn btn-primary">Create alert</button>
         <div className="admin-avatar">AK</div>
@@ -847,7 +843,6 @@ export default function Admin() {
       </div>
       <Sidebar />
       <main className="admin-content">
-        <AdminHeader />
         <Routes>
           <Route index element={<Dashboard />} />
           <Route path="assets" element={<Assets />} />

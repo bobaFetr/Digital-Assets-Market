@@ -10,7 +10,7 @@
   --admin-accent: #8af7ff;
   --admin-accent-strong: #34d7ff;
   --admin-success: #7af5b4;
-  --admin-warning: #ffd07e;
+  --admin-warning: #9ea7ff;
   --admin-danger: #ff8a8a;
   --admin-info: #9ea7ff;
   --admin-glow: 0 30px 80px rgba(34, 70, 255, 0.2);
@@ -250,7 +250,7 @@
 }
 
 .tone-success { border-color: rgba(122, 245, 180, 0.25); }
-.tone-warning { border-color: rgba(255, 208, 126, 0.25); }
+.tone-warning { border-color: rgba(158, 167, 255, 0.3); }
 .tone-danger { border-color: rgba(255, 138, 138, 0.25); }
 .tone-info { border-color: rgba(158, 167, 255, 0.3); }
 
@@ -494,7 +494,7 @@
 }
 
 .badge.success { background: rgba(122, 245, 180, 0.18); color: var(--admin-success); }
-.badge.warning { background: rgba(255, 208, 126, 0.18); color: var(--admin-warning); }
+.badge.warning { background: rgba(158, 167, 255, 0.18); color: var(--admin-warning); }
 .badge.danger { background: rgba(255, 138, 138, 0.18); color: var(--admin-danger); }
 
 @keyframes fadeUp {
