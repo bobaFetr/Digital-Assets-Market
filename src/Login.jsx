@@ -95,7 +95,7 @@ export default function Login() {
                     />
                     Remember me
                   </label>
-                  <Link to="/verify-identity" className="link-button">Forgot password?</Link>
+                  <Link to="/forgot-password" className="link-button">Forgot password?</Link>
                 </div>
 
                 <button type="submit" className="login-submit" disabled={isSubmitting}>

@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getProfile, logoutUser } from "./Services/auth";
+import { getProfile, getToken, logoutUser } from "./Services/auth";
 import Sidebar from "./Components/Sidebar";
+
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5149";
 
 export default function Profile() {
   const [profile, setProfile] = useState(null);
+  const [balance, setBalance] = useState(null);
+  const [balanceError, setBalanceError] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isBalanceLoading, setIsBalanceLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -29,11 +34,61 @@ export default function Profile() {
       }
     };
 
+    const loadBalance = async () => {
+      const token = getToken();
+      if (!token) {
+        if (isMounted) {
+          setBalance(null);
+          setBalanceError("Not authenticated.");
+          setIsBalanceLoading(false);
+        }
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/api/wallets`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+
+        const wallets = await response.json();
+        const total = wallets.reduce((sum, wallet) => sum + Number(wallet.balance || 0), 0);
+
+        if (isMounted) {
+          setBalance(total);
+          setBalanceError("");
+        }
+      } catch (err) {
+        if (isMounted) {
+          setBalance(null);
+          setBalanceError(err.message || "Unable to load balance.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsBalanceLoading(false);
+        }
+      }
+    };
+
     loadProfile();
+    loadBalance();
     return () => {
       isMounted = false;
     };
   }, []);
+
+  const formattedBalance =
+    typeof balance === "number"
+      ? balance.toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })
+      : null;
 
   const handleLogout = () => {
     logoutUser();
@@ -75,6 +130,9 @@ export default function Profile() {
             <>
               <p style={{ marginTop: "10px" }}>Email: {profile?.email}</p>
               <p>Role: {profile?.role}</p>
+              {isBalanceLoading && <p>Balance: Loading...</p>}
+              {!isBalanceLoading && balanceError && <p style={{ color: "#ff8d8d" }}>Balance: unavailable</p>}
+              {!isBalanceLoading && !balanceError && <p>Balance: ${formattedBalance}</p>}
             </>
           )}
           <div className="TransactionHistory">

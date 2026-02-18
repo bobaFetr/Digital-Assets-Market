@@ -9,13 +9,13 @@ function Education() {
             id: 1,
             title: "What is Blockchain?",
             description: "Learn the fundamentals of distributed ledger technology.",
-            link: "#"
+            link: "/education/what-is-blockchain"
         },
         {
             id: 2,
             title: "How to Secure Your Wallet",
             description: "Best practices for keeping your private keys safe.",
-            link: "#"
+            link: "/education/how-to-secure-your-wallet"
         },
         {
             id: 3,

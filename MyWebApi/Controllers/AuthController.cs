@@ -8,6 +8,7 @@ using BCrypt.Net;
 using NetServer.Data; // Added Namespace
 using NetServer.Data.Models; // Added Namespace
 using System.ComponentModel.DataAnnotations;
+using MyWebApi.Services;
 
 [ApiController]
 [Route("api/auth")]
@@ -15,11 +16,13 @@ public class AuthController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly IConfiguration _config;
+    private readonly IEmailSender _emailSender;
 
-    public AuthController(AppDbContext db, IConfiguration config)
+    public AuthController(AppDbContext db, IConfiguration config, IEmailSender emailSender)
     {
         _db = db;
         _config = config;
+        _emailSender = emailSender;
     }
 
     // REGISTER
@@ -194,6 +197,127 @@ public class AuthController : ControllerBase
     {
         return Ok();
     }
+
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Email))
+        {
+            return BadRequest("Email is required.");
+        }
+
+        var normalizedEmail = request.Email.Trim().ToLowerInvariant();
+        var user = _db.Users.FirstOrDefault(u => u.Email.ToLower() == normalizedEmail);
+
+        if (user != null)
+        {
+            var resetToken = CreatePasswordResetToken(user);
+            var frontendBaseUrl = _config["Frontend:BaseUrl"] ?? "http://localhost:5173";
+            var resetUrl = $"{frontendBaseUrl.TrimEnd('/')}/reset-password?token={Uri.EscapeDataString(resetToken)}";
+
+            var subject = "Reset your password";
+            var body = $"Use this link to reset your password: {resetUrl}";
+            try
+            {
+                await _emailSender.SendAsync(user.Email, subject, body);
+            }
+            catch
+            {
+                return StatusCode(503, "Email service is unavailable. Please try again later.");
+            }
+        }
+
+        return Ok("If an account with that email exists, a reset link has been sent.");
+    }
+
+    [HttpPost("reset-password")]
+    [AllowAnonymous]
+    public IActionResult ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Token) || string.IsNullOrWhiteSpace(request.NewPassword))
+        {
+            return BadRequest("Token and new password are required.");
+        }
+
+        var principal = ValidatePasswordResetToken(request.Token);
+        if (principal == null)
+        {
+            return BadRequest("Invalid or expired reset token.");
+        }
+
+        var email = principal.FindFirstValue(ClaimTypes.Email);
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return BadRequest("Invalid token payload.");
+        }
+
+        var user = _db.Users.FirstOrDefault(u => u.Email.ToLower() == email.ToLower());
+        if (user == null)
+        {
+            return BadRequest("User not found.");
+        }
+
+        user.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+        _db.SaveChanges();
+
+        return Ok("Password has been reset successfully.");
+    }
+
+    private string CreatePasswordResetToken(User user)
+    {
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim("purpose", "password_reset")
+        };
+
+        var key = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+
+        var token = new JwtSecurityToken(
+            issuer: _config["Jwt:Issuer"],
+            audience: _config["Jwt:Audience"],
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(30),
+            signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    private ClaimsPrincipal? ValidatePasswordResetToken(string token)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+
+        try
+        {
+            var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = _config["Jwt:Issuer"],
+                ValidAudience = _config["Jwt:Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"])),
+                ClockSkew = TimeSpan.FromMinutes(1)
+            }, out _);
+
+            var purpose = principal.FindFirstValue("purpose");
+            if (!string.Equals(purpose, "password_reset", StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            return principal;
+        }
+        catch
+        {
+            return null;
+        }
+    }
 }
 
 public class BanRequest
@@ -224,4 +348,21 @@ public class LoginRequest
 
     [Required]
     public string Password { get; set; } = "";
+}
+
+public class ForgotPasswordRequest
+{
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; } = "";
+}
+
+public class ResetPasswordRequest
+{
+    [Required]
+    public string Token { get; set; } = "";
+
+    [Required]
+    [MinLength(8)]
+    public string NewPassword { get; set; } = "";
 }

@@ -326,3 +326,24 @@ public class CreateNewsRequest
     public string Content { get; set; } = string.Empty;
     public DateTime? PublishedAt { get; set; }
 }
+
+public class FaqDto
+{
+    public Guid FaqId { get; set; }
+    public string Question { get; set; } = string.Empty;
+    public string Answer { get; set; } = string.Empty;
+    public Guid AuthorId { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+}
+
+public class CreateFaqQuestionRequest
+{
+    public string Question { get; set; } = string.Empty;
+    public Guid? CategoryId { get; set; }
+}
+
+public class ReplyFaqRequest
+{
+    public string Answer { get; set; } = string.Empty;
+}

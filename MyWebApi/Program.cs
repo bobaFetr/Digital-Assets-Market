@@ -53,6 +53,7 @@ internal class Program
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+        builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
         builder.Services.AddDbContext<AppDbContext>(options =>//the reference from he old project was reoved
             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 

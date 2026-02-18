@@ -645,3 +645,31 @@ li {
   margin-top: auto;
 
 }
+
+.footer footer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(17, 19, 31, 0.55);
+}
+
+.social-link:hover {
+  border-color: #7f8cff;
+  color: #7f8cff;
+}
+
+.social-icon {
+  font-size: 16px;
+  line-height: 1;
+}

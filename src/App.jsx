@@ -1,7 +1,7 @@
 
 
 import React, { useEffect, useState } from "react";
-import { Routes, Route, Link, useLocation, useNavigate } from "react-router-dom";
+import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import BitcoinChart from "./BitcoinChart";
 import BNBChart from "./BNB";
 import Profile from "./Profile";
@@ -16,12 +16,17 @@ import SentSMSToNumberPage from "./SentSMSToNumberPage";
 
 import SignUpPage from "./SignUp.jsx";
 import SignInPage from "./Login.jsx";
+import ForgotPassword from "./ForgotPassword.jsx";
+import ResetPassword from "./ResetPassword.jsx";
 import Sidebar from "./Components/Sidebar";
 
 import "./App.css";
 import Admin from "./ADMIN/AdminMainPage.jsx";
 
 import Education from "./Education.jsx";
+import HowToSecureWallet from "./HowToSecureWallet.jsx";
+import WhatIsBlockchain from "./WhatIsBlockchain.jsx";
+import Faq from "./Faq.jsx";
 import News from "./News.jsx";
 import NewsDetail from "./NewsDetail.jsx";
 import RugPull from "./RugPull.jsx";
@@ -85,9 +90,18 @@ function Home() {
         </div>
         <div className="footer">
           <footer>
-            <Link>Instagram</Link>
-            <Link>Facebook</Link>
-            <Link>Twitter</Link>
+            <a href="https://instagram.com" target="_blank" rel="noreferrer" className="social-link" aria-label="Instagram">
+              <span className="social-icon" aria-hidden="true">📸</span>
+              <span>Instagram</span>
+            </a>
+            <a href="https://facebook.com" target="_blank" rel="noreferrer" className="social-link" aria-label="Facebook">
+              <span className="social-icon" aria-hidden="true">📘</span>
+              <span>Facebook</span>
+            </a>
+            <a href="https://x.com" target="_blank" rel="noreferrer" className="social-link" aria-label="X (Twitter)">
+              <span className="social-icon" aria-hidden="true">🐦</span>
+              <span>X</span>
+            </a>
           </footer>
         </div>
       </div>
@@ -129,6 +143,8 @@ export default function App() {
         <Route path="/SentSMSToNumberPage" element={<SentSMSToNumberPage />} />
         <Route path="/sign-in" element={<SignInPage />} />
         <Route path="/sign-up" element={<SignUpPage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/BitcoinChart" element={<BitcoinChartPage />} />
         <Route path="/BNBChart" element={<BNBChartPage />} />
 
@@ -138,6 +154,9 @@ export default function App() {
         <Route path="/news" element={<News />} />
         <Route path="/news/:id" element={<NewsDetail />} />
         <Route path="/education" element={<Education />} />
+        <Route path="/education/how-to-secure-your-wallet" element={<HowToSecureWallet />} />
+        <Route path="/education/what-is-blockchain" element={<WhatIsBlockchain />} />
+        <Route path="/faq" element={<Faq />} />
         <Route path="/rug-pull" element={<RugPull />} />
         ///////////////
         <Route path="*" element={<ErorPage1 />} />
@@ -155,7 +174,7 @@ function KycGate({ children }) {
       return;
     }
 
-    const allowList = new Set(["/VerifyIdentityPage", "/sign-in", "/sign-up"]);
+    const allowList = new Set(["/VerifyIdentityPage", "/sign-in", "/sign-up", "/forgot-password", "/reset-password"]);
     if (allowList.has(location.pathname)) {
       return;
     }

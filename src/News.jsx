@@ -60,7 +60,7 @@ export default function News() {
         );
     }, [articles, query]);
 
-    const trendingArticles = filteredArticles.slice(0, 6);
+    const trendingArticles = filteredArticles;
     const recentUpdates = filteredArticles.slice(0, 2);
 
     return (
