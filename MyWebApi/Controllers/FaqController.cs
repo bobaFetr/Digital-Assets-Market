@@ -93,6 +93,86 @@ public class FaqController : ApiControllerBase
 		return Ok(ToDto(faq));
 	}
 
+	[HttpPost]
+	[Authorize(Roles = "Admin")]
+	public async Task<IActionResult> CreateFaq([FromBody] CreateFaqRequest request)
+	{
+		if (!TryGetUserId(out var currentUserId))
+		{
+			return Unauthorized();
+		}
+
+		if (string.IsNullOrWhiteSpace(request.Question))
+		{
+			return BadRequest("Question is required.");
+		}
+
+		var now = DateTime.UtcNow;
+		var faq = new FAQ
+		{
+			FaqId = Guid.NewGuid(),
+			Question = request.Question.Trim(),
+			Answer = request.Answer?.Trim() ?? string.Empty,
+			CreatedAt = now,
+			UpdatedAt = now,
+			PublishedAt = now,
+			AuthorId = currentUserId,
+			CategoryId = request.CategoryId ?? Guid.Empty
+		};
+
+		_db.FAQs.Add(faq);
+		await _db.SaveChangesAsync();
+
+		return Ok(ToDto(faq));
+	}
+
+	[HttpPut("{id:guid}")]
+	[Authorize(Roles = "Admin")]
+	public async Task<IActionResult> UpdateFaq(Guid id, [FromBody] UpdateFaqRequest request)
+	{
+		var faq = await _db.FAQs.FirstOrDefaultAsync(f => f.FaqId == id);
+		if (faq == null)
+		{
+			return NotFound();
+		}
+
+		if (!string.IsNullOrWhiteSpace(request.Question))
+		{
+			faq.Question = request.Question.Trim();
+		}
+
+		if (request.Answer != null)
+		{
+			faq.Answer = request.Answer.Trim();
+		}
+
+		if (request.CategoryId.HasValue)
+		{
+			faq.CategoryId = request.CategoryId.Value;
+		}
+
+		faq.UpdatedAt = DateTime.UtcNow;
+		await _db.SaveChangesAsync();
+
+		return Ok(ToDto(faq));
+	}
+
+	[HttpDelete("{id:guid}")]
+	[Authorize(Roles = "Admin")]
+	public async Task<IActionResult> DeleteFaq(Guid id)
+	{
+		var faq = await _db.FAQs.FirstOrDefaultAsync(f => f.FaqId == id);
+		if (faq == null)
+		{
+			return NotFound();
+		}
+
+		_db.FAQs.Remove(faq);
+		await _db.SaveChangesAsync();
+
+		return Ok();
+	}
+
 	private static FaqDto ToDto(FAQ faq)
 	{
 		return new FaqDto

@@ -348,3 +348,17 @@ public class ReplyFaqRequest
 {
     public string Answer { get; set; } = string.Empty;
 }
+
+public class CreateFaqRequest
+{
+    public string Question { get; set; } = string.Empty;
+    public string? Answer { get; set; }
+    public Guid? CategoryId { get; set; }
+}
+
+public class UpdateFaqRequest
+{
+    public string? Question { get; set; }
+    public string? Answer { get; set; }
+    public Guid? CategoryId { get; set; }
+}

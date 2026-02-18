@@ -627,6 +627,273 @@ const News = () => {
   );
 };
 
+const Faqs = () => {
+  const [items, setItems] = useState([]);
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [editingId, setEditingId] = useState("");
+  const [editQuestion, setEditQuestion] = useState("");
+  const [editAnswer, setEditAnswer] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [deletingId, setDeletingId] = useState("");
+  const [error, setError] = useState("");
+  const [status, setStatus] = useState("");
+
+  const loadFaqs = async () => {
+    setIsLoading(true);
+    setError("");
+    try {
+      const response = await fetch(`${API_BASE}/api/faq`);
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      const data = await response.json();
+      setItems(Array.isArray(data) ? data : []);
+    } catch (fetchError) {
+      setError(fetchError?.message || "Failed to load FAQs.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadFaqs();
+  }, []);
+
+  const handleCreateFaq = async (event) => {
+    event.preventDefault();
+    setError("");
+    setStatus("");
+
+    if (!question.trim()) {
+      setError("Question is required.");
+      return;
+    }
+
+    const token = getToken();
+    if (!token) {
+      setError("Admin authentication required.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`${API_BASE}/api/faq`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          question: question.trim(),
+          answer: answer.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      setQuestion("");
+      setAnswer("");
+      setStatus("FAQ created.");
+      await loadFaqs();
+    } catch (submitError) {
+      setError(submitError?.message || "Failed to create FAQ.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const beginEdit = (item) => {
+    setEditingId(item.faqId);
+    setEditQuestion(item.question || "");
+    setEditAnswer(item.answer || "");
+    setError("");
+    setStatus("");
+  };
+
+  const cancelEdit = () => {
+    setEditingId("");
+    setEditQuestion("");
+    setEditAnswer("");
+  };
+
+  const saveEdit = async () => {
+    if (!editingId) return;
+    setError("");
+    setStatus("");
+
+    if (!editQuestion.trim()) {
+      setError("Question is required.");
+      return;
+    }
+
+    const token = getToken();
+    if (!token) {
+      setError("Admin authentication required.");
+      return;
+    }
+
+    setIsSavingEdit(true);
+    try {
+      const response = await fetch(`${API_BASE}/api/faq/${editingId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          question: editQuestion.trim(),
+          answer: editAnswer,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      setStatus("FAQ updated.");
+      cancelEdit();
+      await loadFaqs();
+    } catch (updateError) {
+      setError(updateError?.message || "Failed to update FAQ.");
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
+  const deleteFaq = async (faqId) => {
+    const shouldDelete = window.confirm("Delete this FAQ?");
+    if (!shouldDelete) return;
+
+    const token = getToken();
+    if (!token) {
+      setError("Admin authentication required.");
+      return;
+    }
+
+    setError("");
+    setStatus("");
+    setDeletingId(faqId);
+
+    try {
+      const response = await fetch(`${API_BASE}/api/faq/${faqId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      if (editingId === faqId) {
+        cancelEdit();
+      }
+
+      setStatus("FAQ deleted.");
+      await loadFaqs();
+    } catch (deleteError) {
+      setError(deleteError?.message || "Failed to delete FAQ.");
+    } finally {
+      setDeletingId("");
+    }
+  };
+
+  return (
+    <div className="admin-page">
+      <div className="page-header">
+        <h2>FAQs</h2>
+        <button className="btn btn-primary" onClick={loadFaqs}>Refresh</button>
+      </div>
+
+      <div className="panel" style={{ marginBottom: "24px" }}>
+        <div className="panel-header">
+          <h3>Create FAQ</h3>
+        </div>
+        {error && <div className="login-alert" style={{ marginBottom: "12px" }}>{error}</div>}
+        {status && <div className="login-alert" style={{ marginBottom: "12px", color: "#4dff88" }}>{status}</div>}
+        <form onSubmit={handleCreateFaq} className="login-form">
+          <label>
+            Question
+            <input value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="FAQ question" />
+          </label>
+          <label>
+            Answer (optional)
+            <textarea
+              value={answer}
+              onChange={(event) => setAnswer(event.target.value)}
+              placeholder="FAQ answer"
+              rows={4}
+            />
+          </label>
+          <button className="btn btn-primary" type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Creating..." : "Create FAQ"}
+          </button>
+        </form>
+      </div>
+
+      <div className="panel">
+        <div className="panel-header">
+          <h3>Manage FAQs</h3>
+          <span className="label">{isLoading ? "Loading..." : `${items.length} records`}</span>
+        </div>
+
+        <div className="cards-grid">
+          {!isLoading && items.length === 0 && <p>No FAQs found.</p>}
+          {items.map((item) => (
+            <article key={item.faqId} className="info-card">
+              {editingId === item.faqId ? (
+                <>
+                  <input
+                    value={editQuestion}
+                    onChange={(event) => setEditQuestion(event.target.value)}
+                    placeholder="Question"
+                    style={{ marginBottom: "10px" }}
+                  />
+                  <textarea
+                    value={editAnswer}
+                    onChange={(event) => setEditAnswer(event.target.value)}
+                    placeholder="Answer"
+                    rows={4}
+                  />
+                  <div className="inline-actions" style={{ marginTop: "10px" }}>
+                    <button className="btn btn-primary" onClick={saveEdit} disabled={isSavingEdit}>
+                      {isSavingEdit ? "Saving..." : "Save"}
+                    </button>
+                    <button className="btn btn-ghost" onClick={cancelEdit}>Cancel</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h4>{item.question}</h4>
+                  <p>{item.answer || "No answer yet."}</p>
+                  <span className="time">Updated: {formatAdminDate(item.updatedAt)}</span>
+                  <div className="inline-actions" style={{ marginTop: "10px" }}>
+                    <button className="btn btn-ghost" onClick={() => beginEdit(item)}>Edit</button>
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => deleteFaq(item.faqId)}
+                      disabled={deletingId === item.faqId}
+                    >
+                      {deletingId === item.faqId ? "Deleting..." : "Delete"}
+                    </button>
+                  </div>
+                </>
+              )}
+            </article>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Announcements = () => (
   <div className="admin-page">
     <div className="page-header">
@@ -802,6 +1069,7 @@ function Sidebar() {
       <div className="admin-section">
         <p className="section-title">Comms</p>
         <NavLink className="nav-link" to="/Admin/news">Newsroom</NavLink>
+        <NavLink className="nav-link" to="/Admin/faqs">FAQs</NavLink>
         <NavLink className="nav-link" to="/Admin/announcements">Announcements</NavLink>
       </div>
       <div className="admin-section">
@@ -849,6 +1117,7 @@ export default function Admin() {
           <Route path="transactions" element={<Transactions />} />
           <Route path="users" element={<Users />} />
           <Route path="news" element={<News />} />
+          <Route path="faqs" element={<Faqs />} />
           <Route path="announcements" element={<Announcements />} />
           <Route path="security" element={<Security />} />
           <Route path="settings" element={<Settings />} />

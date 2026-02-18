@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { changePassword, getProfile, getToken, logoutUser, updateProfilePicture } from "./Services/auth";
+import { changePassword, deleteAccount, getProfile, getToken, logoutUser, updateProfilePicture } from "./Services/auth";
 import Sidebar from "./Components/Sidebar";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5149";
@@ -18,6 +18,9 @@ export default function Profile() {
   const [passwordError, setPasswordError] = useState("");
   const [passwordSuccess, setPasswordSuccess] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleteError, setDeleteError] = useState("");
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isBalanceLoading, setIsBalanceLoading] = useState(true);
   const navigate = useNavigate();
@@ -180,6 +183,32 @@ export default function Profile() {
     }
   };
 
+  const handleDeleteAccount = async (event) => {
+    event.preventDefault();
+    setDeleteError("");
+
+    if (!deletePassword) {
+      setDeleteError("Please enter your current password to delete account.");
+      return;
+    }
+
+    const shouldDelete = window.confirm("Are you sure you want to deactivate your account?");
+    if (!shouldDelete) {
+      return;
+    }
+
+    setIsDeletingAccount(true);
+    try {
+      await deleteAccount(deletePassword);
+      logoutUser();
+      navigate("/sign-in");
+    } catch (err) {
+      setDeleteError(err.message || "Unable to delete account.");
+    } finally {
+      setIsDeletingAccount(false);
+    }
+  };
+
   return (
     <div style={{ display: "flex", height: "100vh", background: "#0d0f1a", color: "#fff", fontFamily: "Arial" }}>
       {/* Sidebar */}
@@ -259,7 +288,28 @@ export default function Profile() {
             <button>Download all your account info</button>
           </div>
           <div className="DeleteAcccountButton">
-            <button>Delete Account</button>
+            <form onSubmit={handleDeleteAccount} style={{ display: "grid", gap: "10px", marginTop: "10px", maxWidth: "320px" }}>
+              <input
+                type="password"
+                placeholder="Current password"
+                value={deletePassword}
+                onChange={(event) => setDeletePassword(event.target.value)}
+                style={{ padding: "10px", borderRadius: "8px", border: "1px solid #3c415f", background: "#0f1220", color: "#fff" }}
+              />
+              <button
+                type="submit"
+                disabled={isDeletingAccount}
+                style={{
+                  background: isDeletingAccount ? "#7c3c3c" : "#ff4d4d",
+                  border: "none",
+                  color: "#fff",
+                  cursor: isDeletingAccount ? "not-allowed" : "pointer",
+                }}
+              >
+                {isDeletingAccount ? "Deleting..." : "Delete Account"}
+              </button>
+              {deleteError && <p style={{ margin: 0, color: "#ff8d8d" }}>{deleteError}</p>}
+            </form>
           </div>
           <button
             style={{

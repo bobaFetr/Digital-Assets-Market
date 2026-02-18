@@ -137,3 +137,18 @@ export const changePassword = (currentPassword, newPassword) => {
     body: JSON.stringify({ currentPassword, newPassword }),
   });
 };
+
+export const deleteAccount = (currentPassword) => {
+  const token = getToken();
+  if (!token) {
+    return Promise.reject(new Error("Not authenticated"));
+  }
+
+  return request("/api/auth/delete-account", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ currentPassword }),
+  });
+};

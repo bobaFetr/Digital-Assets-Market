@@ -269,6 +269,45 @@ public class AuthController : ControllerBase
         return Ok("Password changed successfully.");
     }
 
+    [Authorize]
+    [HttpPost("delete-account")]
+    public IActionResult DeleteAccount([FromBody] DeleteAccountRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.CurrentPassword))
+        {
+            return BadRequest("Current password is required.");
+        }
+
+        var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdValue, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var user = _db.Users.Find(userId);
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.Password))
+        {
+            return BadRequest("Current password is incorrect.");
+        }
+
+        var deletedMarker = DateTime.UtcNow.ToString("yyyyMMddHHmmssfff");
+        user.Email = $"deleted_{user.Id}_{deletedMarker}@deleted.local";
+        user.UserName = $"deleted_{deletedMarker}";
+        user.Password = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString("N"));
+        user.Role = "DeletedUser";
+        user.IsBanned = true;
+        user.Status = NetServer.Data.Models.User.StatusBit.Inactive;
+        user.ProfilePictureUrl = null;
+
+        _db.SaveChanges();
+        return Ok("Account deactivated successfully.");
+    }
+
     [HttpPost("forgot-password")]
     [AllowAnonymous]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
@@ -448,4 +487,10 @@ public class ChangePasswordRequest
     [Required]
     [MinLength(8)]
     public string NewPassword { get; set; } = "";
+}
+
+public class DeleteAccountRequest
+{
+    [Required]
+    public string CurrentPassword { get; set; } = "";
 }
