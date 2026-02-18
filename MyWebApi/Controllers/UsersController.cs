@@ -33,6 +33,50 @@ public class UsersController : ApiControllerBase
         return Ok(ToDto(user));
     }
 
+    [HttpPut("me/profile-picture")]
+    public async Task<IActionResult> UpdateMyProfilePicture([FromBody] UpdateProfilePictureRequest request)
+    {
+        if (!TryGetUserId(out var userId))
+        {
+            return Unauthorized();
+        }
+
+        if (request == null || string.IsNullOrWhiteSpace(request.ProfilePictureUrl))
+        {
+            return BadRequest("ProfilePictureUrl is required.");
+        }
+
+        var profilePictureUrl = request.ProfilePictureUrl.Trim();
+        var isDataImage = profilePictureUrl.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase);
+
+        if (isDataImage)
+        {
+            if (!profilePictureUrl.Contains(";base64,", StringComparison.OrdinalIgnoreCase))
+            {
+                return BadRequest("ProfilePictureUrl data:image value must be base64-encoded.");
+            }
+        }
+        else
+        {
+            if (!Uri.TryCreate(profilePictureUrl, UriKind.Absolute, out var parsedUri)
+                || (parsedUri.Scheme != Uri.UriSchemeHttp && parsedUri.Scheme != Uri.UriSchemeHttps))
+            {
+                return BadRequest("ProfilePictureUrl must be an absolute http/https URL or a data:image base64 value.");
+            }
+        }
+
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        user.ProfilePictureUrl = profilePictureUrl;
+        await _db.SaveChangesAsync();
+
+        return Ok(ToDto(user));
+    }
+
     [HttpGet]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetAll([FromQuery] string? status)
@@ -156,11 +200,17 @@ public class UsersController : ApiControllerBase
             UserName = user.UserName,
             Email = user.Email,
             Role = user.Role,
+            ProfilePictureUrl = user.ProfilePictureUrl,
             CreatedAt = user.CreatedAt,
             Status = user.Status,
             IsBanned = user.IsBanned
         };
     }
+}
+
+public class UpdateProfilePictureRequest
+{
+    public string ProfilePictureUrl { get; set; } = string.Empty;
 }
 
 public class UserBanRequest

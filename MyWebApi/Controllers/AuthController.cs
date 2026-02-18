@@ -160,7 +160,8 @@ public class AuthController : ControllerBase
         return Ok(new
         {
             user.Email,
-            user.Role
+            user.Role,
+            user.ProfilePictureUrl
         });
     }
 

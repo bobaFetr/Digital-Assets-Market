@@ -6,6 +6,7 @@ namespace MyWebApi.Dtos
         public string UserName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
+        public string? ProfilePictureUrl { get; set; }
         public DateTime CreatedAt { get; set; }
         public object Status { get; set; } = default!;
         public bool IsBanned { get; set; }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getProfile, getToken, logoutUser } from "./Services/auth";
+import { getProfile, getToken, logoutUser, updateProfilePicture } from "./Services/auth";
 import Sidebar from "./Components/Sidebar";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5149";
@@ -10,6 +10,8 @@ export default function Profile() {
   const [balance, setBalance] = useState(null);
   const [balanceError, setBalanceError] = useState("");
   const [error, setError] = useState("");
+  const [uploadError, setUploadError] = useState("");
+  const [isUploadingPicture, setIsUploadingPicture] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isBalanceLoading, setIsBalanceLoading] = useState(true);
   const navigate = useNavigate();
@@ -94,6 +96,50 @@ export default function Profile() {
     logoutUser();
     navigate("/sign-in");
   };
+
+  const readFileAsDataUrl = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = () => reject(new Error("Failed to read image file."));
+      reader.readAsDataURL(file);
+    });
+
+  const handleProfilePictureChange = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      setUploadError("Please select an image file.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError("Image is too large. Please choose one under 5MB.");
+      return;
+    }
+
+    setUploadError("");
+    setIsUploadingPicture(true);
+
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      const updated = await updateProfilePicture(dataUrl);
+      setProfile((prev) => ({
+        ...(prev || {}),
+        profilePictureUrl: updated?.profilePictureUrl || dataUrl,
+      }));
+    } catch (err) {
+      setUploadError(err.message || "Unable to update profile picture.");
+    } finally {
+      setIsUploadingPicture(false);
+    }
+  };
+
   return (
     <div style={{ display: "flex", height: "100vh", background: "#0d0f1a", color: "#fff", fontFamily: "Arial" }}>
       {/* Sidebar */}
@@ -119,9 +165,40 @@ export default function Profile() {
               fontSize: "32px",
               fontWeight: "bold",
               color: "#7f8cff",
+              overflow: "hidden",
             }}
           >
-            {(profile?.email || "U").slice(0, 1).toUpperCase()}
+            {profile?.profilePictureUrl ? (
+              <img
+                src={profile.profilePictureUrl}
+                alt="Profile"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              (profile?.email || "U").slice(0, 1).toUpperCase()
+            )}
+          </div>
+          <div style={{ marginTop: "12px" }}>
+            <label
+              style={{
+                display: "inline-block",
+                padding: "10px 14px",
+                borderRadius: "8px",
+                background: isUploadingPicture ? "#3e4162" : "#7f8cff",
+                color: "#fff",
+                cursor: isUploadingPicture ? "not-allowed" : "pointer",
+              }}
+            >
+              {isUploadingPicture ? "Uploading..." : "Change Profile Picture"}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleProfilePictureChange}
+                disabled={isUploadingPicture}
+                style={{ display: "none" }}
+              />
+            </label>
+            {uploadError && <p style={{ marginTop: "8px", color: "#ff8d8d" }}>{uploadError}</p>}
           </div>
           <h3>User Information</h3>
           {isLoading && <p style={{ marginTop: "10px" }}>Loading profile...</p>}

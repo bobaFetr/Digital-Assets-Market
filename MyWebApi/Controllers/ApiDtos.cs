@@ -6,6 +6,7 @@ public class UserDto
     public string UserName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
+    public string? ProfilePictureUrl { get; set; }
     public DateTime CreatedAt { get; set; }
     public User.StatusBit Status { get; set; }
     public bool IsBanned { get; set; }

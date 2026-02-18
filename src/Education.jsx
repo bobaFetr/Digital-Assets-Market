@@ -25,6 +25,24 @@ function Education() {
         }
     ];
 
+    const youtubeVideos = [
+        {
+            id: 1,
+            title: "What is Blockchain? (Beginner Friendly)",
+            embedUrl: "https://www.youtube.com/embed/SSo_EIwHSd4"
+        },
+        {
+            id: 2,
+            title: "Crypto Wallets Explained",
+            embedUrl: "https://www.youtube.com/embed/d8IBpfs9bf4"
+        },
+        {
+            id: 3,
+            title: "How to Avoid Crypto Scams",
+            embedUrl: "https://www.youtube.com/embed/Mfk4A8q7Qmk"
+        }
+    ];
+
     return (
         <div className="crypto-layout">
             <Sidebar />
@@ -60,6 +78,48 @@ function Education() {
                             }}>
                                 Start Topic →
                             </Link>
+                        </div>
+                    ))}
+                </div>
+
+                <h2 style={{ marginTop: '40px', marginBottom: '16px' }}>YouTube Videos</h2>
+                <p style={{ color: '#aaa', marginBottom: '20px' }}>Watch quick lessons to improve your crypto knowledge.</p>
+
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+                    gap: '20px'
+                }}>
+                    {youtubeVideos.map(video => (
+                        <div key={video.id} style={{
+                            background: '#1a1d2e',
+                            padding: '18px',
+                            borderRadius: '12px',
+                            border: '1px solid #22283a'
+                        }}>
+                            <h3 style={{ marginBottom: '12px' }}>{video.title}</h3>
+                            <div style={{
+                                position: 'relative',
+                                paddingBottom: '56.25%',
+                                height: 0,
+                                overflow: 'hidden',
+                                borderRadius: '10px'
+                            }}>
+                                <iframe
+                                    src={video.embedUrl}
+                                    title={video.title}
+                                    style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        width: '100%',
+                                        height: '100%',
+                                        border: 0
+                                    }}
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                />
+                            </div>
                         </div>
                     ))}
                 </div>

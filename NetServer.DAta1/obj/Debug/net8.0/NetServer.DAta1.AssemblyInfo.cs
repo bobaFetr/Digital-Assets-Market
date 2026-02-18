@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NetServer.DAta1")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+001f526d3a7447d8f376339daef9bc658d937267")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a49bb1a52f851c95b6b2c61c9fd82fd57fc296b3")]
 [assembly: System.Reflection.AssemblyProductAttribute("NetServer.DAta1")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NetServer.DAta1")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

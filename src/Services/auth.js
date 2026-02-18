@@ -59,6 +59,21 @@ export const getProfile = () => {
   });
 };
 
+export const updateProfilePicture = (profilePictureUrl) => {
+  const token = getToken();
+  if (!token) {
+    return Promise.reject(new Error("Not authenticated"));
+  }
+
+  return request("/api/users/me/profile-picture", {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ profilePictureUrl }),
+  });
+};
+
 export const logoutUser = () => {
   sessionStorage.removeItem(TOKEN_STORAGE_KEY);
 };
