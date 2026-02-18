@@ -17,7 +17,7 @@ public class WalletsController : ApiControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetWallets([FromQuery] Guid? userId)
+    public async Task<IActionResult> GetWallets([FromQuery] Guid? userId, [FromQuery] bool includeAll = false)
     {
         if (!TryGetUserId(out var currentUserId))
         {
@@ -31,6 +31,10 @@ public class WalletsController : ApiControllerBase
             if (userId.HasValue)
             {
                 query = query.Where(w => w.UserId == userId.Value);
+            }
+            else if (!includeAll)
+            {
+                query = query.Where(w => w.UserId == currentUserId);
             }
         }
         else

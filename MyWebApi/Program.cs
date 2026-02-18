@@ -16,6 +16,7 @@ internal class Program
         // Add services to the container.
         
         // JWT Authentication
+        var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is missing.");
         builder.Services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme;
@@ -32,7 +33,7 @@ internal class Program
                 ValidIssuer = builder.Configuration["Jwt:Issuer"],
                 ValidAudience = builder.Configuration["Jwt:Audience"],
                 IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
-                    System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                    System.Text.Encoding.UTF8.GetBytes(jwtKey))
             };
         });
 
@@ -54,10 +55,22 @@ internal class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+        builder.Services.AddScoped<WalletProvisioningService>();
         builder.Services.AddDbContext<AppDbContext>(options =>//the reference from he old project was reoved
             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
         var app = builder.Build();
+
+        using (var scope = app.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var walletProvisioning = scope.ServiceProvider.GetRequiredService<WalletProvisioningService>();
+            var created = walletProvisioning.EnsureDefaultWalletsForAllUsers();
+            if (created > 0)
+            {
+                db.SaveChanges();
+            }
+        }
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())

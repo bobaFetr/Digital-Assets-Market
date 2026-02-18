@@ -17,12 +17,14 @@ public class AuthController : ControllerBase
     private readonly AppDbContext _db;
     private readonly IConfiguration _config;
     private readonly IEmailSender _emailSender;
+    private readonly WalletProvisioningService _walletProvisioning;
 
-    public AuthController(AppDbContext db, IConfiguration config, IEmailSender emailSender)
+    public AuthController(AppDbContext db, IConfiguration config, IEmailSender emailSender, WalletProvisioningService walletProvisioning)
     {
         _db = db;
         _config = config;
         _emailSender = emailSender;
+        _walletProvisioning = walletProvisioning;
     }
 
     // REGISTER
@@ -52,6 +54,7 @@ public class AuthController : ControllerBase
 
         user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
         _db.Users.Add(user);
+        _walletProvisioning.EnsureDefaultWalletsForUser(user.Id);
         _db.SaveChanges();
         return Ok("User registered successfully");
     }
@@ -74,6 +77,7 @@ public class AuthController : ControllerBase
 
         user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
         _db.Users.Add(user);
+        _walletProvisioning.EnsureDefaultWalletsForUser(user.Id);
         _db.SaveChanges();
         return Ok("Admin registered");
     }
@@ -91,6 +95,9 @@ public class AuthController : ControllerBase
         if (existing.IsBanned)
             return StatusCode(403, "User is banned");
 
+        _walletProvisioning.EnsureDefaultWalletsForUser(existing.Id);
+        _db.SaveChanges();
+
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, existing.Id.ToString()),
@@ -98,8 +105,9 @@ public class AuthController : ControllerBase
             new Claim(ClaimTypes.Role, existing.Role)
         };
 
+        var jwtKey = _config["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is missing.");
         var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            Encoding.UTF8.GetBytes(jwtKey));
 
         var token = new JwtSecurityToken(
             issuer: _config["Jwt:Issuer"],
@@ -115,6 +123,22 @@ public class AuthController : ControllerBase
         });
     }
 
+    [Authorize(Roles = "Admin")]
+    [HttpPost("wallets/backfill")]
+    public IActionResult BackfillMissingWallets()
+    {
+        var usersCount = _db.Users.Count();
+        var createdCount = _walletProvisioning.EnsureDefaultWalletsForAllUsers();
+
+        _db.SaveChanges();
+        return Ok(new
+        {
+            usersProcessed = usersCount,
+            walletsCreated = createdCount,
+            currenciesPerUser = WalletProvisioningService.DefaultWalletCurrencies.Length
+        });
+    }
+
 
 
     // PROFILE (JWT protected)
@@ -122,7 +146,11 @@ public class AuthController : ControllerBase
     [HttpGet("profile")]
     public IActionResult Profile()
     {
-        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdValue, out var userId))
+        {
+            return Unauthorized();
+        }
 
         var user = _db.Users.Find(userId);
         if (user == null || user.IsBanned)
@@ -273,8 +301,9 @@ public class AuthController : ControllerBase
             new Claim("purpose", "password_reset")
         };
 
+        var jwtKey = _config["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is missing.");
         var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            Encoding.UTF8.GetBytes(jwtKey));
 
         var token = new JwtSecurityToken(
             issuer: _config["Jwt:Issuer"],
@@ -301,7 +330,7 @@ public class AuthController : ControllerBase
                 ValidateIssuerSigningKey = true,
                 ValidIssuer = _config["Jwt:Issuer"],
                 ValidAudience = _config["Jwt:Audience"],
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"])),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is missing."))),
                 ClockSkew = TimeSpan.FromMinutes(1)
             }, out _);
 
@@ -318,6 +347,7 @@ public class AuthController : ControllerBase
             return null;
         }
     }
+
 }
 
 public class BanRequest
