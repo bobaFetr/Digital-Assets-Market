@@ -1,52 +1,34 @@
 # ====== Build Frontend (Vite + React) ======
-FROM node:18-alpine AS frontend-build
-WORKDIR /frontend
+FROM node:20-alpine AS frontend-build
+WORKDIR /src
 
-COPY frontend/package*.json ./
+COPY package*.json ./
 RUN npm install
 
-COPY frontend .
+COPY . .
 RUN npm run build
 
 
 # ====== Build Backend (.NET 8 Web API) ======
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS backend-build
-WORKDIR /backend
+WORKDIR /src
 
-COPY backend/*.csproj .
-RUN dotnet restore
+COPY MyWebApi/MyWebApi.csproj MyWebApi/
+COPY NetServer.DAta1/NetServer.DAta1.csproj NetServer.DAta1/
+RUN dotnet restore MyWebApi/MyWebApi.csproj
 
-COPY backend .
-RUN dotnet publish -c Release -o /app
+COPY . .
+COPY --from=frontend-build /src/dist ./MyWebApi/wwwroot
+RUN dotnet publish MyWebApi/MyWebApi.csproj -c Release -o /app/publish
 
 
 # ====== Final Runtime Image ======
-FROM alpine:3.19
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+WORKDIR /app
 
-# Install Nginx + .NET runtime + supervisor
-RUN apk add --no-cache \
-    nginx \
-    supervisor \
-    icu-data-full \
-    && wget https://dot.net/v1/dotnet-install.sh \
-    && chmod +x dotnet-install.sh \
-    && ./dotnet-install.sh --version 8.0.0 --runtime aspnetcore \
-    && rm dotnet-install.sh
+ENV ASPNETCORE_URLS=http://+:8080
+EXPOSE 8080
 
-# Create folders
-RUN mkdir -p /var/www/frontend /var/log/supervisor
+COPY --from=backend-build /app/publish .
 
-# Copy frontend build
-COPY --from=frontend-build /frontend/dist /var/www/frontend
-
-# Copy backend
-COPY --from=backend-build /app /app
-
-# Copy configs
-COPY nginx.conf /etc/nginx/nginx.conf
-COPY supervisord.conf /etc/supervisord.conf
-
-EXPOSE 80
-
-# Start Nginx + .NET API
-CMD ["supervisord", "-c", "/etc/supervisord.conf"]
+ENTRYPOINT ["dotnet", "MyWebApi.dll"]
