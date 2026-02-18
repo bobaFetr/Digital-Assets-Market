@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getProfile, getToken, logoutUser, updateProfilePicture } from "./Services/auth";
+import { changePassword, getProfile, getToken, logoutUser, updateProfilePicture } from "./Services/auth";
 import Sidebar from "./Components/Sidebar";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5149";
@@ -12,6 +12,12 @@ export default function Profile() {
   const [error, setError] = useState("");
   const [uploadError, setUploadError] = useState("");
   const [isUploadingPicture, setIsUploadingPicture] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState("");
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isBalanceLoading, setIsBalanceLoading] = useState(true);
   const navigate = useNavigate();
@@ -140,6 +146,40 @@ export default function Profile() {
     }
   };
 
+  const handleChangePassword = async (event) => {
+    event.preventDefault();
+    setPasswordError("");
+    setPasswordSuccess("");
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPasswordError("All password fields are required.");
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setPasswordError("New password must be at least 8 characters.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError("New password and confirmation do not match.");
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      await changePassword(currentPassword, newPassword);
+      setPasswordSuccess("Password changed successfully.");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err) {
+      setPasswordError(err.message || "Unable to change password.");
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
   return (
     <div style={{ display: "flex", height: "100vh", background: "#0d0f1a", color: "#fff", fontFamily: "Arial" }}>
       {/* Sidebar */}
@@ -243,7 +283,6 @@ export default function Profile() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px", marginTop: "15px" }}>
             <button>Security Settings</button>
             <button>Two-Factor Authentication</button>
-            <button>Change Password</button>
             <button>Identity Verification (KYC)</button>
             <button>Device Management</button>
             <button>API Management</button>
@@ -254,6 +293,47 @@ export default function Profile() {
             <button>Linked Accounts</button>
             <button>Referral Program</button>
           </div>
+
+          <form onSubmit={handleChangePassword} style={{ marginTop: "20px", display: "grid", gap: "10px", maxWidth: "420px" }}>
+            <h4 style={{ margin: 0 }}>Change Password</h4>
+            <input
+              type="password"
+              placeholder="Current password"
+              value={currentPassword}
+              onChange={(event) => setCurrentPassword(event.target.value)}
+              style={{ padding: "10px", borderRadius: "8px", border: "1px solid #3c415f", background: "#0f1220", color: "#fff" }}
+            />
+            <input
+              type="password"
+              placeholder="New password"
+              value={newPassword}
+              onChange={(event) => setNewPassword(event.target.value)}
+              style={{ padding: "10px", borderRadius: "8px", border: "1px solid #3c415f", background: "#0f1220", color: "#fff" }}
+            />
+            <input
+              type="password"
+              placeholder="Confirm new password"
+              value={confirmPassword}
+              onChange={(event) => setConfirmPassword(event.target.value)}
+              style={{ padding: "10px", borderRadius: "8px", border: "1px solid #3c415f", background: "#0f1220", color: "#fff" }}
+            />
+            <button
+              type="submit"
+              disabled={isChangingPassword}
+              style={{
+                padding: "10px 14px",
+                borderRadius: "8px",
+                border: "none",
+                background: isChangingPassword ? "#3e4162" : "#7f8cff",
+                color: "#fff",
+                cursor: isChangingPassword ? "not-allowed" : "pointer",
+              }}
+            >
+              {isChangingPassword ? "Changing..." : "Update Password"}
+            </button>
+            {passwordError && <p style={{ margin: 0, color: "#ff8d8d" }}>{passwordError}</p>}
+            {passwordSuccess && <p style={{ margin: 0, color: "#7cf29a" }}>{passwordSuccess}</p>}
+          </form>
         </div>
 
         {/* Settings Section */}

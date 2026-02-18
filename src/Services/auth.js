@@ -122,3 +122,18 @@ export const resetPassword = (token, newPassword) =>
     method: "POST",
     body: JSON.stringify({ token, newPassword }),
   });
+
+export const changePassword = (currentPassword, newPassword) => {
+  const token = getToken();
+  if (!token) {
+    return Promise.reject(new Error("Not authenticated"));
+  }
+
+  return request("/api/auth/change-password", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+};

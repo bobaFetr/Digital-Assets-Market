@@ -227,6 +227,48 @@ public class AuthController : ControllerBase
         return Ok();
     }
 
+    [Authorize]
+    [HttpPost("change-password")]
+    public IActionResult ChangePassword([FromBody] ChangePasswordRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(request.NewPassword))
+        {
+            return BadRequest("Current and new password are required.");
+        }
+
+        var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdValue, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var user = _db.Users.Find(userId);
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        if (user.IsBanned)
+        {
+            return StatusCode(403, "User is banned");
+        }
+
+        if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.Password))
+        {
+            return BadRequest("Current password is incorrect.");
+        }
+
+        if (request.CurrentPassword == request.NewPassword)
+        {
+            return BadRequest("New password must be different from current password.");
+        }
+
+        user.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+        _db.SaveChanges();
+
+        return Ok("Password changed successfully.");
+    }
+
     [HttpPost("forgot-password")]
     [AllowAnonymous]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
@@ -392,6 +434,16 @@ public class ResetPasswordRequest
 {
     [Required]
     public string Token { get; set; } = "";
+
+    [Required]
+    [MinLength(8)]
+    public string NewPassword { get; set; } = "";
+}
+
+public class ChangePasswordRequest
+{
+    [Required]
+    public string CurrentPassword { get; set; } = "";
 
     [Required]
     [MinLength(8)]
