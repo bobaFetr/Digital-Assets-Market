@@ -144,6 +144,12 @@ namespace NetServer.Data
                 .HasForeignKey(f => f.AuthorId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<FAQ>()
+                .HasOne<User>()
+                .WithMany()
+                .HasForeignKey(f => f.RepliedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<NewsTable>()
                 .ToTable("NewsTable");
 

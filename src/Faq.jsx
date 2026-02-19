@@ -157,20 +157,85 @@ export default function Faq() {
 
           {!isLoading && items.map((item) => {
             const hasAnswer = Boolean(item.answer && item.answer.trim());
+            const avatarFallback = (item.question || "Q").slice(0, 1).toUpperCase();
+            const authorLabel = item.authorUserName || item.authorEmail || "Unknown author";
+            const replyAuthorLabel = item.replyAuthorUserName || item.replyAuthorEmail || "Unknown replier";
+            const replyAvatarFallback = replyAuthorLabel.slice(0, 1).toUpperCase();
 
             return (
               <div
                 key={item.faqId}
                 style={{ background: "#1a1d2e", padding: "18px", borderRadius: "12px", border: "1px solid #22283a" }}
               >
-                <h3 style={{ marginTop: 0, marginBottom: "8px" }}>{item.question}</h3>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
+                  <div
+                    style={{
+                      width: "42px",
+                      height: "42px",
+                      borderRadius: "50%",
+                      overflow: "hidden",
+                      background: "#2a2f4a",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "#7f8cff",
+                      fontWeight: 700,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {item.authorProfilePictureUrl ? (
+                      <img
+                        src={item.authorProfilePictureUrl}
+                        alt="Author"
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                    ) : (
+                      avatarFallback
+                    )}
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0 }}>{item.question}</h3>
+                    <p style={{ margin: "4px 0 0", color: "#aaa", fontSize: "12px" }}>By: {authorLabel}</p>
+                  </div>
+                </div>
                 <p style={{ color: "#7f8cff", fontSize: "13px", marginBottom: hasAnswer ? "10px" : "14px" }}>
                   Posted: {new Date(item.createdAt).toLocaleString()}
                 </p>
 
                 {hasAnswer ? (
                   <div style={{ background: "#0d0f1a", padding: "12px", borderRadius: "10px", border: "1px solid #2c3454" }}>
-                    <p style={{ margin: 0, color: "#4dff88", fontWeight: 700 }}>Reply</p>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <div
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          borderRadius: "50%",
+                          overflow: "hidden",
+                          background: "#2a2f4a",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "#7f8cff",
+                          fontWeight: 700,
+                          fontSize: "12px",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {item.replyAuthorProfilePictureUrl ? (
+                          <img
+                            src={item.replyAuthorProfilePictureUrl}
+                            alt="Replier"
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          />
+                        ) : (
+                          replyAvatarFallback
+                        )}
+                      </div>
+                      <div>
+                        <p style={{ margin: 0, color: "#4dff88", fontWeight: 700 }}>Reply</p>
+                        <p style={{ margin: "2px 0 0", color: "#aaa", fontSize: "12px" }}>By: {replyAuthorLabel}</p>
+                      </div>
+                    </div>
                     <p style={{ marginTop: "8px", marginBottom: 0 }}>{item.answer}</p>
                   </div>
                 ) : (

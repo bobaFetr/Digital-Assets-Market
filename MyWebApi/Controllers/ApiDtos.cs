@@ -334,6 +334,13 @@ public class FaqDto
     public string Question { get; set; } = string.Empty;
     public string Answer { get; set; } = string.Empty;
     public Guid AuthorId { get; set; }
+    public string? AuthorUserName { get; set; }
+    public string? AuthorEmail { get; set; }
+    public string? AuthorProfilePictureUrl { get; set; }
+    public Guid? ReplyAuthorId { get; set; }
+    public string? ReplyAuthorUserName { get; set; }
+    public string? ReplyAuthorEmail { get; set; }
+    public string? ReplyAuthorProfilePictureUrl { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }

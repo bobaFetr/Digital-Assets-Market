@@ -16,6 +16,7 @@ namespace NetServer.Data.Models
 
         public Guid CategoryId { get; set; }
         public Guid AuthorId { get; set; }
+        public Guid? RepliedByUserId { get; set; }
         public DateTime PublishedAt { get; set; }
     }
 }

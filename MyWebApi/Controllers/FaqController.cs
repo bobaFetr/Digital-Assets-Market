@@ -3,12 +3,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NetServer.Data;
 using NetServer.Data.Models;
+using System.Text.RegularExpressions;
 
 [ApiController]
 [Route("api/faq")]
 public class FaqController : ApiControllerBase
 {
 	private readonly AppDbContext _db;
+	private static readonly string[] BlockedWords =
+	[
+		"badword1",
+		"badword2",
+		"badword3"
+	];
 
 	public FaqController(AppDbContext db)
 	{
@@ -19,10 +26,35 @@ public class FaqController : ApiControllerBase
 	[AllowAnonymous]
 	public async Task<IActionResult> GetFaqs()
 	{
-		var faqs = await _db.FAQs
-			.AsNoTracking()
-			.OrderByDescending(f => f.CreatedAt)
-			.Select(f => ToDto(f))
+		var faqs = await (
+			from f in _db.FAQs.AsNoTracking()
+			join u in _db.Users.AsNoTracking() on f.AuthorId equals u.Id into users
+			from author in users.DefaultIfEmpty()
+			join ru in _db.Users.AsNoTracking() on f.RepliedByUserId equals ru.Id into replyUsers
+			from replyAuthor in replyUsers.DefaultIfEmpty()
+			orderby f.CreatedAt descending
+			select new FaqDto
+			{
+				FaqId = f.FaqId,
+				Question = f.Question ?? string.Empty,
+				Answer = f.Answer ?? string.Empty,
+				CreatedAt = f.CreatedAt,
+				UpdatedAt = f.UpdatedAt,
+				AuthorId = f.AuthorId,
+				AuthorUserName = author != null ? author.UserName : null,
+				AuthorEmail = author != null ? author.Email : null,
+				AuthorProfilePictureUrl = author != null ? author.ProfilePictureUrl : null,
+				ReplyAuthorId = f.RepliedByUserId,
+				ReplyAuthorUserName = replyAuthor != null
+					? replyAuthor.UserName
+					: (!string.IsNullOrWhiteSpace(f.Answer) && author != null ? author.UserName : null),
+				ReplyAuthorEmail = replyAuthor != null
+					? replyAuthor.Email
+					: (!string.IsNullOrWhiteSpace(f.Answer) && author != null ? author.Email : null),
+				ReplyAuthorProfilePictureUrl = replyAuthor != null
+					? replyAuthor.ProfilePictureUrl
+					: (!string.IsNullOrWhiteSpace(f.Answer) && author != null ? author.ProfilePictureUrl : null)
+			})
 			.ToListAsync();
 
 		return Ok(faqs);
@@ -40,6 +72,11 @@ public class FaqController : ApiControllerBase
 		if (string.IsNullOrWhiteSpace(request.Question))
 		{
 			return BadRequest("Question is required.");
+		}
+
+		if (ContainsBlockedWords(request.Question, out var blockedQuestionWords))
+		{
+			return BadRequest($"Your question contains blocked language: {string.Join(", ", blockedQuestionWords)}");
 		}
 
 		var now = DateTime.UtcNow;
@@ -75,6 +112,11 @@ public class FaqController : ApiControllerBase
 			return BadRequest("Answer is required.");
 		}
 
+		if (ContainsBlockedWords(request.Answer, out var blockedAnswerWords))
+		{
+			return BadRequest($"Your reply contains blocked language: {string.Join(", ", blockedAnswerWords)}");
+		}
+
 		var faq = await _db.FAQs.FirstOrDefaultAsync(f => f.FaqId == id);
 		if (faq == null)
 		{
@@ -87,6 +129,7 @@ public class FaqController : ApiControllerBase
 		}
 
 		faq.Answer = request.Answer.Trim();
+		faq.RepliedByUserId = currentUserId;
 		faq.UpdatedAt = DateTime.UtcNow;
 
 		await _db.SaveChangesAsync();
@@ -107,6 +150,16 @@ public class FaqController : ApiControllerBase
 			return BadRequest("Question is required.");
 		}
 
+		if (ContainsBlockedWords(request.Question, out var blockedQuestionWords))
+		{
+			return BadRequest($"Question contains blocked language: {string.Join(", ", blockedQuestionWords)}");
+		}
+
+		if (!string.IsNullOrWhiteSpace(request.Answer) && ContainsBlockedWords(request.Answer, out var blockedAnswerWords))
+		{
+			return BadRequest($"Answer contains blocked language: {string.Join(", ", blockedAnswerWords)}");
+		}
+
 		var now = DateTime.UtcNow;
 		var faq = new FAQ
 		{
@@ -117,6 +170,7 @@ public class FaqController : ApiControllerBase
 			UpdatedAt = now,
 			PublishedAt = now,
 			AuthorId = currentUserId,
+			RepliedByUserId = string.IsNullOrWhiteSpace(request.Answer) ? null : currentUserId,
 			CategoryId = request.CategoryId ?? Guid.Empty
 		};
 
@@ -130,6 +184,11 @@ public class FaqController : ApiControllerBase
 	[Authorize(Roles = "Admin")]
 	public async Task<IActionResult> UpdateFaq(Guid id, [FromBody] UpdateFaqRequest request)
 	{
+		if (!TryGetUserId(out var currentUserId))
+		{
+			return Unauthorized();
+		}
+
 		var faq = await _db.FAQs.FirstOrDefaultAsync(f => f.FaqId == id);
 		if (faq == null)
 		{
@@ -138,12 +197,23 @@ public class FaqController : ApiControllerBase
 
 		if (!string.IsNullOrWhiteSpace(request.Question))
 		{
+			if (ContainsBlockedWords(request.Question, out var blockedQuestionWords))
+			{
+				return BadRequest($"Question contains blocked language: {string.Join(", ", blockedQuestionWords)}");
+			}
+
 			faq.Question = request.Question.Trim();
 		}
 
 		if (request.Answer != null)
 		{
+			if (ContainsBlockedWords(request.Answer, out var blockedAnswerWords))
+			{
+				return BadRequest($"Answer contains blocked language: {string.Join(", ", blockedAnswerWords)}");
+			}
+
 			faq.Answer = request.Answer.Trim();
+			faq.RepliedByUserId = string.IsNullOrWhiteSpace(request.Answer) ? null : currentUserId;
 		}
 
 		if (request.CategoryId.HasValue)
@@ -182,7 +252,27 @@ public class FaqController : ApiControllerBase
 			Answer = faq.Answer ?? string.Empty,
 			CreatedAt = faq.CreatedAt,
 			UpdatedAt = faq.UpdatedAt,
-			AuthorId = faq.AuthorId
+			AuthorId = faq.AuthorId,
+			ReplyAuthorId = faq.RepliedByUserId
 		};
+	}
+
+	private static bool ContainsBlockedWords(string? text, out List<string> matches)
+	{
+		matches = [];
+		if (string.IsNullOrWhiteSpace(text))
+		{
+			return false;
+		}
+
+		foreach (var blockedWord in BlockedWords)
+		{
+			if (Regex.IsMatch(text, $@"\b{Regex.Escape(blockedWord)}\b", RegexOptions.IgnoreCase))
+			{
+				matches.Add(blockedWord);
+			}
+		}
+
+		return matches.Count > 0;
 	}
 }
