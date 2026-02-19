@@ -1,9 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { changePassword, deleteAccount, getProfile, getToken, logoutUser, updateProfilePicture } from "./Services/auth";
+import { changePassword, deleteAccount, getProfile, getToken, logoutUser, updateProfilePicture, updateUserName } from "./Services/auth";
 import Sidebar from "./Components/Sidebar";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5149";
+const DEFAULT_PROFILE_PICTURE = `${API_BASE}/OIP.webp`;
+
+const resolveProfileImageUrl = (value) => {
+  if (!value) {
+    return DEFAULT_PROFILE_PICTURE;
+  }
+
+  if (value.startsWith("data:image/") || /^https?:\/\//i.test(value)) {
+    return value;
+  }
+
+  if (value.startsWith("/")) {
+    return `${API_BASE}${value}`;
+  }
+
+  return value;
+};
 
 export default function Profile() {
   const [profile, setProfile] = useState(null);
@@ -12,6 +29,10 @@ export default function Profile() {
   const [error, setError] = useState("");
   const [uploadError, setUploadError] = useState("");
   const [isUploadingPicture, setIsUploadingPicture] = useState(false);
+  const [userNameInput, setUserNameInput] = useState("");
+  const [userNameError, setUserNameError] = useState("");
+  const [userNameSuccess, setUserNameSuccess] = useState("");
+  const [isUpdatingUserName, setIsUpdatingUserName] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -21,6 +42,8 @@ export default function Profile() {
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteError, setDeleteError] = useState("");
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [isDownloadingInfo, setIsDownloadingInfo] = useState(false);
+  const [downloadInfoError, setDownloadInfoError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isBalanceLoading, setIsBalanceLoading] = useState(true);
   const navigate = useNavigate();
@@ -33,6 +56,7 @@ export default function Profile() {
         const data = await getProfile();
         if (isMounted) {
           setProfile(data);
+          setUserNameInput(data?.userName || "");
         }
       } catch (err) {
         if (isMounted) {
@@ -149,6 +173,38 @@ export default function Profile() {
     }
   };
 
+  const handleUpdateUserName = async (event) => {
+    event.preventDefault();
+    setUserNameError("");
+    setUserNameSuccess("");
+
+    const normalizedUserName = userNameInput.trim();
+    if (!normalizedUserName) {
+      setUserNameError("Username is required.");
+      return;
+    }
+
+    if (normalizedUserName.length < 3) {
+      setUserNameError("Username must be at least 3 characters.");
+      return;
+    }
+
+    setIsUpdatingUserName(true);
+    try {
+      const updated = await updateUserName(normalizedUserName);
+      setProfile((prev) => ({
+        ...(prev || {}),
+        userName: updated?.userName || normalizedUserName,
+      }));
+      setUserNameInput(updated?.userName || normalizedUserName);
+      setUserNameSuccess("Username updated successfully.");
+    } catch (err) {
+      setUserNameError(err.message || "Unable to update username.");
+    } finally {
+      setIsUpdatingUserName(false);
+    }
+  };
+
   const handleChangePassword = async (event) => {
     event.preventDefault();
     setPasswordError("");
@@ -209,6 +265,45 @@ export default function Profile() {
     }
   };
 
+  const handleDownloadAccountInfo = async () => {
+    setDownloadInfoError("");
+
+    const token = getToken();
+    if (!token) {
+      setDownloadInfoError("Not authenticated.");
+      return;
+    }
+
+    setIsDownloadingInfo(true);
+    try {
+      const response = await fetch(`${API_BASE}/api/users/me/export`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      const data = await response.json();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const fileStamp = new Date().toISOString().replace(/[:.]/g, "-");
+      link.href = url;
+      link.download = `account-info-${fileStamp}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setDownloadInfoError(err.message || "Unable to download account info.");
+    } finally {
+      setIsDownloadingInfo(false);
+    }
+  };
+
   return (
     <div style={{ display: "flex", height: "100vh", background: "#0d0f1a", color: "#fff", fontFamily: "Arial" }}>
       {/* Sidebar */}
@@ -239,12 +334,19 @@ export default function Profile() {
           >
             {profile?.profilePictureUrl ? (
               <img
-                src={profile.profilePictureUrl}
+                src={resolveProfileImageUrl(profile?.profilePictureUrl)}
                 alt="Profile"
                 style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                onError={(event) => {
+                  event.currentTarget.src = DEFAULT_PROFILE_PICTURE;
+                }}
               />
             ) : (
-              (profile?.email || "U").slice(0, 1).toUpperCase()
+              <img
+                src={DEFAULT_PROFILE_PICTURE}
+                alt="Default profile"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
             )}
           </div>
           <div style={{ marginTop: "12px" }}>
@@ -274,6 +376,7 @@ export default function Profile() {
           {error && <p style={{ marginTop: "10px", color: "#ff8d8d" }}>{error}</p>}
           {!isLoading && !error && (
             <>
+              <p style={{ marginTop: "10px" }}>Username: {profile?.userName || "-"}</p>
               <p style={{ marginTop: "10px" }}>Email: {profile?.email}</p>
               <p>Role: {profile?.role}</p>
               {isBalanceLoading && <p>Balance: Loading...</p>}
@@ -281,11 +384,39 @@ export default function Profile() {
               {!isBalanceLoading && !balanceError && <p>Balance: ${formattedBalance}</p>}
             </>
           )}
+          <form onSubmit={handleUpdateUserName} style={{ marginTop: "14px", display: "grid", gap: "8px", maxWidth: "320px" }}>
+            <input
+              type="text"
+              placeholder="Change username"
+              value={userNameInput}
+              onChange={(event) => setUserNameInput(event.target.value)}
+              style={{ padding: "10px", borderRadius: "8px", border: "1px solid #3c415f", background: "#0f1220", color: "#fff" }}
+            />
+            <button
+              type="submit"
+              disabled={isUpdatingUserName}
+              style={{
+                padding: "10px 14px",
+                borderRadius: "8px",
+                border: "none",
+                background: isUpdatingUserName ? "#3e4162" : "#7f8cff",
+                color: "#fff",
+                cursor: isUpdatingUserName ? "not-allowed" : "pointer",
+              }}
+            >
+              {isUpdatingUserName ? "Updating..." : "Update Username"}
+            </button>
+            {userNameError && <p style={{ margin: 0, color: "#ff8d8d" }}>{userNameError}</p>}
+            {userNameSuccess && <p style={{ margin: 0, color: "#7cf29a" }}>{userNameSuccess}</p>}
+          </form>
           <div className="TransactionHistory">
             <button>Transaction History</button>
           </div>
           <div>
-            <button>Download all your account info</button>
+            <button onClick={handleDownloadAccountInfo} disabled={isDownloadingInfo}>
+              {isDownloadingInfo ? "Preparing download..." : "Download all your account info"}
+            </button>
+            {downloadInfoError && <p style={{ marginTop: "8px", color: "#ff8d8d" }}>{downloadInfoError}</p>}
           </div>
           <div className="DeleteAcccountButton">
             <form onSubmit={handleDeleteAccount} style={{ display: "grid", gap: "10px", marginTop: "10px", maxWidth: "320px" }}>

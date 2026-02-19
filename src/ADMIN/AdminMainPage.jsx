@@ -459,6 +459,9 @@ const Users = () => {
             <span>Email</span>
             <span>Role</span>
             <span>Status</span>
+            <span>Device</span>
+            <span>IP</span>
+            <span>Last Seen</span>
             <span>Joined</span>
             <span>Action</span>
           </div>
@@ -470,6 +473,9 @@ const Users = () => {
               <span className={`badge ${user.isBanned ? "danger" : "success"}`}>
                 {user.isBanned ? "Banned" : "Active"}
               </span>
+              <span>{user.lastDeviceInfo || "-"}</span>
+              <span>{user.lastIpAddress || "-"}</span>
+              <span>{user.lastSeenAt ? new Date(user.lastSeenAt).toLocaleString() : "-"}</span>
               <span>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "-"}</span>
               <span>
                 <button

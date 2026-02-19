@@ -7,6 +7,9 @@ public class UserDto
     public string Email { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
     public string? ProfilePictureUrl { get; set; }
+    public string? LastDeviceInfo { get; set; }
+    public string? LastIpAddress { get; set; }
+    public DateTime? LastSeenAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public User.StatusBit Status { get; set; }
     public bool IsBanned { get; set; }
@@ -332,6 +335,7 @@ public class FaqDto
 {
     public Guid FaqId { get; set; }
     public string Question { get; set; } = string.Empty;
+    public string? QuestionImageUrl { get; set; }
     public string Answer { get; set; } = string.Empty;
     public Guid AuthorId { get; set; }
     public string? AuthorUserName { get; set; }
@@ -348,6 +352,7 @@ public class FaqDto
 public class CreateFaqQuestionRequest
 {
     public string Question { get; set; } = string.Empty;
+    public string? QuestionImageUrl { get; set; }
     public Guid? CategoryId { get; set; }
 }
 

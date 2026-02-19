@@ -10,6 +10,7 @@ namespace NetServer.Data.Models
         [Key]
         public Guid FaqId { get; set; }
         public string Question { get; set; }
+        public string? QuestionImageUrl { get; set; }
         public string Answer { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }

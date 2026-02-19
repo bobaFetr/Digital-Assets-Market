@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using NetServer.Data;
 using NetServer.Data.Models;
 using System.Text.RegularExpressions;
+using System;
 
 [ApiController]
 [Route("api/faq")]
@@ -12,9 +13,10 @@ public class FaqController : ApiControllerBase
 	private readonly AppDbContext _db;
 	private static readonly string[] BlockedWords =
 	[
-		"badword1",
-		"badword2",
-		"badword3"
+		"Fuck",
+		"Kill",
+		"Mainata",
+		"Shit"
 	];
 
 	public FaqController(AppDbContext db)
@@ -37,13 +39,14 @@ public class FaqController : ApiControllerBase
 			{
 				FaqId = f.FaqId,
 				Question = f.Question ?? string.Empty,
+				QuestionImageUrl = f.QuestionImageUrl,
 				Answer = f.Answer ?? string.Empty,
 				CreatedAt = f.CreatedAt,
 				UpdatedAt = f.UpdatedAt,
 				AuthorId = f.AuthorId,
 				AuthorUserName = author != null ? author.UserName : null,
 				AuthorEmail = author != null ? author.Email : null,
-				AuthorProfilePictureUrl = author != null ? author.ProfilePictureUrl : null,
+				AuthorProfilePictureUrl = author != null ? (author.ProfilePictureUrl ?? "/OIP.webp") : "/OIP.webp",
 				ReplyAuthorId = f.RepliedByUserId,
 				ReplyAuthorUserName = replyAuthor != null
 					? replyAuthor.UserName
@@ -52,8 +55,8 @@ public class FaqController : ApiControllerBase
 					? replyAuthor.Email
 					: (!string.IsNullOrWhiteSpace(f.Answer) && author != null ? author.Email : null),
 				ReplyAuthorProfilePictureUrl = replyAuthor != null
-					? replyAuthor.ProfilePictureUrl
-					: (!string.IsNullOrWhiteSpace(f.Answer) && author != null ? author.ProfilePictureUrl : null)
+					? (replyAuthor.ProfilePictureUrl ?? "/OIP.webp")
+					: (!string.IsNullOrWhiteSpace(f.Answer) && author != null ? (author.ProfilePictureUrl ?? "/OIP.webp") : "/OIP.webp")
 			})
 			.ToListAsync();
 
@@ -79,11 +82,17 @@ public class FaqController : ApiControllerBase
 			return BadRequest($"Your question contains blocked language: {string.Join(", ", blockedQuestionWords)}");
 		}
 
+		if (!string.IsNullOrWhiteSpace(request.QuestionImageUrl) && !IsSupportedImageReference(request.QuestionImageUrl, out var imageValidationError))
+		{
+			return BadRequest(imageValidationError);
+		}
+
 		var now = DateTime.UtcNow;
 		var faq = new FAQ
 		{
 			FaqId = Guid.NewGuid(),
 			Question = request.Question.Trim(),
+			QuestionImageUrl = string.IsNullOrWhiteSpace(request.QuestionImageUrl) ? null : request.QuestionImageUrl.Trim(),
 			Answer = string.Empty,
 			CreatedAt = now,
 			UpdatedAt = now,
@@ -249,6 +258,7 @@ public class FaqController : ApiControllerBase
 		{
 			FaqId = faq.FaqId,
 			Question = faq.Question ?? string.Empty,
+			QuestionImageUrl = faq.QuestionImageUrl,
 			Answer = faq.Answer ?? string.Empty,
 			CreatedAt = faq.CreatedAt,
 			UpdatedAt = faq.UpdatedAt,
@@ -274,5 +284,31 @@ public class FaqController : ApiControllerBase
 		}
 
 		return matches.Count > 0;
+	}
+
+	private static bool IsSupportedImageReference(string value, out string error)
+	{
+		error = string.Empty;
+		var trimmed = value.Trim();
+
+		if (trimmed.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase))
+		{
+			if (!trimmed.Contains(";base64,", StringComparison.OrdinalIgnoreCase))
+			{
+				error = "QuestionImageUrl data:image value must be base64-encoded.";
+				return false;
+			}
+
+			return true;
+		}
+
+		if (!Uri.TryCreate(trimmed, UriKind.Absolute, out var parsedUri)
+			|| (parsedUri.Scheme != Uri.UriSchemeHttp && parsedUri.Scheme != Uri.UriSchemeHttps))
+		{
+			error = "QuestionImageUrl must be an absolute http/https URL or data:image base64 value.";
+			return false;
+		}
+
+		return true;
 	}
 }

@@ -117,9 +117,25 @@ public class AuthController : ControllerBase
             signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
         );
 
+        var tokenValue = new JwtSecurityTokenHandler().WriteToken(token);
+        var userAgent = Request.Headers.UserAgent.ToString();
+        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+
+        _db.Sessions.Add(new SessionTable
+        {
+            SessionId = Guid.NewGuid(),
+            UserId = existing.Id,
+            Token = tokenValue,
+            IpAddress = string.IsNullOrWhiteSpace(ipAddress) ? "Unknown IP" : ipAddress,
+            DeviceInfo = string.IsNullOrWhiteSpace(userAgent) ? "Unknown device" : userAgent,
+            CreatedAt = DateTime.UtcNow,
+            ExpiresAt = DateTime.UtcNow.AddHours(1)
+        });
+        _db.SaveChanges();
+
         return Ok(new
         {
-            token = new JwtSecurityTokenHandler().WriteToken(token)
+            token = tokenValue
         });
     }
 
@@ -159,9 +175,10 @@ public class AuthController : ControllerBase
 
         return Ok(new
         {
+            user.UserName,
             user.Email,
             user.Role,
-            user.ProfilePictureUrl
+            ProfilePictureUrl = user.ProfilePictureUrl ?? "/OIP.webp"
         });
     }
 

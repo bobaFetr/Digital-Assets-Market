@@ -33,6 +33,136 @@ public class UsersController : ApiControllerBase
         return Ok(ToDto(user));
     }
 
+    [HttpGet("me/export")]
+    public async Task<IActionResult> ExportMyAccountInfo()
+    {
+        if (!TryGetUserId(out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        var wallets = await _db.Wallets
+            .AsNoTracking()
+            .Where(w => w.UserId == userId)
+            .Select(w => new
+            {
+                w.WalletID,
+                w.Currency,
+                w.Balance,
+                Address = w.Addres,
+                w.Status,
+                w.CreatedAt
+            })
+            .ToListAsync();
+
+        var orders = await _db.Orders
+            .AsNoTracking()
+            .Where(o => o.UserId == userId)
+            .Select(o => new
+            {
+                o.OrderId,
+                o.TypeOfOrder,
+                o.Symbol,
+                o.Price,
+                o.Amount,
+                o.OrderStatus,
+                o.CreatedAt
+            })
+            .ToListAsync();
+
+        var transactions = await _db.Transactions
+            .AsNoTracking()
+            .Where(t => t.UserID == userId)
+            .Select(t => new
+            {
+                TransactionId = t.TransactionID,
+                t.TypeOfTransaction,
+                t.Currency,
+                t.Amount,
+                t.Status,
+                t.BlockchainTransactionHash,
+                t.TimeStamp
+            })
+            .ToListAsync();
+
+        var sessions = await _db.Sessions
+            .AsNoTracking()
+            .Where(s => s.UserId == userId)
+            .Select(s => new
+            {
+                s.SessionId,
+                s.IpAddress,
+                s.DeviceInfo,
+                s.CreatedAt,
+                s.ExpiresAt
+            })
+            .ToListAsync();
+
+        var kycDocuments = await _db.KycDocuments
+            .AsNoTracking()
+            .Where(k => k.UserId == userId)
+            .Select(k => new
+            {
+                k.DocId,
+                k.Type,
+                k.FilePath,
+                k.DocumentNumber,
+                k.FullName,
+                k.DateOfBirth,
+                k.CountryOfResidence,
+                k.ExpiryDate,
+                k.Status,
+                k.UploadedAt
+            })
+            .ToListAsync();
+
+        var faqs = await _db.FAQs
+            .AsNoTracking()
+            .Where(f => f.AuthorId == userId || f.RepliedByUserId == userId)
+            .Select(f => new
+            {
+                f.FaqId,
+                f.Question,
+                f.QuestionImageUrl,
+                f.Answer,
+                f.AuthorId,
+                f.RepliedByUserId,
+                f.CreatedAt,
+                f.UpdatedAt
+            })
+            .ToListAsync();
+
+        var payload = new
+        {
+            exportedAtUtc = DateTime.UtcNow,
+            profile = new
+            {
+                user.Id,
+                user.UserName,
+                user.Email,
+                user.Role,
+                user.ProfilePictureUrl,
+                user.CreatedAt,
+                user.Status,
+                user.IsBanned
+            },
+            wallets,
+            orders,
+            transactions,
+            sessions,
+            kycDocuments,
+            faqs
+        };
+
+        return Ok(payload);
+    }
+
     [HttpPut("me/profile-picture")]
     public async Task<IActionResult> UpdateMyProfilePicture([FromBody] UpdateProfilePictureRequest request)
     {
@@ -77,6 +207,37 @@ public class UsersController : ApiControllerBase
         return Ok(ToDto(user));
     }
 
+    [HttpPut("me/username")]
+    public async Task<IActionResult> UpdateMyUserName([FromBody] UpdateUserNameRequest request)
+    {
+        if (!TryGetUserId(out var userId))
+        {
+            return Unauthorized();
+        }
+
+        if (request == null || string.IsNullOrWhiteSpace(request.UserName))
+        {
+            return BadRequest("UserName is required.");
+        }
+
+        var normalizedUserName = request.UserName.Trim();
+        if (normalizedUserName.Length < 3)
+        {
+            return BadRequest("UserName must be at least 3 characters.");
+        }
+
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        user.UserName = normalizedUserName;
+        await _db.SaveChangesAsync();
+
+        return Ok(ToDto(user));
+    }
+
     [HttpGet]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetAll([FromQuery] string? status)
@@ -100,8 +261,26 @@ public class UsersController : ApiControllerBase
             }
         }
 
-        var users = await query.Select(u => ToDto(u)).ToListAsync();
-        return Ok(users);
+        var users = await query.ToListAsync();
+        var userIds = users.Select(u => u.Id).ToList();
+
+        var sessions = await _db.Sessions
+            .AsNoTracking()
+            .Where(s => userIds.Contains(s.UserId))
+            .OrderByDescending(s => s.CreatedAt)
+            .ToListAsync();
+
+        var latestSessionByUser = sessions
+            .GroupBy(s => s.UserId)
+            .ToDictionary(group => group.Key, group => group.First());
+
+        var result = users.Select(u =>
+        {
+            latestSessionByUser.TryGetValue(u.Id, out var latestSession);
+            return ToDto(u, latestSession);
+        }).ToList();
+
+        return Ok(result);
     }
 
     [HttpGet("{id:guid}")]
@@ -114,7 +293,13 @@ public class UsersController : ApiControllerBase
             return NotFound();
         }
 
-        return Ok(ToDto(user));
+        var latestSession = await _db.Sessions
+            .AsNoTracking()
+            .Where(s => s.UserId == id)
+            .OrderByDescending(s => s.CreatedAt)
+            .FirstOrDefaultAsync();
+
+        return Ok(ToDto(user, latestSession));
     }
 
     [HttpPost("ban")]
@@ -192,7 +377,7 @@ public class UsersController : ApiControllerBase
         return null;
     }
 
-    private static UserDto ToDto(User user)
+    private static UserDto ToDto(User user, SessionTable? latestSession = null)
     {
         return new UserDto
         {
@@ -200,7 +385,10 @@ public class UsersController : ApiControllerBase
             UserName = user.UserName,
             Email = user.Email,
             Role = user.Role,
-            ProfilePictureUrl = user.ProfilePictureUrl,
+            ProfilePictureUrl = user.ProfilePictureUrl ?? "/OIP.webp",
+            LastDeviceInfo = latestSession?.DeviceInfo,
+            LastIpAddress = latestSession?.IpAddress,
+            LastSeenAt = latestSession?.CreatedAt,
             CreatedAt = user.CreatedAt,
             Status = user.Status,
             IsBanned = user.IsBanned
@@ -211,6 +399,11 @@ public class UsersController : ApiControllerBase
 public class UpdateProfilePictureRequest
 {
     public string ProfilePictureUrl { get; set; } = string.Empty;
+}
+
+public class UpdateUserNameRequest
+{
+    public string UserName { get; set; } = string.Empty;
 }
 
 public class UserBanRequest

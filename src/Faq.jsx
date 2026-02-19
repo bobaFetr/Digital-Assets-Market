@@ -3,11 +3,29 @@ import Sidebar from "./Components/Sidebar";
 import { getToken } from "./Services/auth";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5149";
+const DEFAULT_PROFILE_PICTURE = `${API_BASE}/OIP.webp`;
+
+const resolveProfileImageUrl = (value) => {
+  if (!value) {
+    return DEFAULT_PROFILE_PICTURE;
+  }
+
+  if (value.startsWith("data:image/") || /^https?:\/\//i.test(value)) {
+    return value;
+  }
+
+  if (value.startsWith("/")) {
+    return `${API_BASE}${value}`;
+  }
+
+  return value;
+};
 
 export default function Faq() {
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [questionText, setQuestionText] = useState("");
+  const [questionImageUrl, setQuestionImageUrl] = useState("");
   const [replyDrafts, setReplyDrafts] = useState({});
   const [statusMessage, setStatusMessage] = useState("");
 
@@ -35,6 +53,41 @@ export default function Faq() {
     loadFaqs();
   }, []);
 
+  const readFileAsDataUrl = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = () => reject(new Error("Failed to read image file."));
+      reader.readAsDataURL(file);
+    });
+
+  const handleQuestionImageChange = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      setStatusMessage("Please select an image file.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setStatusMessage("Image is too large. Please choose one under 5MB.");
+      return;
+    }
+
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      setQuestionImageUrl(dataUrl);
+      setStatusMessage("Image attached.");
+    } catch (error) {
+      setStatusMessage(error?.message || "Failed to process image.");
+    }
+  };
+
   const submitQuestion = async (event) => {
     event.preventDefault();
     setStatusMessage("");
@@ -58,6 +111,7 @@ export default function Faq() {
         },
         body: JSON.stringify({
           question: questionText.trim(),
+          questionImageUrl: questionImageUrl || null,
         }),
       });
 
@@ -66,6 +120,7 @@ export default function Faq() {
       }
 
       setQuestionText("");
+      setQuestionImageUrl("");
       setStatusMessage("Question submitted.");
       await loadFaqs();
     } catch (error) {
@@ -137,6 +192,44 @@ export default function Faq() {
                 resize: "vertical",
               }}
             />
+            <div style={{ marginTop: "12px" }}>
+              <label
+                style={{
+                  display: "inline-block",
+                  padding: "10px 14px",
+                  borderRadius: "8px",
+                  background: "#7f8cff",
+                  color: "#fff",
+                  cursor: "pointer",
+                }}
+              >
+                Upload Screenshot
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleQuestionImageChange}
+                  style={{ display: "none" }}
+                />
+              </label>
+              {questionImageUrl && (
+                <div style={{ marginTop: "10px" }}>
+                  <img
+                    src={questionImageUrl}
+                    alt="Question attachment preview"
+                    style={{ maxWidth: "260px", borderRadius: "10px", border: "1px solid #2c3454" }}
+                  />
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => setQuestionImageUrl("")}
+                      style={{ marginTop: "8px" }}
+                    >
+                      Remove Image
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
             <button type="submit" style={{ marginTop: "12px" }}>
               Send Question
             </button>
@@ -185,12 +278,19 @@ export default function Faq() {
                   >
                     {item.authorProfilePictureUrl ? (
                       <img
-                        src={item.authorProfilePictureUrl}
+                        src={resolveProfileImageUrl(item.authorProfilePictureUrl)}
                         alt="Author"
                         style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        onError={(event) => {
+                          event.currentTarget.src = DEFAULT_PROFILE_PICTURE;
+                        }}
                       />
                     ) : (
-                      avatarFallback
+                      <img
+                        src={DEFAULT_PROFILE_PICTURE}
+                        alt="Default profile"
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
                     )}
                   </div>
                   <div>
@@ -201,6 +301,16 @@ export default function Faq() {
                 <p style={{ color: "#7f8cff", fontSize: "13px", marginBottom: hasAnswer ? "10px" : "14px" }}>
                   Posted: {new Date(item.createdAt).toLocaleString()}
                 </p>
+
+                {item.questionImageUrl && (
+                  <div style={{ marginBottom: hasAnswer ? "10px" : "14px" }}>
+                    <img
+                      src={item.questionImageUrl}
+                      alt="Question attachment"
+                      style={{ maxWidth: "320px", width: "100%", borderRadius: "10px", border: "1px solid #2c3454" }}
+                    />
+                  </div>
+                )}
 
                 {hasAnswer ? (
                   <div style={{ background: "#0d0f1a", padding: "12px", borderRadius: "10px", border: "1px solid #2c3454" }}>
@@ -223,12 +333,19 @@ export default function Faq() {
                       >
                         {item.replyAuthorProfilePictureUrl ? (
                           <img
-                            src={item.replyAuthorProfilePictureUrl}
+                            src={resolveProfileImageUrl(item.replyAuthorProfilePictureUrl)}
                             alt="Replier"
                             style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                            onError={(event) => {
+                              event.currentTarget.src = DEFAULT_PROFILE_PICTURE;
+                            }}
                           />
                         ) : (
-                          replyAvatarFallback
+                          <img
+                            src={DEFAULT_PROFILE_PICTURE}
+                            alt="Default profile"
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          />
                         )}
                       </div>
                       <div>
