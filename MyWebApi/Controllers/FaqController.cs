@@ -26,8 +26,15 @@ public class FaqController : ApiControllerBase
 
 	[HttpGet]
 	[AllowAnonymous]
-	public async Task<IActionResult> GetFaqs()
+	public async Task<IActionResult> GetFaqs([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
 	{
+		page = page < 1 ? 1 : page;
+		pageSize = pageSize < 1 ? 20 : pageSize;
+		if (pageSize > 100)
+		{
+			pageSize = 100;
+		}
+
 		var faqs = await (
 			from f in _db.FAQs.AsNoTracking()
 			join u in _db.Users.AsNoTracking() on f.AuthorId equals u.Id into users
@@ -58,6 +65,8 @@ public class FaqController : ApiControllerBase
 					? (replyAuthor.ProfilePictureUrl ?? "/OIP.webp")
 					: (!string.IsNullOrWhiteSpace(f.Answer) && author != null ? (author.ProfilePictureUrl ?? "/OIP.webp") : "/OIP.webp")
 			})
+			.Skip((page - 1) * pageSize)
+			.Take(pageSize)
 			.ToListAsync();
 
 		return Ok(faqs);

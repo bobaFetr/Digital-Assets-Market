@@ -35,7 +35,7 @@ export default function Faq() {
   const loadFaqs = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/api/faq`);
+      const response = await fetch(`${API_BASE}/api/faq?page=1&pageSize=20`);
       if (!response.ok) {
         throw new Error(await response.text());
       }
