@@ -39,9 +39,16 @@ public class AuthController : ControllerBase
         if (string.IsNullOrWhiteSpace(request.UserName))
             return BadRequest("UserName is required.");
 
+        var normalizedUserName = request.UserName.Trim();
+        var normalizedUserNameLower = normalizedUserName.ToLowerInvariant();
+        if (_db.Users.Any(u => u.UserName.ToLower() == normalizedUserNameLower))
+        {
+            return BadRequest("Username already exists.");
+        }
+
         var user = new User
         {
-            UserName = request.UserName.Trim(),
+            UserName = normalizedUserName,
             Email = request.Email.Trim(),
             Password = request.Password,
             Role = string.IsNullOrWhiteSpace(request.Role) ? "User" : request.Role
@@ -70,6 +77,14 @@ public class AuthController : ControllerBase
         if (string.IsNullOrWhiteSpace(user.UserName))
             return BadRequest("UserName is required.");
 
+        var normalizedUserName = user.UserName.Trim();
+        var normalizedUserNameLower = normalizedUserName.ToLowerInvariant();
+        if (_db.Users.Any(u => u.UserName.ToLower() == normalizedUserNameLower))
+        {
+            return BadRequest("Username already exists.");
+        }
+
+        user.UserName = normalizedUserName;
         user.Role = "Admin";
         user.CreatedAt = user.CreatedAt == default ? DateTime.UtcNow : user.CreatedAt;
         user.Status = user.Status == default ? NetServer.Data.Models.User.StatusBit.Active : user.Status;

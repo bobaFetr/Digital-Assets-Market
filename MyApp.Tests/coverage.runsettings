@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <Include>[MyWebApi]*</Include>
+          <IncludeByFile>**/ApiControllerBase.cs;**/NewsController.cs;**/OrderBookController.cs;**/WalletsController.cs;**/TransactionsController.cs</IncludeByFile>
+          <ExcludeByFile>**/Program.cs;**/ApiDtos.cs</ExcludeByFile>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

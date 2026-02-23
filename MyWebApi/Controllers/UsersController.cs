@@ -226,6 +226,15 @@ public class UsersController : ApiControllerBase
             return BadRequest("UserName must be at least 3 characters.");
         }
 
+        var normalizedUserNameLower = normalizedUserName.ToLowerInvariant();
+        var isTakenByAnotherUser = await _db.Users
+            .AnyAsync(u => u.Id != userId && u.UserName.ToLower() == normalizedUserNameLower);
+
+        if (isTakenByAnotherUser)
+        {
+            return BadRequest("Username already exists.");
+        }
+
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
         if (user == null)
         {
