@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { changePassword, deleteAccount, getProfile, getToken, logoutUser, updateProfilePicture, updateUserName } from "./Services/auth";
+import { addMoneyFromCard, changePassword, deleteAccount, getProfile, getSavedCardDetails, getToken, logoutUser, updateProfilePicture, updateUserName } from "./Services/auth";
 import Sidebar from "./Components/Sidebar";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5149";
@@ -44,19 +44,70 @@ export default function Profile() {
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [isDownloadingInfo, setIsDownloadingInfo] = useState(false);
   const [downloadInfoError, setDownloadInfoError] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardHolderName, setCardHolderName] = useState("");
+  const [cardCvv, setCardCvv] = useState("");
+  const [cardExpiry, setCardExpiry] = useState("");
+  const [depositAmount, setDepositAmount] = useState("");
+  const [depositCurrency, setDepositCurrency] = useState("USD");
+  const [savedCardForDeposits, setSavedCardForDeposits] = useState(null);
+  const [addMoneyError, setAddMoneyError] = useState("");
+  const [addMoneySuccess, setAddMoneySuccess] = useState("");
+  const [isAddingMoney, setIsAddingMoney] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isBalanceLoading, setIsBalanceLoading] = useState(true);
   const navigate = useNavigate();
+
+  const loadBalance = async () => {
+    const token = getToken();
+    if (!token) {
+      setBalance(null);
+      setBalanceError("Not authenticated.");
+      setIsBalanceLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/api/wallets`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      const wallets = await response.json();
+      const total = wallets.reduce((sum, wallet) => sum + Number(wallet.balance || 0), 0);
+
+      setBalance(total);
+      setBalanceError("");
+    } catch (err) {
+      setBalance(null);
+      setBalanceError(err.message || "Unable to load balance.");
+    } finally {
+      setIsBalanceLoading(false);
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
 
     const loadProfile = async () => {
       try {
-        const data = await getProfile();
+        const [data, savedCard] = await Promise.all([
+          getProfile(),
+          getSavedCardDetails().catch(() => null),
+        ]);
+
         if (isMounted) {
           setProfile(data);
           setUserNameInput(data?.userName || "");
+          setSavedCardForDeposits(savedCard);
+          if (savedCard?.currency) {
+            setDepositCurrency(savedCard.currency);
+          }
         }
       } catch (err) {
         if (isMounted) {
@@ -69,49 +120,8 @@ export default function Profile() {
       }
     };
 
-    const loadBalance = async () => {
-      const token = getToken();
-      if (!token) {
-        if (isMounted) {
-          setBalance(null);
-          setBalanceError("Not authenticated.");
-          setIsBalanceLoading(false);
-        }
-        return;
-      }
-
-      try {
-        const response = await fetch(`${API_BASE}/api/wallets`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(await response.text());
-        }
-
-        const wallets = await response.json();
-        const total = wallets.reduce((sum, wallet) => sum + Number(wallet.balance || 0), 0);
-
-        if (isMounted) {
-          setBalance(total);
-          setBalanceError("");
-        }
-      } catch (err) {
-        if (isMounted) {
-          setBalance(null);
-          setBalanceError(err.message || "Unable to load balance.");
-        }
-      } finally {
-        if (isMounted) {
-          setIsBalanceLoading(false);
-        }
-      }
-    };
-
     loadProfile();
-    loadBalance();
+    loadBalance().catch(() => {});
     return () => {
       isMounted = false;
     };
@@ -304,6 +314,93 @@ export default function Profile() {
     }
   };
 
+  const handleAddMoney = async (event) => {
+    event.preventDefault();
+    setAddMoneyError("");
+    setAddMoneySuccess("");
+
+    const parsedAmount = Number(depositAmount);
+
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      setAddMoneyError("Amount must be greater than zero.");
+      return;
+    }
+
+    let normalizedCardHolder = "";
+    let normalizedCardNumber = "";
+    let normalizedCvv = "";
+    let normalizedExpiry = "";
+    let normalizedCurrency = depositCurrency;
+
+    if (savedCardForDeposits) {
+      normalizedCardHolder = "";
+      normalizedCardNumber = "";
+      normalizedCvv = "";
+      normalizedExpiry = "";
+      normalizedCurrency = savedCardForDeposits.currency;
+    } else {
+      normalizedCardHolder = cardHolderName.trim();
+      normalizedCardNumber = cardNumber.replace(/\s+/g, "");
+      normalizedCvv = cardCvv.trim();
+      normalizedExpiry = cardExpiry.trim();
+      normalizedCurrency = depositCurrency;
+
+      if (!normalizedCardHolder) {
+        setAddMoneyError("Card holder name is required.");
+        return;
+      }
+
+      if (!/^\d{12,19}$/.test(normalizedCardNumber)) {
+        setAddMoneyError("Card number must be 12-19 digits.");
+        return;
+      }
+
+      if (!/^\d{3,4}$/.test(normalizedCvv)) {
+        setAddMoneyError("CVV must be 3 or 4 digits.");
+        return;
+      }
+
+      if (!/^(0[1-9]|1[0-2])\/(\d{2})$/.test(normalizedExpiry)) {
+        setAddMoneyError("Expiry date must be in MM/YY format.");
+        return;
+      }
+    }
+
+    setIsAddingMoney(true);
+    try {
+      await addMoneyFromCard({
+        cardNumber: normalizedCardNumber,
+        cardHolderName: normalizedCardHolder,
+        cvv: normalizedCvv,
+        expiryDate: normalizedExpiry,
+        amount: parsedAmount,
+        currency: normalizedCurrency,
+      });
+
+      setAddMoneySuccess("Money added successfully.");
+
+      if (!savedCardForDeposits) {
+        const savedCard = await getSavedCardDetails().catch(() => null);
+        if (savedCard) {
+          setSavedCardForDeposits(savedCard);
+          setDepositCurrency(savedCard.currency || normalizedCurrency);
+        }
+      }
+
+      setCardNumber("");
+      setCardHolderName("");
+      setCardCvv("");
+      setCardExpiry("");
+      setDepositAmount("");
+      setIsBalanceLoading(true);
+      await loadBalance();
+    } catch (err) {
+      setAddMoneyError(err.message || "Unable to add money.");
+    } finally {
+      setIsAddingMoney(false);
+    }
+  };
+
   return (
     <div style={{ display: "flex", height: "100vh", background: "#0d0f1a", color: "#fff", fontFamily: "Arial" }}>
       {/* Sidebar */}
@@ -411,6 +508,133 @@ export default function Profile() {
           </form>
           <div className="TransactionHistory">
             <button>Transaction History</button>
+          </div>
+          <div className="AddMoney">
+            <form onSubmit={handleAddMoney} style={{ display: "grid", gap: "10px", marginTop: "10px", maxWidth: "360px" }}>
+              <h4 style={{ margin: 0 }}>Add Money from Card</h4>
+              {savedCardForDeposits && (
+                <div style={{ color: "#9aa3ff", fontSize: "13px" }}>
+                  Using saved card: {savedCardForDeposits.cardHolderName} •••• {savedCardForDeposits.cardLast4} ({savedCardForDeposits.currency})
+                </div>
+              )}
+
+              {savedCardForDeposits && (
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px", background: "#0f1220", borderRadius: "8px", overflow: "hidden" }}>
+                  <thead>
+                    <tr style={{ background: "#1b2140" }}>
+                      <th style={{ textAlign: "left", padding: "8px", borderBottom: "1px solid #3c415f" }}>Credit Card ID</th>
+                      <th style={{ textAlign: "left", padding: "8px", borderBottom: "1px solid #3c415f" }}>Holder</th>
+                      <th style={{ textAlign: "left", padding: "8px", borderBottom: "1px solid #3c415f" }}>Last 4</th>
+                      <th style={{ textAlign: "left", padding: "8px", borderBottom: "1px solid #3c415f" }}>Expiry</th>
+                      <th style={{ textAlign: "left", padding: "8px", borderBottom: "1px solid #3c415f" }}>Currency</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style={{ padding: "8px", borderBottom: "1px solid #3c415f" }}>{savedCardForDeposits.creditCardId || savedCardForDeposits.userId}</td>
+                      <td style={{ padding: "8px", borderBottom: "1px solid #3c415f" }}>{savedCardForDeposits.cardHolderName}</td>
+                      <td style={{ padding: "8px", borderBottom: "1px solid #3c415f" }}>{savedCardForDeposits.cardLast4}</td>
+                      <td style={{ padding: "8px", borderBottom: "1px solid #3c415f" }}>{savedCardForDeposits.expiryDate}</td>
+                      <td style={{ padding: "8px", borderBottom: "1px solid #3c415f" }}>{savedCardForDeposits.currency}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              )}
+
+              {!savedCardForDeposits && (
+                <>
+                  <input
+                    type="text"
+                    placeholder="Card holder name"
+                    value={cardHolderName}
+                    onChange={(event) => setCardHolderName(event.target.value)}
+                    style={{ padding: "10px", borderRadius: "8px", border: "1px solid #3c415f", background: "#0f1220", color: "#fff" }}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Card number"
+                    value={cardNumber}
+                    onChange={(event) => setCardNumber(event.target.value)}
+                    style={{ padding: "10px", borderRadius: "8px", border: "1px solid #3c415f", background: "#0f1220", color: "#fff" }}
+                  />
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                    <input
+                      type="text"
+                      placeholder="CVV"
+                      value={cardCvv}
+                      onChange={(event) => setCardCvv(event.target.value)}
+                      style={{ padding: "10px", borderRadius: "8px", border: "1px solid #3c415f", background: "#0f1220", color: "#fff" }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="MM/YY"
+                      value={cardExpiry}
+                      onChange={(event) => setCardExpiry(event.target.value)}
+                      style={{ padding: "10px", borderRadius: "8px", border: "1px solid #3c415f", background: "#0f1220", color: "#fff" }}
+                    />
+                  </div>
+                </>
+              )}
+
+              <div style={{ display: "grid", gridTemplateColumns: savedCardForDeposits ? "1fr" : "1fr 120px", gap: "10px" }}>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="Amount"
+                  value={depositAmount}
+                  onChange={(event) => setDepositAmount(event.target.value)}
+                  style={{ padding: "10px", borderRadius: "8px", border: "1px solid #3c415f", background: "#0f1220", color: "#fff" }}
+                />
+                {!savedCardForDeposits && (
+                  <select
+                    value={depositCurrency}
+                    onChange={(event) => setDepositCurrency(event.target.value)}
+                    style={{ padding: "10px", borderRadius: "8px", border: "1px solid #3c415f", background: "#0f1220", color: "#fff" }}
+                  >
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                  </select>
+                )}
+              </div>
+              <button
+                type="submit"
+                disabled={isAddingMoney}
+                style={{
+                  padding: "10px 14px",
+                  borderRadius: "8px",
+                  border: "none",
+                  background: isAddingMoney ? "#3e4162" : "#7f8cff",
+                  color: "#fff",
+                  cursor: isAddingMoney ? "not-allowed" : "pointer",
+                }}
+              >
+                {isAddingMoney ? "Adding..." : "Add Money"}
+              </button>
+              {savedCardForDeposits && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSavedCardForDeposits(null);
+                    setDepositCurrency("USD");
+                    setAddMoneySuccess("");
+                    setAddMoneyError("");
+                  }}
+                  style={{
+                    padding: "10px 14px",
+                    borderRadius: "8px",
+                    border: "1px solid #3c415f",
+                    background: "#0f1220",
+                    color: "#fff",
+                    cursor: "pointer",
+                  }}
+                >
+                  Use another card
+                </button>
+              )}
+              {addMoneyError && <p style={{ margin: 0, color: "#ff8d8d" }}>{addMoneyError}</p>}
+              {addMoneySuccess && <p style={{ margin: 0, color: "#7cf29a" }}>{addMoneySuccess}</p>}
+            </form>
           </div>
           <div>
             <button onClick={handleDownloadAccountInfo} disabled={isDownloadingInfo}>

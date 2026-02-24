@@ -43,6 +43,28 @@ public class UpdateWalletRequest
     public string? Status { get; set; }
 }
 
+public class AddMoneyByCardRequest
+{
+    public string? CardNumber { get; set; }
+    public string? CardHolderName { get; set; }
+    public string? Cvv { get; set; }
+    public string? ExpiryDate { get; set; }
+    public decimal Amount { get; set; }
+    public string Currency { get; set; } = string.Empty;
+}
+
+public class CreditCardDetailsDto
+{
+    public Guid CreditCardId { get; set; }
+    public Guid UserId { get; set; }
+    public string CardHolderName { get; set; } = string.Empty;
+    public string CardLast4 { get; set; } = string.Empty;
+    public string ExpiryDate { get; set; } = string.Empty;
+    public string Currency { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+}
+
 public class OrderDto
 {
     public Guid OrderId { get; set; }

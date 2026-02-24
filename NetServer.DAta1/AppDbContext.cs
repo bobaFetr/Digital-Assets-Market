@@ -36,6 +36,7 @@ namespace NetServer.Data
 
         public DbSet<FAQ> FAQs { get; set; } = null!;
         public DbSet<NewsTable> News { get; set; } = null!;
+        public DbSet<CreditCardDetailsTable> CreditCardDetails { get; set; } = null!;
         // public DbSet<ChatTable> Messages { get; set; } = null!;
          
 
@@ -60,6 +61,7 @@ namespace NetServer.Data
             modelBuilder.Entity<BlockchainEvent>().HasKey(b => b.EventId);
             modelBuilder.Entity<ExchangeTransaction>().HasKey(et => et.TransactionID);
             modelBuilder.Entity<FeeTable>().HasKey(f => f.FeeTableId);
+            modelBuilder.Entity<CreditCardDetailsTable>().HasKey(c => c.UserId);
             // modelBuilder.Entity<WalletTable>().HasKey(w => w.WalletID);
             // modelBuilder.Entity<KycDocument>().HasKey(k => k.DocId);
             // modelBuilder.Entity<AuditLog>().HasKey(a => a.LogId);
@@ -77,6 +79,12 @@ namespace NetServer.Data
                 .HasOne<User>()
                 .WithMany()
                 .HasForeignKey(w => w.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CreditCardDetailsTable>()
+                .HasOne(c => c.User)
+                .WithOne()
+                .HasForeignKey<CreditCardDetailsTable>(c => c.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<OrdersTable>()

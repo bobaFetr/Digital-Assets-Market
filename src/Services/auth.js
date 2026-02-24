@@ -167,3 +167,32 @@ export const deleteAccount = (currentPassword) => {
     body: JSON.stringify({ currentPassword }),
   });
 };
+
+export const addMoneyFromCard = (payload) => {
+  const token = getToken();
+  if (!token) {
+    return Promise.reject(new Error("Not authenticated"));
+  }
+
+  return request("/api/wallets/deposit-card", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+};
+
+export const getSavedCardDetails = () => {
+  const token = getToken();
+  if (!token) {
+    return Promise.reject(new Error("Not authenticated"));
+  }
+
+  return request("/api/wallets/card-details", {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};

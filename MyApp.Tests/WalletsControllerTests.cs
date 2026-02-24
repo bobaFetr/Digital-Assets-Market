@@ -177,4 +177,139 @@ public class WalletsControllerTests
         Assert.That(result, Is.InstanceOf<NoContentResult>());
         Assert.That(db.Wallets.Count(), Is.EqualTo(0));
     }
+
+    [Test]
+    public async Task AddMoneyFromCard_CreditsWallet_AndCreatesTransaction()
+    {
+        using var db = ControllerTestHelpers.CreateDbContext();
+        var userId = Guid.NewGuid();
+        db.Wallets.Add(new WalletTable
+        {
+            WalletID = Guid.NewGuid(),
+            UserId = userId,
+            Currency = "USD",
+            Balance = 10m,
+            Addres = string.Empty,
+            Status = "Active",
+            CreatedAt = DateTime.UtcNow
+        });
+        await db.SaveChangesAsync();
+
+        var controller = new WalletsController(db);
+        ControllerTestHelpers.SetUser(controller, userId, isAdmin: false);
+
+        var result = await controller.AddMoneyFromCard(new AddMoneyByCardRequest
+        {
+            CardNumber = "4111111111111111",
+            CardHolderName = "Alice Test",
+            Cvv = "123",
+            ExpiryDate = "12/99",
+            Amount = 25m,
+            Currency = "USD"
+        });
+
+        var ok = result as OkObjectResult;
+        Assert.That(ok, Is.Not.Null);
+
+        var wallet = db.Wallets.Single(w => w.UserId == userId && w.Currency == "USD");
+        Assert.That(wallet.Balance, Is.EqualTo(35m));
+
+        var tx = db.Transactions.Single(t => t.UserID == userId);
+        Assert.That(tx.TypeOfTransaction, Is.EqualTo("CardDeposit"));
+        Assert.That(tx.Currency, Is.EqualTo("USD"));
+        Assert.That(tx.Amount, Is.EqualTo(25m));
+        Assert.That(tx.Status, Is.EqualTo("Completed"));
+
+        var savedCard = db.CreditCardDetails.Single(c => c.UserId == userId);
+        Assert.That(savedCard.CardHolderName, Is.EqualTo("Alice Test"));
+        Assert.That(savedCard.CardLast4, Is.EqualTo("1111"));
+    }
+
+    [Test]
+    public async Task AddMoneyFromCard_UsesSavedCard_WhenOnlyAmountProvided()
+    {
+        using var db = ControllerTestHelpers.CreateDbContext();
+        var userId = Guid.NewGuid();
+
+        db.CreditCardDetails.Add(new CreditCardDetailsTable
+        {
+            UserId = userId,
+            CardHolderName = "Saved Holder",
+            CardLast4 = "1234",
+            ExpiryDate = "12/99",
+            Currency = "USD",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        });
+        await db.SaveChangesAsync();
+
+        var controller = new WalletsController(db);
+        ControllerTestHelpers.SetUser(controller, userId, isAdmin: false);
+
+        var result = await controller.AddMoneyFromCard(new AddMoneyByCardRequest
+        {
+            Amount = 40m,
+            Currency = "USD"
+        });
+
+        Assert.That(result, Is.InstanceOf<OkObjectResult>());
+
+        var wallet = db.Wallets.Single(w => w.UserId == userId && w.Currency == "USD");
+        Assert.That(wallet.Balance, Is.EqualTo(40m));
+    }
+
+    [Test]
+    public async Task GetSavedCardDetails_ReturnsSavedCard_ForCurrentUser()
+    {
+        using var db = ControllerTestHelpers.CreateDbContext();
+        var userId = Guid.NewGuid();
+
+        db.CreditCardDetails.Add(new CreditCardDetailsTable
+        {
+            UserId = userId,
+            CardHolderName = "Alice",
+            CardLast4 = "4321",
+            ExpiryDate = "10/99",
+            Currency = "EUR",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        });
+        await db.SaveChangesAsync();
+
+        var controller = new WalletsController(db);
+        ControllerTestHelpers.SetUser(controller, userId, isAdmin: false);
+
+        var result = await controller.GetSavedCardDetails();
+
+        var ok = result as OkObjectResult;
+        Assert.That(ok, Is.Not.Null);
+        var dto = ok!.Value as CreditCardDetailsDto;
+        Assert.That(dto, Is.Not.Null);
+        Assert.That(dto!.CreditCardId, Is.EqualTo(userId));
+        Assert.That(dto.CardLast4, Is.EqualTo("4321"));
+    }
+
+    [Test]
+    public async Task AddMoneyFromCard_ReturnsBadRequest_WhenCvvInvalid()
+    {
+        using var db = ControllerTestHelpers.CreateDbContext();
+        var userId = Guid.NewGuid();
+
+        var controller = new WalletsController(db);
+        ControllerTestHelpers.SetUser(controller, userId, isAdmin: false);
+
+        var result = await controller.AddMoneyFromCard(new AddMoneyByCardRequest
+        {
+            CardNumber = "4111111111111111",
+            CardHolderName = "Alice Test",
+            Cvv = "1",
+            ExpiryDate = "12/99",
+            Amount = 25m,
+            Currency = "USD"
+        });
+
+        var badRequest = result as BadRequestObjectResult;
+        Assert.That(badRequest, Is.Not.Null);
+        Assert.That(badRequest!.Value, Is.EqualTo("CVV is invalid."));
+    }
 }
