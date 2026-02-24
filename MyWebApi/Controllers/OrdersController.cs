@@ -121,15 +121,17 @@ public class OrdersController : ApiControllerBase
         var now = DateTime.UtcNow;
         var oppositeType = request.TypeOfOrder == OrderType.Buy ? OrderType.Sell : OrderType.Buy;
 
-        var orderBookQuery = _db.OrderBookTable.AsNoTracking()
+        var orderBookQuery = _db.OrderBookTable
             .Join(
-                _db.Orders.AsNoTracking(),
+                _db.Orders,
                 ob => ob.OrderId,
                 o => o.OrderId,
                 (ob, o) => new { OrderBook = ob, Order = o })
             .Where(x => x.Order.Symbol == request.Symbol
                 && x.Order.TypeOfOrder == oppositeType
-                && x.Order.OrderStatus == OrderStatus.Open);
+                && x.Order.OrderStatus == OrderStatus.Open
+                && x.Order.Amount > 0
+                && x.OrderBook.Amount > 0);
 
         if (isLimit)
         {
@@ -142,13 +144,24 @@ public class OrdersController : ApiControllerBase
             ? orderBookQuery.OrderBy(x => x.OrderBook.Price).ThenBy(x => x.OrderBook.Timestamp)
             : orderBookQuery.OrderByDescending(x => x.OrderBook.Price).ThenBy(x => x.OrderBook.Timestamp);
 
-        var match = await orderBookQuery.FirstOrDefaultAsync();
+        var matches = await orderBookQuery.ToListAsync();
 
-        if (isMarket && match == null)
+        if (isMarket && matches.Count == 0)
         {
             return BadRequest("No liquidity available for market order.");
         }
 
+        if (isMarket)
+        {
+            var totalAvailable = matches.Sum(x => x.OrderBook.Amount);
+            if (totalAvailable < request.Amount)
+            {
+                return BadRequest("Not enough liquidity available for market order.");
+            }
+        }
+
+        var initialPrice = isLimit ? request.Price : matches[0].OrderBook.Price;
+        var requestedAmount = request.Amount;
         var order = new OrdersTable
         {
             OrderId = Guid.NewGuid(),
@@ -156,23 +169,22 @@ public class OrdersController : ApiControllerBase
             FeeTableId = request.FeeTableId,
             TypeOfOrder = request.TypeOfOrder,
             Symbol = request.Symbol,
-            Price = isLimit ? request.Price : match!.OrderBook.Price,
+            Price = initialPrice,
             Amount = request.Amount,
-            OrderStatus = match == null ? (request.OrderStatus ?? OrderStatus.Open) : OrderStatus.Filled,
+            OrderStatus = OrderStatus.Open,
             CreatedAt = now
         };
 
         _db.Orders.Add(order);
 
-        if (match == null)
+        if (matches.Count == 0)
         {
-            var fallbackPrice = order.Price > 0 ? order.Price : 1m;
             var orderBookEntry = new OrderBook
             {
                 OrderBookId = Guid.NewGuid(),
                 OrderId = order.OrderId,
                 Symbol = order.Symbol,
-                Price = fallbackPrice,
+                Price = order.Price,
                 Amount = order.Amount,
                 Timestamp = order.CreatedAt
             };
@@ -181,30 +193,69 @@ public class OrdersController : ApiControllerBase
             return CreatedAtAction(nameof(GetOrder), new { id = order.OrderId }, ToDto(order));
         }
 
-        var matchedOrder = match.Order;
-        matchedOrder.OrderStatus = OrderStatus.Filled;
-
-        var matchedOrderBook = await _db.OrderBookTable
-            .FirstOrDefaultAsync(ob => ob.OrderId == matchedOrder.OrderId);
-
-        if (matchedOrderBook != null)
+        decimal remainingAmount = requestedAmount;
+        foreach (var match in matches)
         {
-            _db.OrderBookTable.Remove(matchedOrderBook);
+            if (remainingAmount <= 0)
+            {
+                break;
+            }
+
+            var availableAmount = match.OrderBook.Amount;
+            var tradeAmount = Math.Min(remainingAmount, availableAmount);
+            if (tradeAmount <= 0)
+            {
+                continue;
+            }
+
+            var trade = new TradesTable
+            {
+                TradeId = Guid.NewGuid(),
+                BuyOrderId = request.TypeOfOrder == OrderType.Buy ? order.OrderId : match.Order.OrderId,
+                SellOrderId = request.TypeOfOrder == OrderType.Sell ? order.OrderId : match.Order.OrderId,
+                Price = match.OrderBook.Price,
+                Amount = (double)tradeAmount,
+                TimeStamp = now
+            };
+            _db.TradesTable.Add(trade);
+
+            remainingAmount -= tradeAmount;
+            match.OrderBook.Amount -= tradeAmount;
+            match.Order.Amount -= tradeAmount;
+
+            if (match.OrderBook.Amount <= 0)
+            {
+                match.Order.OrderStatus = OrderStatus.Filled;
+                _db.OrderBookTable.Remove(match.OrderBook);
+            }
+            else
+            {
+                match.Order.OrderStatus = OrderStatus.Open;
+            }
         }
 
-        var tradePrice = match.OrderBook.Price;
-        var tradeAmount = Math.Min(order.Amount, match.OrderBook.Amount);
-        var trade = new TradesTable
+        if (remainingAmount <= 0)
         {
-            TradeId = Guid.NewGuid(),
-            BuyOrderId = request.TypeOfOrder == OrderType.Buy ? order.OrderId : matchedOrder.OrderId,
-            SellOrderId = request.TypeOfOrder == OrderType.Sell ? order.OrderId : matchedOrder.OrderId,
-            Price = tradePrice,
-            Amount = (double)tradeAmount,
-            TimeStamp = now
-        };
+            order.OrderStatus = OrderStatus.Filled;
+            order.Amount = requestedAmount;
+        }
+        else if (isLimit)
+        {
+            order.OrderStatus = OrderStatus.Open;
+            order.Amount = remainingAmount;
 
-        _db.TradesTable.Add(trade);
+            var orderBookEntry = new OrderBook
+            {
+                OrderBookId = Guid.NewGuid(),
+                OrderId = order.OrderId,
+                Symbol = order.Symbol,
+                Price = order.Price,
+                Amount = remainingAmount,
+                Timestamp = now
+            };
+            _db.OrderBookTable.Add(orderBookEntry);
+        }
+
         await _db.SaveChangesAsync();
 
         return CreatedAtAction(nameof(GetOrder), new { id = order.OrderId }, ToDto(order));

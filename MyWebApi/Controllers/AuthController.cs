@@ -104,11 +104,20 @@ public class AuthController : ControllerBase
         var existing = _db.Users
             .FirstOrDefault(u => u.Email == request.Email);
 
-        if (existing == null || !BCrypt.Net.BCrypt.Verify(request.Password, existing.Password))
+        if (existing == null)
+            return Unauthorized("Invalid credentials");
+
+        var isValidPassword = VerifyPassword(request.Password, existing.Password, out var shouldUpgradePasswordHash);
+        if (!isValidPassword)
             return Unauthorized("Invalid credentials");
 
         if (existing.IsBanned)
             return StatusCode(403, "User is banned");
+
+        if (shouldUpgradePasswordHash)
+        {
+            existing.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
+        }
 
         _walletProvisioning.EnsureDefaultWalletsForUser(existing.Id);
         _db.SaveChanges();
@@ -285,7 +294,7 @@ public class AuthController : ControllerBase
             return StatusCode(403, "User is banned");
         }
 
-        if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.Password))
+        if (!VerifyPassword(request.CurrentPassword, user.Password, out _))
         {
             return BadRequest("Current password is incorrect.");
         }
@@ -322,7 +331,7 @@ public class AuthController : ControllerBase
             return NotFound();
         }
 
-        if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.Password))
+        if (!VerifyPassword(request.CurrentPassword, user.Password, out _))
         {
             return BadRequest("Current password is incorrect.");
         }
@@ -459,6 +468,27 @@ public class AuthController : ControllerBase
         catch
         {
             return null;
+        }
+    }
+
+    private static bool VerifyPassword(string providedPassword, string storedPassword, out bool shouldUpgradePasswordHash)
+    {
+        shouldUpgradePasswordHash = false;
+
+        if (string.IsNullOrWhiteSpace(storedPassword))
+        {
+            return false;
+        }
+
+        try
+        {
+            return BCrypt.Net.BCrypt.Verify(providedPassword, storedPassword);
+        }
+        catch (BCrypt.Net.SaltParseException)
+        {
+            var matchesLegacyPlainText = string.Equals(providedPassword, storedPassword, StringComparison.Ordinal);
+            shouldUpgradePasswordHash = matchesLegacyPlainText;
+            return matchesLegacyPlainText;
         }
     }
 

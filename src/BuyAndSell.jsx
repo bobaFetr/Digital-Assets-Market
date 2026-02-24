@@ -4,10 +4,25 @@ import Sidebar from "./Components/Sidebar";
 import { getToken } from "./Services/auth";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5149";
+const BUY_SELL_FROM_CURRENCY_KEY = "buySell.fromCurrency";
+const BUY_SELL_TO_CURRENCY_KEY = "buySell.toCurrency";
+
+const readPersistedCurrency = (key, allowedValues, fallbackValue) => {
+  if (typeof window === "undefined") {
+    return fallbackValue;
+  }
+
+  const value = window.localStorage.getItem(key);
+  return value && allowedValues.includes(value) ? value : fallbackValue;
+};
 
 export default function BuyAndSell() {
-  const [fromCurrency, setFromCurrency] = useState("BTC");
-  const [toCurrency, setToCurrency] = useState("USD");
+  const [fromCurrency, setFromCurrency] = useState(() =>
+    readPersistedCurrency(BUY_SELL_FROM_CURRENCY_KEY, ["BTC", "ETH", "BNB", "ALGO"], "BTC")
+  );
+  const [toCurrency, setToCurrency] = useState(() =>
+    readPersistedCurrency(BUY_SELL_TO_CURRENCY_KEY, ["USD", "EUR"], "USD")
+  );
   const [amountCrypto, setAmountCrypto] = useState(0);
   const [amountQuote, setAmountQuote] = useState(0);
   const [lastEdited, setLastEdited] = useState("crypto");
@@ -81,6 +96,18 @@ export default function BuyAndSell() {
 
     loadWallets();
   }, [balanceCurrency]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(BUY_SELL_FROM_CURRENCY_KEY, fromCurrency);
+    }
+  }, [fromCurrency]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(BUY_SELL_TO_CURRENCY_KEY, toCurrency);
+    }
+  }, [toCurrency]);
 
   useEffect(() => {
     const loadQuote = async () => {
@@ -312,7 +339,7 @@ export default function BuyAndSell() {
 
         <div className="chart-container" style={{ marginTop: "18px" }}>
           <h3 className="chart-header">Market Chart</h3>
-          <BitcoinChart symbol={chartSymbol} refreshKey={chartRefreshTick} />
+          <BitcoinChart key={chartSymbol} symbol={chartSymbol} refreshKey={chartRefreshTick} />
         </div>
 
         <div className="orderbook-section" style={{ marginTop: "18px" }}>
