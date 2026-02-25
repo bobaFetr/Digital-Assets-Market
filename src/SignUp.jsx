@@ -4,6 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { loginUser, registerUser } from "./Services/auth";
 import Sidebar from "./Components/Sidebar";
 
+const COOKIE_CONSENT_TRIGGER_KEY = "crypto_cookie_consent_trigger_v1";
+
 export default function SignUp() {
     const [form, setForm] = useState({
         username: "",
@@ -112,6 +114,7 @@ export default function SignUp() {
                 documentType: form.documentType,
                 idFilePath: fileName,
             });
+            window.localStorage.setItem(COOKIE_CONSENT_TRIGGER_KEY, "true");
             await loginUser({ email: form.email, password: form.password }, true);
             navigate("/profile");
         } catch (err) {

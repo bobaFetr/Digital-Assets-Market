@@ -20,6 +20,7 @@ import ForgotPassword from "./ForgotPassword.jsx";
 import ResetPassword from "./ResetPassword.jsx";
 import Sidebar from "./Components/Sidebar";
 import Footer from "./Components/Footer";
+import CookieConsent from "./Components/CookieConsent";
 
 import "./App.css";
 import Admin from "./ADMIN/AdminMainPage.jsx";
@@ -154,6 +155,7 @@ export default function App() {
         </Routes>
         </div>
         <Footer />
+        <CookieConsent />
       </div>
     </KycGate>
   );
