@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./Login.css"; // reuse login styles so signup matches the login design
 import { Link, useNavigate } from "react-router-dom";
-import { loginUser, registerUser, submitKycVerification } from "./Services/auth";
+import { loginUser, registerUser } from "./Services/auth";
 import Sidebar from "./Components/Sidebar";
 
 export default function SignUp() {
@@ -20,6 +20,7 @@ export default function SignUp() {
     const [error, setError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [fileName, setFileName] = useState("");
+    const [uploadInfo, setUploadInfo] = useState("");
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -31,13 +32,48 @@ export default function SignUp() {
         const file = event.target.files?.[0];
         if (!file) {
             setFileName("");
+            setUploadInfo("");
             return;
         }
 
         setFileName(file.name);
-        if (file.name.toLowerCase().endsWith(".txt")) {
-            parseIdentityFile(file, setForm);
+        setUploadInfo(`Selected file: ${file.name}`);
+
+        if (!file.name.toLowerCase().endsWith(".txt")) {
+            setUploadInfo(`Selected file: ${file.name}. Auto-fill works with .txt ID files.`);
+            return;
         }
+
+        parseIdentityFile(file)
+            .then((parsed) => {
+                if (!parsed) {
+                    setUploadInfo("Could not parse ID file. Please fill fields manually.");
+                    return;
+                }
+
+                setForm((prev) => ({
+                    ...prev,
+                    ...Object.fromEntries(
+                        Object.entries(parsed).filter(([, value]) => Boolean(value))
+                    ),
+                }));
+
+                if (!parsed.dob) {
+                    setUploadInfo("ID file loaded, but date of birth was not recognized.");
+                    return;
+                }
+
+                const age = getAge(parsed.dob);
+                if (!Number.isNaN(age) && age >= 18) {
+                    setUploadInfo(`ID file loaded. Age check passed (${age}).`);
+                    return;
+                }
+
+                setUploadInfo("ID file loaded, but age check failed (must be 18+).");
+            })
+            .catch(() => {
+                setUploadInfo("Could not read ID file. Please try again.");
+            });
     };
 
     const handleSubmit = async (e) => {
@@ -68,18 +104,15 @@ export default function SignUp() {
                 UserName: form.username.trim(),
                 email: form.email,
                 password: form.password,
+                fullName: form.fullName,
+                idNumber: form.idNumber,
+                dateOfBirth: form.dob,
+                expiryDate: form.expiryDate,
+                country: form.country,
+                documentType: form.documentType,
+                idFilePath: fileName,
             });
             await loginUser({ email: form.email, password: form.password }, true);
-            await submitKycVerification({
-                type: form.documentType,
-                filePath: fileName,
-                documentNumber: form.idNumber,
-                fullName: form.fullName,
-                dateOfBirth: form.dob,
-                countryOfResidence: form.country,
-                expiryDate: form.expiryDate,
-                status: "Verified",
-            });
             navigate("/profile");
         } catch (err) {
             setError(err.message || "Registration failed.");
@@ -108,7 +141,7 @@ export default function SignUp() {
                     <section className="login-panel">
                         <div className="login-card">
                             <h2>Create account</h2>
-                            <p className="subtext">Create your Digital Assets Market account</p>
+                            <p className="subtext">Create your Crypto Inc ЕООД account</p>
 
                             {error && <div className="login-alert">{error}</div>}
 
@@ -167,9 +200,16 @@ export default function SignUp() {
                                 </label>
 
                                 <label>
-                                    Upload ID (optional)
+                                    Upload ID document
                                     <input type="file" accept="image/*,.pdf,.txt" onChange={handleFileChange} />
                                 </label>
+
+                                <label>
+                                    Uploaded document
+                                    <input type="text" value={fileName || "No file selected"} readOnly />
+                                </label>
+
+                                {uploadInfo && <p className="subtext" style={{ marginTop: 0 }}>{uploadInfo}</p>}
 
                                 <label>
                                     Country of residence
@@ -214,23 +254,17 @@ const getAge = (dateOfBirth) => {
     return age;
 };
 
-const parseIdentityFile = (file, setForm) => {
+const parseIdentityFile = (file) => {
+    return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (event) => {
         const content = String(event.target?.result || "");
         const parsed = parseIdentityText(content);
-        if (!parsed) {
-            return;
-        }
-
-        setForm((prev) => ({
-            ...prev,
-            ...Object.fromEntries(
-                Object.entries(parsed).filter(([, value]) => Boolean(value))
-            ),
-        }));
+        resolve(parsed);
     };
+    reader.onerror = () => reject(new Error("Unable to read file"));
     reader.readAsText(file);
+    });
 };
 
 const parseIdentityText = (text) => {
@@ -245,15 +279,15 @@ const parseIdentityText = (text) => {
         lookup[key] = value;
     });
 
-    const dobRaw = lookup["date of birth"];
-    const expiryRaw = lookup["document expiry date"];
+    const dobRaw = lookup["date of birth"] || lookup["dob"];
+    const expiryRaw = lookup["document expiry date"] || lookup["expiry date"];
 
     return {
-        fullName: lookup["full name"] || "",
+        fullName: lookup["full name"] || lookup["name"] || "",
         dob: normalizeDate(dobRaw),
-        idNumber: lookup["id number"] || "",
+        idNumber: lookup["id number"] || lookup["document number"] || "",
         documentType: lookup["document type"] || "Passport",
-        country: lookup["country of residence"] || "",
+        country: lookup["country of residence"] || lookup["country"] || "",
         expiryDate: normalizeDate(expiryRaw),
     };
 };

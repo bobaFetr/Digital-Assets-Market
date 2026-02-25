@@ -122,22 +122,6 @@ public class UsersController : ApiControllerBase
             })
             .ToListAsync();
 
-        var faqs = await _db.FAQs
-            .AsNoTracking()
-            .Where(f => f.AuthorId == userId || f.RepliedByUserId == userId)
-            .Select(f => new
-            {
-                f.FaqId,
-                f.Question,
-                f.QuestionImageUrl,
-                f.Answer,
-                f.AuthorId,
-                f.RepliedByUserId,
-                f.CreatedAt,
-                f.UpdatedAt
-            })
-            .ToListAsync();
-
         var payload = new
         {
             exportedAtUtc = DateTime.UtcNow,
@@ -156,8 +140,7 @@ public class UsersController : ApiControllerBase
             orders,
             transactions,
             sessions,
-            kycDocuments,
-            faqs
+            kycDocuments
         };
 
         return Ok(payload);

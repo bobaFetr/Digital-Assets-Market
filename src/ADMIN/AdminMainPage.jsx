@@ -1060,7 +1060,7 @@ function Sidebar() {
     <aside className="admin-sidebar">
       <div className="admin-brand">
         <div>
-          <p className="eyebrow">Digital Assets Market</p>
+          <p className="eyebrow">Crypto Inc ЕООД</p>
           <h2>Admin Suite</h2>
         </div>
         <span className="badge success">Live</span>

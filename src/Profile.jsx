@@ -40,6 +40,11 @@ export default function Profile() {
   const [passwordSuccess, setPasswordSuccess] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
+  const [showDeleteBankDetails, setShowDeleteBankDetails] = useState(false);
+  const [bankAccountHolderName, setBankAccountHolderName] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [bankIban, setBankIban] = useState("");
+  const [bankSwiftCode, setBankSwiftCode] = useState("");
   const [deleteError, setDeleteError] = useState("");
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [isDownloadingInfo, setIsDownloadingInfo] = useState(false);
@@ -258,18 +263,41 @@ export default function Profile() {
       return;
     }
 
-    const shouldDelete = window.confirm("Are you sure you want to deactivate your account?");
+    if (showDeleteBankDetails) {
+      if (!bankAccountHolderName.trim() || !bankName.trim() || !bankIban.trim() || !bankSwiftCode.trim()) {
+        setDeleteError("Please fill all bank account fields to continue.");
+        return;
+      }
+    }
+
+    const shouldDelete = window.confirm(
+      showDeleteBankDetails
+        ? "Confirm transfer to your bank account and deactivate profile?"
+        : "Are you sure you want to continue with account deletion?"
+    );
     if (!shouldDelete) {
       return;
     }
 
     setIsDeletingAccount(true);
     try {
-      await deleteAccount(deletePassword);
+      await deleteAccount({
+        currentPassword: deletePassword,
+        bankAccountHolderName: showDeleteBankDetails ? bankAccountHolderName.trim() : undefined,
+        bankName: showDeleteBankDetails ? bankName.trim() : undefined,
+        iban: showDeleteBankDetails ? bankIban.trim() : undefined,
+        swiftCode: showDeleteBankDetails ? bankSwiftCode.trim() : undefined,
+      });
       logoutUser();
       navigate("/sign-in");
     } catch (err) {
-      setDeleteError(err.message || "Unable to delete account.");
+      const message = err.message || "Unable to delete account.";
+      if (message.includes("Bank account details are required before deleting your profile.")) {
+        setShowDeleteBankDetails(true);
+        setDeleteError("Enter your personal bank account details, then press Confirm and Delete.");
+      } else {
+        setDeleteError(message);
+      }
     } finally {
       setIsDeletingAccount(false);
     }
@@ -651,6 +679,38 @@ export default function Profile() {
                 onChange={(event) => setDeletePassword(event.target.value)}
                 style={{ padding: "10px", borderRadius: "8px", border: "1px solid #3c415f", background: "#0f1220", color: "#fff" }}
               />
+              {showDeleteBankDetails && (
+                <>
+                  <input
+                    type="text"
+                    placeholder="Bank account holder name"
+                    value={bankAccountHolderName}
+                    onChange={(event) => setBankAccountHolderName(event.target.value)}
+                    style={{ padding: "10px", borderRadius: "8px", border: "1px solid #3c415f", background: "#0f1220", color: "#fff" }}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Bank name"
+                    value={bankName}
+                    onChange={(event) => setBankName(event.target.value)}
+                    style={{ padding: "10px", borderRadius: "8px", border: "1px solid #3c415f", background: "#0f1220", color: "#fff" }}
+                  />
+                  <input
+                    type="text"
+                    placeholder="IBAN"
+                    value={bankIban}
+                    onChange={(event) => setBankIban(event.target.value)}
+                    style={{ padding: "10px", borderRadius: "8px", border: "1px solid #3c415f", background: "#0f1220", color: "#fff" }}
+                  />
+                  <input
+                    type="text"
+                    placeholder="SWIFT code"
+                    value={bankSwiftCode}
+                    onChange={(event) => setBankSwiftCode(event.target.value)}
+                    style={{ padding: "10px", borderRadius: "8px", border: "1px solid #3c415f", background: "#0f1220", color: "#fff" }}
+                  />
+                </>
+              )}
               <button
                 type="submit"
                 disabled={isDeletingAccount}
@@ -661,7 +721,7 @@ export default function Profile() {
                   cursor: isDeletingAccount ? "not-allowed" : "pointer",
                 }}
               >
-                {isDeletingAccount ? "Deleting..." : "Delete Account"}
+                {isDeletingAccount ? "Deleting..." : showDeleteBankDetails ? "Confirm and Delete" : "Continue"}
               </button>
               {deleteError && <p style={{ margin: 0, color: "#ff8d8d" }}>{deleteError}</p>}
             </form>

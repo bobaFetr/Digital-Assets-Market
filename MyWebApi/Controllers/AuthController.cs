@@ -46,6 +46,25 @@ public class AuthController : ControllerBase
             return BadRequest("Username already exists.");
         }
 
+        if (string.IsNullOrWhiteSpace(request.FullName)
+            || string.IsNullOrWhiteSpace(request.IdNumber)
+            || string.IsNullOrWhiteSpace(request.Country)
+            || request.DateOfBirth == default
+            || request.ExpiryDate == default)
+        {
+            return BadRequest("ID verification fields are required during registration.");
+        }
+
+        if (!IsAtLeast18(request.DateOfBirth))
+        {
+            return BadRequest("User must be at least 18 years old.");
+        }
+
+        if (request.ExpiryDate <= DateTime.UtcNow.Date)
+        {
+            return BadRequest("ID document is expired.");
+        }
+
         var user = new User
         {
             UserName = normalizedUserName,
@@ -61,6 +80,22 @@ public class AuthController : ControllerBase
 
         user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
         _db.Users.Add(user);
+
+        _db.KycDocuments.Add(new KycDocument
+        {
+            DocId = Guid.NewGuid(),
+            UserId = user.Id,
+            Type = string.IsNullOrWhiteSpace(request.DocumentType) ? "Passport" : request.DocumentType.Trim(),
+            FilePath = request.IdFilePath?.Trim() ?? string.Empty,
+            DocumentNumber = request.IdNumber.Trim(),
+            FullName = request.FullName.Trim(),
+            DateOfBirth = request.DateOfBirth,
+            CountryOfResidence = request.Country.Trim(),
+            ExpiryDate = request.ExpiryDate,
+            Status = "Verified",
+            UploadedAt = DateTime.UtcNow
+        });
+
         _walletProvisioning.EnsureDefaultWalletsForUser(user.Id);
         _db.SaveChanges();
         return Ok("User registered successfully");
@@ -336,6 +371,50 @@ public class AuthController : ControllerBase
             return BadRequest("Current password is incorrect.");
         }
 
+        var walletsWithBalance = _db.Wallets.Where(w => w.UserId == userId && w.Balance > 0).ToList();
+        if (walletsWithBalance.Count > 0)
+        {
+            if (string.IsNullOrWhiteSpace(request.BankAccountHolderName)
+                || string.IsNullOrWhiteSpace(request.BankName)
+                || string.IsNullOrWhiteSpace(request.Iban)
+                || string.IsNullOrWhiteSpace(request.SwiftCode))
+            {
+                return BadRequest("Bank account details are required before deleting your profile.");
+            }
+
+            var normalizedIban = request.Iban.Replace(" ", string.Empty).Trim();
+            if (normalizedIban.Length < 12)
+            {
+                return BadRequest("IBAN is invalid.");
+            }
+
+            if (request.SwiftCode.Trim().Length < 8)
+            {
+                return BadRequest("SWIFT code is invalid.");
+            }
+
+            var ibanLast4 = normalizedIban.Length >= 4
+                ? normalizedIban.Substring(normalizedIban.Length - 4)
+                : normalizedIban;
+
+            foreach (var wallet in walletsWithBalance)
+            {
+                _db.Transactions.Add(new ExchangeTransaction
+                {
+                    TransactionID = Guid.NewGuid(),
+                    UserID = userId,
+                    TypeOfTransaction = "BankTransferOut",
+                    Currency = wallet.Currency,
+                    Amount = wallet.Balance,
+                    Status = "Completed",
+                    BlockchainTransactionHash = $"BANK-{ibanLast4}",
+                    TimeStamp = DateTime.UtcNow
+                });
+
+                wallet.Balance = 0m;
+            }
+        }
+
         var deletedMarker = DateTime.UtcNow.ToString("yyyyMMddHHmmssfff");
         user.Email = $"deleted_{user.Id}_{deletedMarker}@deleted.local";
         user.UserName = $"deleted_{deletedMarker}";
@@ -492,6 +571,18 @@ public class AuthController : ControllerBase
         }
     }
 
+    private static bool IsAtLeast18(DateTime dateOfBirth)
+    {
+        var today = DateTime.UtcNow.Date;
+        var age = today.Year - dateOfBirth.Year;
+        if (dateOfBirth.Date > today.AddYears(-age))
+        {
+            age--;
+        }
+
+        return age >= 18;
+    }
+
 }
 
 public class BanRequest
@@ -512,6 +603,14 @@ public class RegisterRequest
     public string Password { get; set; } = "";
 
     public string? Role { get; set; }
+
+    public string FullName { get; set; } = "";
+    public string IdNumber { get; set; } = "";
+    public DateTime DateOfBirth { get; set; }
+    public DateTime ExpiryDate { get; set; }
+    public string Country { get; set; } = "";
+    public string? DocumentType { get; set; }
+    public string? IdFilePath { get; set; }
 }
 
 public class LoginRequest
@@ -555,4 +654,9 @@ public class DeleteAccountRequest
 {
     [Required]
     public string CurrentPassword { get; set; } = "";
+
+    public string? BankAccountHolderName { get; set; }
+    public string? BankName { get; set; }
+    public string? Iban { get; set; }
+    public string? SwiftCode { get; set; }
 }

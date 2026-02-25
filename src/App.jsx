@@ -19,6 +19,7 @@ import SignInPage from "./Login.jsx";
 import ForgotPassword from "./ForgotPassword.jsx";
 import ResetPassword from "./ResetPassword.jsx";
 import Sidebar from "./Components/Sidebar";
+import Footer from "./Components/Footer";
 
 import "./App.css";
 import Admin from "./ADMIN/AdminMainPage.jsx";
@@ -27,6 +28,8 @@ import Education from "./Education.jsx";
 import HowToSecureWallet from "./HowToSecureWallet.jsx";
 import WhatIsBlockchain from "./WhatIsBlockchain.jsx";
 import Faq from "./Faq.jsx";
+import Support from "./Support.jsx";
+import Feedback from "./Feedback.jsx";
 import News from "./News.jsx";
 import NewsDetail from "./NewsDetail.jsx";
 import RugPull from "./RugPull.jsx";
@@ -88,22 +91,6 @@ function Home() {
           <h1 style={{ color: "var(--accent-green)", margin: "10px 0" }}>$23.7475</h1>
           <div style={{ height: "280px", background: "#0d0f1a", marginTop: "20px", borderRadius: "10px" }}></div>
         </div>
-        <div className="footer">
-          <footer>
-            <a href="https://instagram.com" target="_blank" rel="noreferrer" className="social-link" aria-label="Instagram">
-              <span className="social-icon" aria-hidden="true">📸</span>
-              <span>Instagram</span>
-            </a>
-            <a href="https://facebook.com" target="_blank" rel="noreferrer" className="social-link" aria-label="Facebook">
-              <span className="social-icon" aria-hidden="true">📘</span>
-              <span>Facebook</span>
-            </a>
-            <a href="https://x.com" target="_blank" rel="noreferrer" className="social-link" aria-label="X (Twitter)">
-              <span className="social-icon" aria-hidden="true">🐦</span>
-              <span>X</span>
-            </a>
-          </footer>
-        </div>
       </div>
     </div>
   );
@@ -133,34 +120,41 @@ function BNBChartPage() {
 export default function App() {
   return (
     <KycGate>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/withdraw" element={<WithDraw />} />
-        <Route path="/buy-sell" element={<BuyAndSell />} />
-        <Route path="/VerifyIdentityPage" element={<VerifyIdentityPage />} />
-        <Route path="/VerificationEmailPage" element={<VerificationEmailPage />} />
-        <Route path="/SentSMSToNumberPage" element={<SentSMSToNumberPage />} />
-        <Route path="/sign-in" element={<SignInPage />} />
-        <Route path="/sign-up" element={<SignUpPage />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/BitcoinChart" element={<BitcoinChartPage />} />
-        <Route path="/BNBChart" element={<BNBChartPage />} />
+      <div className="app-shell">
+        <div className="app-shell-content">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/withdraw" element={<WithDraw />} />
+          <Route path="/buy-sell" element={<BuyAndSell />} />
+          <Route path="/VerifyIdentityPage" element={<VerifyIdentityPage />} />
+          <Route path="/VerificationEmailPage" element={<VerificationEmailPage />} />
+          <Route path="/SentSMSToNumberPage" element={<SentSMSToNumberPage />} />
+          <Route path="/sign-in" element={<SignInPage />} />
+          <Route path="/sign-up" element={<SignUpPage />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/BitcoinChart" element={<BitcoinChartPage />} />
+          <Route path="/BNBChart" element={<BNBChartPage />} />
 
-        <Route path="/Admin/*" element={<Admin />} />
-        <Route path="/BCrypto" element={<BCrypto assets={[]} />} />
+          <Route path="/Admin/*" element={<Admin />} />
+          <Route path="/BCrypto" element={<BCrypto assets={[]} />} />
 
-        <Route path="/news" element={<News />} />
-        <Route path="/news/:id" element={<NewsDetail />} />
-        <Route path="/education" element={<Education />} />
-        <Route path="/education/how-to-secure-your-wallet" element={<HowToSecureWallet />} />
-        <Route path="/education/what-is-blockchain" element={<WhatIsBlockchain />} />
-        <Route path="/faq" element={<Faq />} />
-        <Route path="/rug-pull" element={<RugPull />} />
-        ///////////////
-        <Route path="*" element={<ErorPage1 />} />
-      </Routes>
+          <Route path="/news" element={<News />} />
+          <Route path="/news/:id" element={<NewsDetail />} />
+          <Route path="/education" element={<Education />} />
+          <Route path="/education/how-to-secure-your-wallet" element={<HowToSecureWallet />} />
+          <Route path="/education/what-is-blockchain" element={<WhatIsBlockchain />} />
+          <Route path="/faq" element={<Faq />} />
+          <Route path="/support" element={<Support />} />
+          <Route path="/feedback" element={<Feedback />} />
+          <Route path="/rug-pull" element={<RugPull />} />
+          ///////////////
+          <Route path="*" element={<ErorPage1 />} />
+        </Routes>
+        </div>
+        <Footer />
+      </div>
     </KycGate>
   );
 }

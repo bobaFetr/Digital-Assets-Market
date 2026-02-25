@@ -108,7 +108,9 @@ export default function Sidebar() {
                     <Link to="/news" className="nav-dropdown-item">News</Link>
                     <Link to="/education" className="nav-dropdown-item">Education</Link>
                     <Link to="/rug-pull" className="nav-dropdown-item">Rug Pull</Link>
-                    <Link to="/faq" className="nav-dropdown-item">FAQ</Link>
+                    <Link to="/faq" className="nav-dropdown-item">Questions and Answers</Link>
+                    <Link to="/support" className="nav-dropdown-item">Support</Link>
+                    <Link to="/feedback" className="nav-dropdown-item">Feedback</Link>
                   </div>
                 )}
               </div>

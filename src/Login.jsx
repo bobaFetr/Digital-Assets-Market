@@ -58,7 +58,7 @@ export default function Login() {
           <section className="login-panel">
             <div className="login-card">
               <h2>Sign in or Sign in as Admin</h2>
-              <p className="subtext">Use your Digital Assets Market credentials</p>
+              <p className="subtext">Use your Crypto Inc ЕООД credentials</p>
 
               {error && <div className="login-alert">{error}</div>}
 
@@ -114,7 +114,7 @@ export default function Login() {
               </div>
 
               <p className="signup-text">
-                New to DAM? <a href="/signup">Create an account</a>
+                New to Crypto Inc ЕООД? <a href="/signup">Create an account</a>
               </p>
             </div>
           </section>

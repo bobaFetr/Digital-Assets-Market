@@ -168,7 +168,7 @@ export default function Faq() {
     <div className="crypto-layout">
       <Sidebar />
       <div className="crypto-main">
-        <h1 style={{ marginBottom: "16px" }}>FAQ</h1>
+        <h1 style={{ marginBottom: "16px" }}>Questions and Answers</h1>
         <p style={{ color: "#aaa", marginBottom: "20px" }}>
           Ask a question and help other users by replying to unanswered ones.
         </p>
