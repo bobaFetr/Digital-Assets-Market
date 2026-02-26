@@ -36,14 +36,107 @@ import NewsDetail from "./NewsDetail.jsx";
 import RugPull from "./RugPull.jsx";
 //////// Error page for testing 404 handling
 import ErorPage1 from "./ErorPage1.jsx";
-function Home() {
+
+const AVAILABLE_CURRENCIES = [
+  { code: "BTC", name: "Bitcoin", coinGeckoId: "bitcoin" },
+  { code: "ETH", name: "Ethereum", coinGeckoId: "ethereum" },
+  { code: "BNB", name: "Binance Coin", coinGeckoId: "binancecoin" },
+  { code: "ALGO", name: "Algorand", coinGeckoId: "algorand" },
+];
+
+const formatUsd = (value) => {
+  if (typeof value !== "number" || Number.isNaN(value)) {
+    return "--";
+  }
+
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: value >= 1 ? 2 : 4,
+    maximumFractionDigits: value >= 1 ? 2 : 6,
+  }).format(value);
+};
+
+function Home({ theme, onToggleTheme }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [theme, setTheme] = useState("dark");
+  const [livePrices, setLivePrices] = useState(() =>
+    AVAILABLE_CURRENCIES.map((currency) => ({
+      ...currency,
+      price: null,
+      previousPrice: null,
+      changePct: null,
+    }))
+  );
+  const [loadingPrices, setLoadingPrices] = useState(true);
+  const [priceError, setPriceError] = useState("");
+  const [lastUpdated, setLastUpdated] = useState(null);
   const navigate = useNavigate();
 
-  const toggleTheme = () => {
-    setTheme((prevTheme) => (prevTheme === "dark" ? "light" : "dark"));
-  };
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadLivePrices = async () => {
+      try {
+        const ids = AVAILABLE_CURRENCIES.map((currency) => currency.coinGeckoId).join(",");
+        const response = await fetch(
+          `https://api.coingecko.com/api/v3/simple/price?ids=${encodeURIComponent(ids)}&vs_currencies=usd`
+        );
+
+        if (!response.ok) {
+          throw new Error("Unable to fetch market prices.");
+        }
+
+        const payload = await response.json();
+        if (!isMounted) {
+          return;
+        }
+
+        setLivePrices((previousList) =>
+          AVAILABLE_CURRENCIES.map((currency) => {
+            const previous = previousList.find((item) => item.code === currency.code);
+            const nextPrice = Number(payload?.[currency.coinGeckoId]?.usd);
+            const previousPrice = previous?.price ?? null;
+            const hasComparablePrices =
+              typeof previousPrice === "number" &&
+              Number.isFinite(previousPrice) &&
+              Number.isFinite(nextPrice) &&
+              previousPrice > 0;
+
+            return {
+              ...currency,
+              price: Number.isFinite(nextPrice) ? nextPrice : null,
+              previousPrice,
+              changePct: hasComparablePrices
+                ? ((nextPrice - previousPrice) / previousPrice) * 100
+                : null,
+            };
+          })
+        );
+
+        setLastUpdated(new Date());
+        setPriceError("");
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+
+        setPriceError(error?.message || "Unable to fetch market prices.");
+      } finally {
+        if (isMounted) {
+          setLoadingPrices(false);
+        }
+      }
+    };
+
+    loadLivePrices();
+    const intervalId = setInterval(loadLivePrices, 10000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
+  }, []);
+
   return (
     <div className={`crypto-layout ${theme === "light" ? "light-mode" : ""}`}>
       {/* Sidebar */}
@@ -73,10 +166,10 @@ function Home() {
             />
           </div>
 
-          <button className="theme-toggle-btn" onClick={toggleTheme} title="Toggle Theme">
+          <button className="theme-toggle-btn" onClick={onToggleTheme} title="Toggle Theme">
             {theme === 'dark' ? 'Light Theme' : 'Dark Theme'}
           </button>
-          <button className="theme-toggle-btn" onClick={toggleTheme} title="Announcements">
+          <button className="theme-toggle-btn" onClick={onToggleTheme} title="Announcements">
             {'📢'}
           </button>
         </div>
@@ -86,11 +179,69 @@ function Home() {
           <BitcoinChart />
         </div>
 
-        {/* Bitcoin Cash Graph */}
+        {/* Available currencies and real-time prices */}
         <div className="chart-container">
-          <h3 className="chart-header">Bitcoin Cash (BTH)</h3>
-          <h1 style={{ color: "var(--accent-green)", margin: "10px 0" }}>$23.7475</h1>
-          <div style={{ height: "280px", background: "#0d0f1a", marginTop: "20px", borderRadius: "10px" }}></div>
+          <h3 className="chart-header">Available Currencies (Live)</h3>
+          {loadingPrices ? (
+            <p className="balance-title">Loading live prices...</p>
+          ) : (
+            <>
+              <div className="market-list">
+                {livePrices.map((currency) => {
+                  const isUp = typeof currency.changePct === "number" && currency.changePct >= 0;
+
+                  return (
+                    <div key={currency.code} className="market-item">
+                      <div>
+                        <span className="market-code">{currency.code}</span>
+                        <div className="balance-title" style={{ marginTop: "4px" }}>
+                          {currency.name}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <div className="market-code">{formatUsd(currency.price)}</div>
+                        <div
+                          className={
+                            typeof currency.changePct === "number"
+                              ? isUp
+                                ? "rate-up"
+                                : "rate-down"
+                              : "balance-title"
+                          }
+                          style={{ fontSize: "13px", marginTop: "4px" }}
+                        >
+                          {typeof currency.changePct === "number"
+                            ? `${isUp ? "+" : ""}${currency.changePct.toFixed(2)}%`
+                            : "--"}
+                        </div>
+                        <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end", marginTop: "8px" }}>
+                          <button
+                            className="theme-toggle-btn"
+                            style={{ minWidth: "64px", minHeight: "34px", padding: "6px 10px" }}
+                            onClick={() => navigate(`/buy-sell?action=buy&asset=${currency.code}&quote=USD`)}
+                          >
+                            Buy
+                          </button>
+                          <button
+                            className="theme-toggle-btn"
+                            style={{ minWidth: "64px", minHeight: "34px", padding: "6px 10px" }}
+                            onClick={() => navigate(`/buy-sell?action=sell&asset=${currency.code}&quote=USD`)}
+                          >
+                            Sell
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="balance-title" style={{ marginTop: "14px" }}>
+                {priceError
+                  ? `Live update issue: ${priceError}`
+                  : `Last updated: ${lastUpdated ? lastUpdated.toLocaleTimeString() : "--"} (refresh every 10s)`}
+              </p>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -119,12 +270,31 @@ function BNBChartPage() {
   );
 }
 export default function App() {
+  const [theme, setTheme] = useState(() => {
+    if (typeof window === "undefined") {
+      return "dark";
+    }
+
+    const savedTheme = window.localStorage.getItem("app.theme");
+    return savedTheme === "light" ? "light" : "dark";
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("app.theme", theme);
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prevTheme) => (prevTheme === "dark" ? "light" : "dark"));
+  };
+
   return (
     <KycGate>
-      <div className="app-shell">
+      <div className={`app-shell ${theme === "light" ? "light-mode" : ""}`}>
         <div className="app-shell-content">
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Home theme={theme} onToggleTheme={toggleTheme} />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/withdraw" element={<WithDraw />} />
           <Route path="/buy-sell" element={<BuyAndSell />} />

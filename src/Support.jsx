@@ -23,25 +23,25 @@ export default function Support() {
       <Sidebar />
       <div className="crypto-main">
         <h1 style={{ marginBottom: "12px" }}>Support</h1>
-        <p style={{ color: "#aaa", marginBottom: "20px" }}>
+        <p style={{ color: "var(--text-secondary)", marginBottom: "20px" }}>
           Contact support for account, trading, verification, or wallet issues.
         </p>
 
-        <div style={{ background: "#1a1d2e", padding: "20px", borderRadius: "12px", border: "1px solid #22283a", maxWidth: "700px" }}>
+        <div style={{ background: "var(--card-bg)", padding: "20px", borderRadius: "12px", border: "1px solid var(--glass-border)", maxWidth: "700px" }}>
           <form onSubmit={handleSubmit} style={{ display: "grid", gap: "12px" }}>
             <input
               type="text"
               placeholder="Subject"
               value={subject}
               onChange={(event) => setSubject(event.target.value)}
-              style={{ padding: "10px", borderRadius: "8px", border: "1px solid #3c415f", background: "#0f1220", color: "#fff" }}
+              style={{ padding: "10px", borderRadius: "8px", border: "1px solid var(--glass-border)", background: "var(--panel-bg)", color: "var(--input-text)" }}
             />
             <textarea
               placeholder="Describe your issue"
               rows={6}
               value={message}
               onChange={(event) => setMessage(event.target.value)}
-              style={{ padding: "10px", borderRadius: "8px", border: "1px solid #3c415f", background: "#0f1220", color: "#fff", resize: "vertical" }}
+              style={{ padding: "10px", borderRadius: "8px", border: "1px solid var(--glass-border)", background: "var(--panel-bg)", color: "var(--input-text)", resize: "vertical" }}
             />
             <button type="submit" style={{ width: "fit-content", padding: "10px 14px", borderRadius: "8px", border: "none", background: "#7f8cff", color: "#fff", cursor: "pointer" }}>
               Send to Support

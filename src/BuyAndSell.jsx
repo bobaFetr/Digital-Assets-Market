@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import BitcoinChart from "./BitcoinChart";
 import Sidebar from "./Components/Sidebar";
 import { getToken } from "./Services/auth";
@@ -17,6 +18,7 @@ const readPersistedCurrency = (key, allowedValues, fallbackValue) => {
 };
 
 export default function BuyAndSell() {
+  const [searchParams] = useSearchParams();
   const [fromCurrency, setFromCurrency] = useState(() =>
     readPersistedCurrency(BUY_SELL_FROM_CURRENCY_KEY, ["BTC", "ETH", "BNB", "ALGO"], "BTC")
   );
@@ -63,6 +65,26 @@ export default function BuyAndSell() {
     { name: "Binance Coin", code: "BNB" },
     { name: "Algorand", code: "ALGO" },
   ];
+
+  useEffect(() => {
+    const action = (searchParams.get("action") || "").toLowerCase();
+    const asset = (searchParams.get("asset") || "").toUpperCase();
+    const quote = (searchParams.get("quote") || "").toUpperCase();
+
+    if (action === "buy") {
+      setOrderType("Buy");
+    } else if (action === "sell") {
+      setOrderType("Sell");
+    }
+
+    if (["BTC", "ETH", "BNB", "ALGO"].includes(asset)) {
+      setFromCurrency(asset);
+    }
+
+    if (["USD", "EUR"].includes(quote)) {
+      setToCurrency(quote);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const loadWallets = async () => {
@@ -382,7 +404,10 @@ export default function BuyAndSell() {
               </button>
             </div>
           </div>
-          <div className="binance-panel" style={{ background: "#0d0f1a", padding: "18px", borderRadius: "10px" }}>
+          <div
+            className="binance-panel"
+            style={{ background: "var(--panel-bg)", padding: "18px", borderRadius: "10px" }}
+          >
             <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
               <button
                 className={`binance-tab ${orderKind === "Market" ? "active" : ""}`}
@@ -398,7 +423,9 @@ export default function BuyAndSell() {
               </button>
             </div>
             <div style={{ display: "flex", gap: "12px", alignItems: "center", marginBottom: "12px" }}>
-              <label style={{ minWidth: "80px" }}>{orderType}</label>
+              <label style={{ minWidth: "80px" }}>
+                {orderType === "Buy" ? "Buy Coin" : "Sell Coin"}
+              </label>
               <select value={fromCurrency} onChange={(e) => setFromCurrency(e.target.value)}>
                 <option>BTC</option>
                 <option>ETH</option>
@@ -415,7 +442,7 @@ export default function BuyAndSell() {
                     setAmountQuote(Number(e.target.value) * Number(quoteRate));
                   }
                 }}
-                placeholder="Crypto amount"
+                placeholder={orderType === "Buy" ? "Amount to buy (coin)" : "Amount to sell (coin)"}
                 style={{ flex: 1 }}
               />
             </div>
@@ -437,7 +464,9 @@ export default function BuyAndSell() {
             )}
 
             <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-              <label style={{ minWidth: "80px" }}>Pay</label>
+              <label style={{ minWidth: "80px" }}>
+                {orderType === "Buy" ? "Total Cost" : "Total Value"}
+              </label>
               <select value={toCurrency} onChange={(e) => setToCurrency(e.target.value)} style={{ width: "120px" }}>
                 <option>USD</option>
                 <option>EUR</option>
@@ -453,7 +482,11 @@ export default function BuyAndSell() {
                       setAmountCrypto(Number(e.target.value) / Number(quoteRate));
                     }
                   }}
-                  placeholder={`Amount in ${toCurrency}`}
+                  placeholder={
+                    orderType === "Buy"
+                      ? `How much to spend (${toCurrency})`
+                      : `Estimated proceeds (${toCurrency})`
+                  }
                   style={{ width: "100%" }}
                 />
               </div>

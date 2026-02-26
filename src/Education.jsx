@@ -48,7 +48,7 @@ function Education() {
             <Sidebar />
             <div className="crypto-main">
                 <h1 style={{ marginBottom: '20px' }}>Crypto Education</h1>
-                <p style={{ color: '#aaa', marginBottom: '30px' }}>Master the market with our educational resources.</p>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: '30px' }}>Master the market with our educational resources.</p>
 
                 <div style={{
                     display: 'grid',
@@ -57,17 +57,17 @@ function Education() {
                 }}>
                     {customModules.map(module => (
                         <div key={module.id} style={{
-                            background: '#1a1d2e',
+                            background: 'var(--card-bg)',
                             padding: '25px',
                             borderRadius: '12px',
-                            border: '1px solid #22283a',
+                            border: '1px solid var(--glass-border)',
                             display: 'flex',
                             flexDirection: 'column',
                             justifyContent: 'space-between'
                         }}>
                             <div>
                                 <h3 style={{ marginBottom: '10px' }}>{module.title}</h3>
-                                <p style={{ color: '#aaa', marginBottom: '20px' }}>{module.description}</p>
+                                <p style={{ color: 'var(--text-secondary)', marginBottom: '20px' }}>{module.description}</p>
                             </div>
                             <Link to={module.link} style={{
                                 display: 'inline-block',
@@ -83,7 +83,7 @@ function Education() {
                 </div>
 
                 <h2 style={{ marginTop: '40px', marginBottom: '16px' }}>YouTube Videos</h2>
-                <p style={{ color: '#aaa', marginBottom: '20px' }}>Watch quick lessons to improve your crypto knowledge.</p>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: '20px' }}>Watch quick lessons to improve your crypto knowledge.</p>
 
                 <div style={{
                     display: 'grid',
@@ -92,10 +92,10 @@ function Education() {
                 }}>
                     {youtubeVideos.map(video => (
                         <div key={video.id} style={{
-                            background: '#1a1d2e',
+                            background: 'var(--card-bg)',
                             padding: '18px',
                             borderRadius: '12px',
-                            border: '1px solid #22283a'
+                            border: '1px solid var(--glass-border)'
                         }}>
                             <h3 style={{ marginBottom: '12px' }}>{video.title}</h3>
                             <div style={{

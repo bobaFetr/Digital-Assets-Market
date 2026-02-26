@@ -23,18 +23,18 @@ export default function Feedback() {
       <Sidebar />
       <div className="crypto-main">
         <h1 style={{ marginBottom: "12px" }}>Feedback</h1>
-        <p style={{ color: "#aaa", marginBottom: "20px" }}>
+        <p style={{ color: "var(--text-secondary)", marginBottom: "20px" }}>
           Share your experience and help improve the platform.
         </p>
 
-        <div style={{ background: "#1a1d2e", padding: "20px", borderRadius: "12px", border: "1px solid #22283a", maxWidth: "700px" }}>
+        <div style={{ background: "var(--card-bg)", padding: "20px", borderRadius: "12px", border: "1px solid var(--glass-border)", maxWidth: "700px" }}>
           <form onSubmit={handleSubmit} style={{ display: "grid", gap: "12px" }}>
             <label style={{ display: "grid", gap: "6px" }}>
               <span>Rating</span>
               <select
                 value={rating}
                 onChange={(event) => setRating(event.target.value)}
-                style={{ padding: "10px", borderRadius: "8px", border: "1px solid #3c415f", background: "#0f1220", color: "#fff" }}
+                style={{ padding: "10px", borderRadius: "8px", border: "1px solid var(--glass-border)", background: "var(--panel-bg)", color: "var(--input-text)" }}
               >
                 <option value="5">5 - Excellent</option>
                 <option value="4">4 - Good</option>
@@ -48,7 +48,7 @@ export default function Feedback() {
               rows={6}
               value={comment}
               onChange={(event) => setComment(event.target.value)}
-              style={{ padding: "10px", borderRadius: "8px", border: "1px solid #3c415f", background: "#0f1220", color: "#fff", resize: "vertical" }}
+              style={{ padding: "10px", borderRadius: "8px", border: "1px solid var(--glass-border)", background: "var(--panel-bg)", color: "var(--input-text)", resize: "vertical" }}
             />
             <button type="submit" style={{ width: "fit-content", padding: "10px 14px", borderRadius: "8px", border: "none", background: "#7f8cff", color: "#fff", cursor: "pointer" }}>
               Submit Feedback

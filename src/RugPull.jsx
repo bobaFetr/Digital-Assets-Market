@@ -9,14 +9,14 @@ function RugPull() {
             <div className="crypto-main" style={{ maxWidth: '900px' }}>
                 <h1 style={{ marginBottom: '20px', color: '#ff6b6b' }}>⚠️ What is a Rug Pull?</h1>
 
-                <div style={{ background: '#1a1d2e', padding: '30px', borderRadius: '12px', marginBottom: '20px' }}>
+                <div style={{ background: 'var(--card-bg)', padding: '30px', borderRadius: '12px', marginBottom: '20px', border: '1px solid var(--glass-border)' }}>
                     <p style={{ lineHeight: '1.6', fontSize: '1.1rem', marginBottom: '20px' }}>
                         A <strong>Rug Pull</strong> is a type of scam in the decentralized finance (DeFi) and crypto ecosystem
                         where legitimate-looking developers abandon a project and take their investors' money.
                     </p>
 
                     <h3 style={{ marginTop: '20px', marginBottom: '10px' }}>How it works</h3>
-                    <ul style={{ paddingLeft: '20px', lineHeight: '1.6', color: '#aaa' }}>
+                    <ul style={{ paddingLeft: '20px', lineHeight: '1.6', color: 'var(--text-secondary)' }}>
                         <li>Developers create a new token and list it on a decentralized exchange (DEX).</li>
                         <li>They pair it with a valuable currency like ETH or BNB to create a liquidity pool.</li>
                         <li>Once investors buy in and drive up the price, developers withdraw everything from the liquidity pool.</li>

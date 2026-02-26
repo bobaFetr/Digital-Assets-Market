@@ -169,11 +169,11 @@ export default function Faq() {
       <Sidebar />
       <div className="crypto-main">
         <h1 style={{ marginBottom: "16px" }}>Questions and Answers</h1>
-        <p style={{ color: "#aaa", marginBottom: "20px" }}>
+        <p style={{ color: "var(--text-secondary)", marginBottom: "20px" }}>
           Ask a question and help other users by replying to unanswered ones.
         </p>
 
-        <div style={{ background: "#1a1d2e", padding: "20px", borderRadius: "12px", border: "1px solid #22283a", marginBottom: "20px" }}>
+        <div style={{ background: "var(--card-bg)", padding: "20px", borderRadius: "12px", border: "1px solid var(--glass-border)", marginBottom: "20px" }}>
           <h3 style={{ marginTop: 0 }}>Ask a question</h3>
           <form onSubmit={submitQuestion}>
             <textarea
@@ -184,9 +184,9 @@ export default function Faq() {
               style={{
                 width: "100%",
                 borderRadius: "10px",
-                border: "1px solid #2c3454",
-                background: "#0d0f1a",
-                color: "#fff",
+                border: "1px solid var(--glass-border)",
+                background: "var(--panel-bg)",
+                color: "var(--input-text)",
                 padding: "12px",
                 marginTop: "8px",
                 resize: "vertical",
@@ -216,7 +216,7 @@ export default function Faq() {
                   <img
                     src={questionImageUrl}
                     alt="Question attachment preview"
-                    style={{ maxWidth: "260px", borderRadius: "10px", border: "1px solid #2c3454" }}
+                    style={{ maxWidth: "260px", borderRadius: "10px", border: "1px solid var(--glass-border)" }}
                   />
                   <div>
                     <button
@@ -243,7 +243,7 @@ export default function Faq() {
           {isLoading && <p>Loading questions...</p>}
 
           {!isLoading && items.length === 0 && (
-            <div style={{ background: "#1a1d2e", padding: "18px", borderRadius: "12px", border: "1px solid #22283a" }}>
+            <div style={{ background: "var(--card-bg)", padding: "18px", borderRadius: "12px", border: "1px solid var(--glass-border)" }}>
               No questions yet.
             </div>
           )}
@@ -258,7 +258,7 @@ export default function Faq() {
             return (
               <div
                 key={item.faqId}
-                style={{ background: "#1a1d2e", padding: "18px", borderRadius: "12px", border: "1px solid #22283a" }}
+                style={{ background: "var(--card-bg)", padding: "18px", borderRadius: "12px", border: "1px solid var(--glass-border)" }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
                   <div
@@ -295,7 +295,7 @@ export default function Faq() {
                   </div>
                   <div>
                     <h3 style={{ margin: 0 }}>{item.question}</h3>
-                    <p style={{ margin: "4px 0 0", color: "#aaa", fontSize: "12px" }}>By: {authorLabel}</p>
+                    <p style={{ margin: "4px 0 0", color: "var(--text-secondary)", fontSize: "12px" }}>By: {authorLabel}</p>
                   </div>
                 </div>
                 <p style={{ color: "#7f8cff", fontSize: "13px", marginBottom: hasAnswer ? "10px" : "14px" }}>
@@ -307,13 +307,13 @@ export default function Faq() {
                     <img
                       src={item.questionImageUrl}
                       alt="Question attachment"
-                      style={{ maxWidth: "320px", width: "100%", borderRadius: "10px", border: "1px solid #2c3454" }}
+                      style={{ maxWidth: "320px", width: "100%", borderRadius: "10px", border: "1px solid var(--glass-border)" }}
                     />
                   </div>
                 )}
 
                 {hasAnswer ? (
-                  <div style={{ background: "#0d0f1a", padding: "12px", borderRadius: "10px", border: "1px solid #2c3454" }}>
+                  <div style={{ background: "var(--panel-bg)", padding: "12px", borderRadius: "10px", border: "1px solid var(--glass-border)" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                       <div
                         style={{
@@ -350,7 +350,7 @@ export default function Faq() {
                       </div>
                       <div>
                         <p style={{ margin: 0, color: "#4dff88", fontWeight: 700 }}>Reply</p>
-                        <p style={{ margin: "2px 0 0", color: "#aaa", fontSize: "12px" }}>By: {replyAuthorLabel}</p>
+                        <p style={{ margin: "2px 0 0", color: "var(--text-secondary)", fontSize: "12px" }}>By: {replyAuthorLabel}</p>
                       </div>
                     </div>
                     <p style={{ marginTop: "8px", marginBottom: 0 }}>{item.answer}</p>
@@ -371,9 +371,9 @@ export default function Faq() {
                       style={{
                         width: "100%",
                         borderRadius: "10px",
-                        border: "1px solid #2c3454",
-                        background: "#0d0f1a",
-                        color: "#fff",
+                        border: "1px solid var(--glass-border)",
+                        background: "var(--panel-bg)",
+                        color: "var(--input-text)",
                         padding: "10px",
                         resize: "vertical",
                       }}
