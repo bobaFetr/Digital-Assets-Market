@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState } from "react";
 import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import BitcoinChart from "./BitcoinChart";
@@ -57,8 +55,47 @@ const formatUsd = (value) => {
   }).format(value);
 };
 
+function UserBalanceCard() {
+  const [balance, setBalance] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    const token = getToken && getToken();
+    if (!token) {
+      setError("Not authenticated.");
+      setLoading(false);
+      return;
+    }
+    const API_BASE = import.meta.env && import.meta.env.VITE_API_BASE ? import.meta.env.VITE_API_BASE : "http://localhost:5149";
+    fetch(`${API_BASE}/api/wallets`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error(await res.text());
+        }
+        return res.json();
+      })
+      .then((wallets) => {
+        const total = wallets.reduce((sum, wallet) => sum + Number(wallet.balance || 0), 0);
+        setBalance(total);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message || "Unable to load balance.");
+        setLoading(false);
+      });
+  }, []);
+  if (loading) return <div className="balance-amount" style={{ color: '#fff' }}>Loading...</div>;
+  if (error) return <div className="balance-amount" style={{ color: '#ff8d8d' }}>{error}</div>;
+  return <div className="balance-amount" style={{ color: '#fff' }}>${balance?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>;
+}
+
 function Home({ theme, onToggleTheme }) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchTerms, setSearchTerms] = useState([]);
   const [livePrices, setLivePrices] = useState(() =>
     AVAILABLE_CURRENCIES.map((currency) => ({
       ...currency,
@@ -139,20 +176,20 @@ function Home({ theme, onToggleTheme }) {
 
   return (
     <div className={`crypto-layout ${theme === "light" ? "light-mode" : ""}`}>
-      {/* Sidebar */}
       <Sidebar />
-
-      {/* Main Content */}
-
       <div className="crypto-main">
         <div className="top-bar">
           <div className="search-container">
             <span className="search-icon">🔍</span>
             <input
               type="text"
-              placeholder="Search assets, markets, or news..."
+              placeholder="Search assets, markets, or news... (separate with commas)"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                const terms = e.target.value.split(",").map((t) => t.trim()).filter(Boolean);
+                setSearchTerms(terms);
+              }}
               onKeyDown={(event) => {
                 if (event.key !== "Enter") return;
                 const trimmed = searchQuery.trim();
@@ -160,88 +197,110 @@ function Home({ theme, onToggleTheme }) {
                   navigate("/news");
                   return;
                 }
-                navigate(`/news?q=${encodeURIComponent(trimmed)}`);
+                const multiQ = searchTerms.length > 1 ? searchTerms.join(",") : trimmed;
+                navigate(`/news?q=${encodeURIComponent(multiQ)}`);
               }}
               className="top-search-input"
             />
           </div>
-
           <button className="theme-toggle-btn" onClick={onToggleTheme} title="Toggle Theme">
             {theme === 'dark' ? 'Light Theme' : 'Dark Theme'}
           </button>
-          <button className="theme-toggle-btn" onClick={onToggleTheme} title="Announcements">
-            {'📢'}
-          </button>
+          <button className="theme-toggle-btn" title="Announcements">{'📢'}</button>
         </div>
-        {/* Bitcoin Live Chart */}
-        <div className="chart-container">
-          <h3 className="chart-header">Bitcoin Live Chart</h3>
-          <BitcoinChart />
+        {/* Dashboard Overview Cards */}
+        <div className="cards-grid" style={{ marginBottom: 30 }}>
+          <div className="coin-card" style={{ background: 'linear-gradient(135deg, #ff7f50 0%, #ff4500 100%)', color: '#fff', boxShadow: '0 4px 16px #ff7f50a0' }}>
+            <div className="coin-header"><h4 style={{ color: '#fff' }}>My balance</h4></div>
+            <UserBalanceCard />
+            <div className="reward-label" style={{ color: '#ffd6b0' }}>+15%</div>
+            <button className="btn-primary" style={{ marginTop: 12, background: '#ff7f50', color: '#fff', border: 'none' }}>See details</button>
+          </div>
+          <div className="coin-card" style={{ background: '#232323', color: '#fff', boxShadow: '0 2px 8px #232323a0' }}>
+            <div className="coin-header"><h4 style={{ color: '#fff' }}>Savings account</h4></div>
+            <div className="balance-amount" style={{ color: '#fff' }}>$24,800.45</div>
+            <button className="btn-primary" style={{ marginTop: 12, background: '#232323', color: '#ff7f50', border: '1px solid #ff7f50' }}>View summary</button>
+          </div>
+          <div className="coin-card" style={{ background: '#2d2d2d', color: '#fff', boxShadow: '0 2px 8px #2d2d2da0' }}>
+            <div className="coin-header"><h4 style={{ color: '#fff' }}>Investment portfolio</h4></div>
+            <div className="balance-amount" style={{ color: '#fff' }}>$70,120.78</div>
+            <button className="btn-primary" style={{ marginTop: 12, background: '#2d2d2d', color: '#ff7f50', border: '1px solid #ff7f50' }}>Analyze performance</button>
+          </div>
         </div>
-
-        {/* Available currencies and real-time prices */}
-        <div className="chart-container">
-          <h3 className="chart-header">Available Currencies (Live)</h3>
-          {loadingPrices ? (
-            <p className="balance-title">Loading live prices...</p>
-          ) : (
-            <>
-              <div className="market-list">
-                {livePrices.map((currency) => {
-                  const isUp = typeof currency.changePct === "number" && currency.changePct >= 0;
-
-                  return (
-                    <div key={currency.code} className="market-item">
-                      <div>
-                        <span className="market-code">{currency.code}</span>
-                        <div className="balance-title" style={{ marginTop: "4px" }}>
-                          {currency.name}
-                        </div>
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <div className="market-code">{formatUsd(currency.price)}</div>
-                        <div
-                          className={
-                            typeof currency.changePct === "number"
-                              ? isUp
-                                ? "rate-up"
-                                : "rate-down"
-                              : "balance-title"
-                          }
-                          style={{ fontSize: "13px", marginTop: "4px" }}
-                        >
-                          {typeof currency.changePct === "number"
-                            ? `${isUp ? "+" : ""}${currency.changePct.toFixed(2)}%`
-                            : "--"}
-                        </div>
-                        <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end", marginTop: "8px" }}>
-                          <button
-                            className="theme-toggle-btn"
-                            style={{ minWidth: "64px", minHeight: "34px", padding: "6px 10px" }}
-                            onClick={() => navigate(`/buy-sell?action=buy&asset=${currency.code}&quote=USD`)}
-                          >
-                            Buy
-                          </button>
-                          <button
-                            className="theme-toggle-btn"
-                            style={{ minWidth: "64px", minHeight: "34px", padding: "6px 10px" }}
-                            onClick={() => navigate(`/buy-sell?action=sell&asset=${currency.code}&quote=USD`)}
-                          >
-                            Sell
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+        {/* Wallet Section */}
+        <div className="cards-grid" style={{ marginBottom: 30 }}>
+          <div className="coin-card" style={{ gridColumn: 'span 2', background: '#232323', color: '#fff', boxShadow: '0 2px 8px #232323a0' }}>
+            <div className="coin-header"><h4 style={{ color: '#fff' }}>My Wallet</h4></div>
+            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: 12 }}>
+              <div className="currency-box" style={{ background: '#181818', color: '#ff7f50' }}>USD <span style={{ color: '#fff' }}>$24,678.00</span></div>
+              <div className="currency-box" style={{ background: '#181818', color: '#ff7f50' }}>EUR <span style={{ color: '#fff' }}>€28,345.00</span></div>
+              <div className="currency-box" style={{ background: '#181818', color: '#ff7f50' }}>AUD <span style={{ color: '#fff' }}>$20,517.52</span></div>
+              <div className="currency-box" style={{ background: '#181818', color: '#ff7f50' }}>GBP <span style={{ color: '#fff' }}>£25,000.00</span></div>
+            </div>
+            <button className="btn-primary" style={{ marginTop: 12, background: '#ff7f50', color: '#fff', border: 'none' }}>+ Add new</button>
+          </div>
+        </div>
+        {/* Cash Flow Chart */}
+        <div className="chart-container" style={{ background: '#232323', color: '#fff', boxShadow: '0 2px 8px #232323a0' }}>
+          <div className="chart-header" style={{ color: '#fff' }}>Cash Flow</div>
+          <div style={{ display: 'flex', alignItems: 'flex-end', height: 180, gap: 16 }}>
+            {[80, 120, 160, 220, 140, 100, 60].map((v, i) => (
+              <div key={i} style={{ width: 40, height: v, background: i === 3 ? 'linear-gradient(180deg, #ff7f50 0%, #ff4500 100%)' : '#222', borderRadius: 8, position: 'relative', boxShadow: i === 3 ? '0 4px 16px #ff7f50a0' : 'none' }}>
+                {i === 3 && (
+                  <div style={{ position: 'absolute', top: -32, left: -10, color: '#ff7f50', fontWeight: 700, fontSize: 18 }}>$540,323.45</div>
+                )}
               </div>
-              <p className="balance-title" style={{ marginTop: "14px" }}>
-                {priceError
-                  ? `Live update issue: ${priceError}`
-                  : `Last updated: ${lastUpdated ? lastUpdated.toLocaleTimeString() : "--"} (refresh every 10s)`}
-              </p>
-            </>
-          )}
+            ))}
+          </div>
+          <div style={{ marginTop: 12, display: 'flex', gap: 24 }}>
+            {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'].map((m, i) => (
+              <span key={i} style={{ color: '#ff7f50', fontWeight: 500 }}>{m}</span>
+            ))}
+          </div>
+        </div>
+        {/* Recent Activities Table */}
+        <div className="chart-container" style={{ background: '#232323', color: '#fff', boxShadow: '0 2px 8px #232323a0' }}>
+          <div className="chart-header" style={{ color: '#fff' }}>Recent Activities</div>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff', background: '#232323' }}>
+              <thead>
+                <tr style={{ background: '#181818' }}>
+                  <th style={{ padding: '10px 16px', color: '#ff7f50' }}>Activity</th>
+                  <th style={{ padding: '10px 16px', color: '#ff7f50' }}>Order</th>
+                  <th style={{ padding: '10px 16px', color: '#ff7f50' }}>Date</th>
+                  <th style={{ padding: '10px 16px', color: '#ff7f50' }}>Time</th>
+                  <th style={{ padding: '10px 16px', color: '#ff7f50' }}>Amount</th>
+                  <th style={{ padding: '10px 16px', color: '#ff7f50' }}>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style={{ background: '#232323' }}>
+                  <td style={{ padding: '10px 16px' }}>Software License</td>
+                  <td style={{ padding: '10px 16px' }}>No.000676</td>
+                  <td style={{ padding: '10px 16px' }}>17 Apr, 2026</td>
+                  <td style={{ padding: '10px 16px' }}>02:45 PM</td>
+                  <td style={{ padding: '10px 16px' }}>$25,500</td>
+                  <td style={{ padding: '10px 16px', color: '#4dff88' }}>Completed</td>
+                </tr>
+                <tr style={{ background: '#232323' }}>
+                  <td style={{ padding: '10px 16px' }}>Deposit</td>
+                  <td style={{ padding: '10px 16px' }}>No.000677</td>
+                  <td style={{ padding: '10px 16px' }}>18 Apr, 2026</td>
+                  <td style={{ padding: '10px 16px' }}>10:15 AM</td>
+                  <td style={{ padding: '10px 16px' }}>$10,000</td>
+                  <td style={{ padding: '10px 16px', color: '#ff7f50' }}>Pending</td>
+                </tr>
+                <tr style={{ background: '#232323' }}>
+                  <td style={{ padding: '10px 16px' }}>Withdrawal</td>
+                  <td style={{ padding: '10px 16px' }}>No.000678</td>
+                  <td style={{ padding: '10px 16px' }}>19 Apr, 2026</td>
+                  <td style={{ padding: '10px 16px' }}>04:30 PM</td>
+                  <td style={{ padding: '10px 16px' }}>$5,000</td>
+                  <td style={{ padding: '10px 16px', color: '#ff4d4d' }}>Failed</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
