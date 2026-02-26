@@ -102,81 +102,83 @@ const announcements = [
 
 /* ===== Pages ===== */
 const Dashboard = () => (
-  <div className="admin-page">
-    <section className="hero-panel">
+  <div className="admin-page" style={{ background: '#181a20', color: '#fff', minHeight: '100vh' }}>
+    <section className="hero-panel" style={{ background: '#23263a', borderRadius: 16, padding: 32, marginBottom: 32, boxShadow: '0 2px 8px #181a20' }}>
       <div>
-        <p className="eyebrow">Operations Overview</p>
-        <h1>Command Center</h1>
-        <p className="hero-subtext">
+        <p className="eyebrow" style={{ color: '#ff7f50', fontWeight: 600 }}>Operations Overview</p>
+        <h1 style={{ color: '#ff7f50' }}>Command Center</h1>
+        <p className="hero-subtext" style={{ color: '#fff' }}>
           Live market health, compliance queue, and revenue signals in one place.
         </p>
-        <div className="hero-actions">
-          <button className="btn btn-primary">Open Incident Room</button>
-          <button className="btn btn-ghost">Generate Ops Report</button>
+        <div className="hero-actions" style={{ marginTop: 16 }}>
+          <button className="btn btn-primary" style={{ background: '#ff7f50', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, marginRight: 12 }}>Open Incident Room</button>
+          <button className="btn btn-ghost" style={{ background: 'transparent', color: '#ff7f50', border: '1px solid #ff7f50', borderRadius: 8, fontWeight: 600 }}>Generate Ops Report</button>
         </div>
       </div>
-      <div className="hero-status">
+      <div className="hero-status" style={{ display: 'flex', gap: 32 }}>
         <div>
-          <p className="label">System Status</p>
-          <h3 className="status-green">All systems stable</h3>
+          <p className="label" style={{ color: '#ff7f50' }}>System Status</p>
+          <h3 style={{ color: '#7cf29a' }}>All systems stable</h3>
         </div>
         <div>
-          <p className="label">Latency</p>
-          <h3>142ms</h3>
+          <p className="label" style={{ color: '#ff7f50' }}>Latency</p>
+          <h3 style={{ color: '#fff' }}>142ms</h3>
         </div>
         <div>
-          <p className="label">Alerts</p>
-          <h3>2 active</h3>
+          <p className="label" style={{ color: '#ff7f50' }}>Alerts</p>
+          <h3 style={{ color: '#fff' }}>2 active</h3>
         </div>
       </div>
     </section>
 
-    <section className="metric-grid">
+    <section className="metric-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 18, marginBottom: 32 }}>
       {quickMetrics.map((metric) => (
-        <article key={metric.label} className={`metric-card tone-${metric.tone}`}>
-          <p className="label">{metric.label}</p>
-          <h3>{metric.value}</h3>
-          <span className="chip">{metric.trend}</span>
+        <article key={metric.label} className={`metric-card tone-${metric.tone}`}
+          style={{ background: '#23263a', borderRadius: 12, padding: 18, color: '#fff', boxShadow: '0 2px 8px #181a20' }}>
+          <p className="label" style={{ color: '#ff7f50', fontWeight: 600 }}>{metric.label}</p>
+          <h3 style={{ color: '#fff' }}>{metric.value}</h3>
+          <span className="chip" style={{ color: metric.tone === 'success' ? '#7cf29a' : metric.tone === 'danger' ? '#ff4d4d' : metric.tone === 'warning' ? '#ffd700' : '#ff7f50', fontWeight: 600 }}>{metric.trend}</span>
         </article>
       ))}
     </section>
 
-    <section className="split-grid">
-      <article className="panel">
-        <div className="panel-header">
-          <h3>Live Activity</h3>
-          <button className="btn btn-ghost">View all</button>
+    <section className="split-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 32 }}>
+      <article className="panel" style={{ background: '#23263a', borderRadius: 12, padding: 18, color: '#fff', boxShadow: '0 2px 8px #181a20' }}>
+        <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3 style={{ color: '#ff7f50' }}>Live Activity</h3>
+          <button className="btn btn-ghost" style={{ background: 'transparent', color: '#ff7f50', border: '1px solid #ff7f50', borderRadius: 8, fontWeight: 600 }}>View all</button>
         </div>
         <div className="activity-list">
           {activityFeed.map((item) => (
-            <div key={item.title} className={`activity-card tone-${item.tone}`}>
+            <div key={item.title} className={`activity-card tone-${item.tone}`}
+              style={{ background: '#181a20', borderRadius: 8, marginBottom: 12, padding: 12, color: '#fff', borderLeft: `4px solid ${item.tone === 'success' ? '#7cf29a' : item.tone === 'danger' ? '#ff4d4d' : item.tone === 'warning' ? '#ffd700' : '#ff7f50'}` }}>
               <div>
                 <h4>{item.title}</h4>
                 <p>{item.meta}</p>
               </div>
-              <span className="time">{item.time}</span>
+              <span className="time" style={{ color: '#ff7f50', fontWeight: 600 }}>{item.time}</span>
             </div>
           ))}
         </div>
       </article>
 
-      <article className="panel">
-        <div className="panel-header">
-          <h3>KYC Review Queue</h3>
-          <button className="btn btn-ghost">Open queue</button>
+      <article className="panel" style={{ background: '#23263a', borderRadius: 12, padding: 18, color: '#fff', boxShadow: '0 2px 8px #181a20' }}>
+        <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3 style={{ color: '#ff7f50' }}>KYC Review Queue</h3>
+          <button className="btn btn-ghost" style={{ background: 'transparent', color: '#ff7f50', border: '1px solid #ff7f50', borderRadius: 8, fontWeight: 600 }}>Open queue</button>
         </div>
-        <div className="table user-table">
-          <div className="table-row table-head">
+        <div className="table user-table" style={{ color: '#fff' }}>
+          <div className="table-row table-head" style={{ background: '#181a20', color: '#ff7f50', fontWeight: 600 }}>
             <span>User</span>
             <span>Tier</span>
             <span>Risk</span>
             <span>Wait</span>
           </div>
           {kycQueue.map((row) => (
-            <div className="table-row" key={row.name}>
+            <div className="table-row" key={row.name} style={{ background: '#23263a', color: '#fff' }}>
               <span>{row.name}</span>
               <span>{row.tier}</span>
-              <span>{row.risk}</span>
+              <span style={{ color: row.risk === 'High' ? '#ff4d4d' : row.risk === 'Medium' ? '#ffd700' : '#7cf29a' }}>{row.risk}</span>
               <span>{row.time}</span>
             </div>
           ))}
@@ -184,23 +186,23 @@ const Dashboard = () => (
       </article>
     </section>
 
-    <section className="wide-panel">
-      <div className="panel-header">
-        <h3>Top Assets</h3>
-        <button className="btn btn-ghost">Manage listings</button>
+    <section className="wide-panel" style={{ background: '#23263a', borderRadius: 12, padding: 18, color: '#fff', boxShadow: '0 2px 8px #181a20', marginBottom: 32 }}>
+      <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3 style={{ color: '#ff7f50' }}>Top Assets</h3>
+        <button className="btn btn-ghost" style={{ background: 'transparent', color: '#ff7f50', border: '1px solid #ff7f50', borderRadius: 8, fontWeight: 600 }}>Manage listings</button>
       </div>
       <div className="table">
-        <div className="table-row table-head">
+        <div className="table-row table-head" style={{ background: '#181a20', color: '#ff7f50', fontWeight: 600 }}>
           <span>Asset</span>
           <span>Price</span>
           <span>Change</span>
           <span>24h Volume</span>
         </div>
         {topAssets.map((asset) => (
-          <div className="table-row" key={asset.symbol}>
+          <div className="table-row" key={asset.symbol} style={{ background: '#23263a', color: '#fff' }}>
             <span>{asset.symbol}</span>
             <span>{asset.price}</span>
-            <span>{asset.change}</span>
+            <span style={{ color: asset.change.startsWith('+') ? '#7cf29a' : '#ff4d4d' }}>{asset.change}</span>
             <span>{asset.volume}</span>
           </div>
         ))}
@@ -212,26 +214,26 @@ const Dashboard = () => (
 const Assets = () => (
   <div className="admin-page">
     <div className="page-header">
-      <h2>Assets</h2>
-      <button className="btn btn-primary">Add Listing</button>
+      <h2 style={{ color: '#ff7f50' }}>Assets</h2>
+      <button className="btn btn-primary" style={{ background: '#ff7f50', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600 }}>Add Listing</button>
     </div>
-    <div className="panel">
-      <div className="panel-header">
-        <h3>Listings</h3>
-        <button className="btn btn-ghost">Export</button>
+    <div className="panel" style={{ background: '#23263a', borderRadius: 12, color: '#fff', boxShadow: '0 2px 8px #181a20' }}>
+      <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3 style={{ color: '#ff7f50' }}>Listings</h3>
+        <button className="btn btn-ghost" style={{ background: 'transparent', color: '#ff7f50', border: '1px solid #ff7f50', borderRadius: 8, fontWeight: 600 }}>Export</button>
       </div>
       <div className="table">
-        <div className="table-row table-head">
+        <div className="table-row table-head" style={{ background: '#181a20', color: '#ff7f50', fontWeight: 600 }}>
           <span>Symbol</span>
           <span>Network</span>
           <span>Status</span>
           <span>Liquidity</span>
         </div>
         {topAssets.map((asset) => (
-          <div className="table-row" key={asset.symbol}>
+          <div className="table-row" key={asset.symbol} style={{ background: '#23263a', color: '#fff' }}>
             <span>{asset.symbol}</span>
             <span>Primary</span>
-            <span className="badge success">Active</span>
+            <span className="badge success" style={{ background: '#ff7f50', color: '#fff', borderRadius: 6, padding: '2px 10px', fontWeight: 600 }}>Active</span>
             <span>{asset.volume}</span>
           </div>
         ))}
@@ -243,19 +245,19 @@ const Assets = () => (
 const Transactions = () => (
   <div className="admin-page">
     <div className="page-header">
-      <h2>Transactions</h2>
+      <h2 style={{ color: '#ff7f50' }}>Transactions</h2>
       <div className="inline-actions">
-        <button className="btn btn-ghost">Filters</button>
-        <button className="btn btn-primary">Flag Review</button>
+        <button className="btn btn-ghost" style={{ background: 'transparent', color: '#ff7f50', border: '1px solid #ff7f50', borderRadius: 8, fontWeight: 600 }}>Filters</button>
+        <button className="btn btn-primary" style={{ background: '#ff7f50', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600 }}>Flag Review</button>
       </div>
     </div>
-    <div className="panel">
-      <div className="panel-header">
-        <h3>Recent</h3>
-        <button className="btn btn-ghost">Export</button>
+    <div className="panel" style={{ background: '#23263a', borderRadius: 12, color: '#fff', boxShadow: '0 2px 8px #181a20' }}>
+      <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3 style={{ color: '#ff7f50' }}>Recent</h3>
+        <button className="btn btn-ghost" style={{ background: 'transparent', color: '#ff7f50', border: '1px solid #ff7f50', borderRadius: 8, fontWeight: 600 }}>Export</button>
       </div>
       <div className="table">
-        <div className="table-row table-head">
+        <div className="table-row table-head" style={{ background: '#181a20', color: '#ff7f50', fontWeight: 600 }}>
           <span>Transaction</span>
           <span>User</span>
           <span>Type</span>
@@ -264,13 +266,13 @@ const Transactions = () => (
           <span>Status</span>
         </div>
         {recentTransactions.map((tx) => (
-          <div className="table-row" key={tx.id}>
+          <div className="table-row" key={tx.id} style={{ background: '#23263a', color: '#fff' }}>
             <span>{tx.id}</span>
             <span>{tx.user}</span>
             <span>{tx.type}</span>
             <span>{tx.asset}</span>
             <span>{tx.amount}</span>
-            <span className={`badge ${tx.status === "Completed" ? "success" : tx.status === "Review" ? "warning" : "danger"}`}>
+            <span className={`badge ${tx.status === "Completed" ? "success" : tx.status === "Review" ? "warning" : "danger"}`} style={{ background: tx.status === 'Completed' ? '#7cf29a' : tx.status === 'Review' ? '#ffd700' : '#ff4d4d', color: '#23263a', borderRadius: 6, padding: '2px 10px', fontWeight: 600 }}>
               {tx.status}
             </span>
           </div>
@@ -903,22 +905,22 @@ const Faqs = () => {
 const Announcements = () => (
   <div className="admin-page">
     <div className="page-header">
-      <h2>Announcements</h2>
-      <button className="btn btn-primary">Draft</button>
+      <h2 style={{ color: '#ff7f50' }}>Announcements</h2>
+      <button className="btn btn-primary" style={{ background: '#ff7f50', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600 }}>Draft</button>
     </div>
-    <div className="panel">
-      <div className="panel-header">
-        <h3>Recent Broadcasts</h3>
-        <button className="btn btn-ghost">Schedule</button>
+    <div className="panel" style={{ background: '#23263a', borderRadius: 12, color: '#fff', boxShadow: '0 2px 8px #181a20' }}>
+      <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3 style={{ color: '#ff7f50' }}>Recent Broadcasts</h3>
+        <button className="btn btn-ghost" style={{ background: 'transparent', color: '#ff7f50', border: '1px solid #ff7f50', borderRadius: 8, fontWeight: 600 }}>Schedule</button>
       </div>
       <div className="activity-list">
         {announcements.map((item) => (
-          <div key={item.title} className="activity-card tone-info">
+          <div key={item.title} className="activity-card tone-info" style={{ background: '#181a20', borderLeft: '4px solid #ff7f50', borderRadius: 8, marginBottom: 12, padding: 12, color: '#fff' }}>
             <div>
-              <h4>{item.title}</h4>
+              <h4 style={{ color: '#ff7f50' }}>{item.title}</h4>
               <p>{item.detail}</p>
             </div>
-            <span className="time">Draft</span>
+            <span className="time" style={{ color: '#ff7f50', fontWeight: 600 }}>Draft</span>
           </div>
         ))}
       </div>
@@ -929,52 +931,52 @@ const Announcements = () => (
 const Security = () => (
   <div className="admin-page">
     <div className="page-header">
-      <h2>Security</h2>
-      <button className="btn btn-primary">Run Audit</button>
+      <h2 style={{ color: '#ff7f50' }}>Security</h2>
+      <button className="btn btn-primary" style={{ background: '#ff7f50', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600 }}>Run Audit</button>
     </div>
     <div className="split-grid">
-      <article className="panel">
-        <div className="panel-header">
-          <h3>Active Policies</h3>
-          <button className="btn btn-ghost">Edit</button>
+      <article className="panel" style={{ background: '#23263a', borderRadius: 12, color: '#fff', boxShadow: '0 2px 8px #181a20' }}>
+        <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3 style={{ color: '#ff7f50' }}>Active Policies</h3>
+          <button className="btn btn-ghost" style={{ background: 'transparent', color: '#ff7f50', border: '1px solid #ff7f50', borderRadius: 8, fontWeight: 600 }}>Edit</button>
         </div>
         <div className="policy-list">
           <div>
-            <h4>Withdrawal Cooldown</h4>
+            <h4 style={{ color: '#ff7f50' }}>Withdrawal Cooldown</h4>
             <p>Hold period: 30 minutes for high-risk accounts.</p>
           </div>
           <div>
-            <h4>Device Verification</h4>
+            <h4 style={{ color: '#ff7f50' }}>Device Verification</h4>
             <p>Require new device approval on flagged IPs.</p>
           </div>
           <div>
-            <h4>AML Threshold</h4>
+            <h4 style={{ color: '#ff7f50' }}>AML Threshold</h4>
             <p>Auto-freeze over $100k within 15 minutes.</p>
           </div>
         </div>
       </article>
-      <article className="panel">
-        <div className="panel-header">
-          <h3>Audit Trail</h3>
-          <button className="btn btn-ghost">View logs</button>
+      <article className="panel" style={{ background: '#23263a', borderRadius: 12, color: '#fff', boxShadow: '0 2px 8px #181a20' }}>
+        <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3 style={{ color: '#ff7f50' }}>Audit Trail</h3>
+          <button className="btn btn-ghost" style={{ background: 'transparent', color: '#ff7f50', border: '1px solid #ff7f50', borderRadius: 8, fontWeight: 600 }}>View logs</button>
         </div>
         <div className="table">
-          <div className="table-row table-head">
+          <div className="table-row table-head" style={{ background: '#181a20', color: '#ff7f50', fontWeight: 600 }}>
             <span>Event</span>
             <span>Actor</span>
             <span>Time</span>
           </div>
-          <div className="table-row">
+          <div className="table-row" style={{ background: '#23263a', color: '#fff' }}>
             <span>Policy update</span>
             <span>Admin-01</span>
             <span>Today, 09:22</span>
           </div>
-          <div className="table-row">
+          <div className="table-row" style={{ background: '#23263a', color: '#fff' }}>
             <span>New key rotation</span>
             <span>Security Bot</span>
             <span>Today, 02:14</span>
           </div>
-          <div className="table-row">
+          <div className="table-row" style={{ background: '#23263a', color: '#fff' }}>
             <span>Incident cleared</span>
             <span>Admin-04</span>
             <span>Yesterday, 22:05</span>
@@ -988,65 +990,65 @@ const Security = () => (
 const Settings = () => (
   <div className="admin-page">
     <div className="page-header">
-      <h2>Settings</h2>
-      <button className="btn btn-primary">Save changes</button>
+      <h2 style={{ color: '#ff7f50' }}>Settings</h2>
+      <button className="btn btn-primary" style={{ background: '#ff7f50', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600 }}>Save changes</button>
     </div>
     <div className="split-grid">
-      <article className="panel">
-        <div className="panel-header">
-          <h3>Team</h3>
-          <button className="btn btn-ghost">Invite</button>
+      <article className="panel" style={{ background: '#23263a', borderRadius: 12, color: '#fff', boxShadow: '0 2px 8px #181a20' }}>
+        <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3 style={{ color: '#ff7f50' }}>Team</h3>
+          <button className="btn btn-ghost" style={{ background: 'transparent', color: '#ff7f50', border: '1px solid #ff7f50', borderRadius: 8, fontWeight: 600 }}>Invite</button>
         </div>
         <div className="activity-list">
-          <div className="activity-card tone-info">
+          <div className="activity-card tone-info" style={{ background: '#181a20', borderLeft: '4px solid #ff7f50', borderRadius: 8, marginBottom: 12, padding: 12, color: '#fff' }}>
             <div>
-              <h4>Alex Kim</h4>
+              <h4 style={{ color: '#ff7f50' }}>Alex Kim</h4>
               <p>Super Admin · Active</p>
             </div>
-            <span className="time">Online</span>
+            <span className="time" style={{ color: '#ff7f50', fontWeight: 600 }}>Online</span>
           </div>
-          <div className="activity-card tone-success">
+          <div className="activity-card tone-success" style={{ background: '#181a20', borderLeft: '4px solid #7cf29a', borderRadius: 8, marginBottom: 12, padding: 12, color: '#fff' }}>
             <div>
-              <h4>Maya Soto</h4>
+              <h4 style={{ color: '#7cf29a' }}>Maya Soto</h4>
               <p>Compliance Lead · Active</p>
             </div>
-            <span className="time">2m</span>
+            <span className="time" style={{ color: '#7cf29a', fontWeight: 600 }}>2m</span>
           </div>
-          <div className="activity-card tone-warning">
+          <div className="activity-card tone-warning" style={{ background: '#181a20', borderLeft: '4px solid #ffd700', borderRadius: 8, marginBottom: 12, padding: 12, color: '#fff' }}>
             <div>
-              <h4>Remy H.</h4>
+              <h4 style={{ color: '#ffd700' }}>Remy H.</h4>
               <p>Risk Analyst · Away</p>
             </div>
-            <span className="time">15m</span>
+            <span className="time" style={{ color: '#ffd700', fontWeight: 600 }}>15m</span>
           </div>
         </div>
       </article>
-      <article className="panel">
-        <div className="panel-header">
-          <h3>Notifications</h3>
-          <button className="btn btn-ghost">Configure</button>
+      <article className="panel" style={{ background: '#23263a', borderRadius: 12, color: '#fff', boxShadow: '0 2px 8px #181a20' }}>
+        <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3 style={{ color: '#ff7f50' }}>Notifications</h3>
+          <button className="btn btn-ghost" style={{ background: 'transparent', color: '#ff7f50', border: '1px solid #ff7f50', borderRadius: 8, fontWeight: 600 }}>Configure</button>
         </div>
         <div className="notification-grid">
-          <div className="toggle-card">
+          <div className="toggle-card" style={{ background: '#181a20', borderRadius: 8, color: '#fff', marginBottom: 10 }}>
             <div>
-              <h4>Critical Alerts</h4>
+              <h4 style={{ color: '#ff7f50' }}>Critical Alerts</h4>
               <p>Push + Slack</p>
             </div>
-            <span className="chip">On</span>
+            <span className="chip" style={{ background: '#ff7f50', color: '#fff', borderRadius: 6, padding: '2px 10px', fontWeight: 600 }}>On</span>
           </div>
-          <div className="toggle-card">
+          <div className="toggle-card" style={{ background: '#181a20', borderRadius: 8, color: '#fff', marginBottom: 10 }}>
             <div>
-              <h4>KYC Updates</h4>
+              <h4 style={{ color: '#ff7f50' }}>KYC Updates</h4>
               <p>Email digest</p>
             </div>
-            <span className="chip">Daily</span>
+            <span className="chip" style={{ background: '#ff7f50', color: '#fff', borderRadius: 6, padding: '2px 10px', fontWeight: 600 }}>Daily</span>
           </div>
-          <div className="toggle-card">
+          <div className="toggle-card" style={{ background: '#181a20', borderRadius: 8, color: '#fff', marginBottom: 10 }}>
             <div>
-              <h4>Market Shifts</h4>
+              <h4 style={{ color: '#ff7f50' }}>Market Shifts</h4>
               <p>SMS alert</p>
             </div>
-            <span className="chip">On</span>
+            <span className="chip" style={{ background: '#ff7f50', color: '#fff', borderRadius: 6, padding: '2px 10px', fontWeight: 600 }}>On</span>
           </div>
         </div>
       </article>
