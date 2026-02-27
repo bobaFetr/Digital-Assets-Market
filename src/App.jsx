@@ -96,6 +96,10 @@ function UserBalanceCard() {
 function Home({ theme, onToggleTheme }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchTerms, setSearchTerms] = useState([]);
+  const [news, setNews] = useState([]);
+  const [unreadNews, setUnreadNews] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [newsError, setNewsError] = useState("");
   const [livePrices, setLivePrices] = useState(() =>
     AVAILABLE_CURRENCIES.map((currency) => ({
       ...currency,
@@ -112,22 +116,18 @@ function Home({ theme, onToggleTheme }) {
   useEffect(() => {
     let isMounted = true;
 
+    // Fetch live prices
     const loadLivePrices = async () => {
       try {
         const ids = AVAILABLE_CURRENCIES.map((currency) => currency.coinGeckoId).join(",");
         const response = await fetch(
           `https://api.coingecko.com/api/v3/simple/price?ids=${encodeURIComponent(ids)}&vs_currencies=usd`
         );
-
         if (!response.ok) {
           throw new Error("Unable to fetch market prices.");
         }
-
         const payload = await response.json();
-        if (!isMounted) {
-          return;
-        }
-
+        if (!isMounted) return;
         setLivePrices((previousList) =>
           AVAILABLE_CURRENCIES.map((currency) => {
             const previous = previousList.find((item) => item.code === currency.code);
@@ -138,7 +138,6 @@ function Home({ theme, onToggleTheme }) {
               Number.isFinite(previousPrice) &&
               Number.isFinite(nextPrice) &&
               previousPrice > 0;
-
             return {
               ...currency,
               price: Number.isFinite(nextPrice) ? nextPrice : null,
@@ -149,30 +148,64 @@ function Home({ theme, onToggleTheme }) {
             };
           })
         );
-
         setLastUpdated(new Date());
         setPriceError("");
       } catch (error) {
-        if (!isMounted) {
-          return;
-        }
-
+        if (!isMounted) return;
         setPriceError(error?.message || "Unable to fetch market prices.");
       } finally {
-        if (isMounted) {
-          setLoadingPrices(false);
-        }
+        if (isMounted) setLoadingPrices(false);
+      }
+    };
+
+    // Fetch news and unread status
+    const loadNews = async () => {
+      setNewsError("");
+      try {
+        const token = getToken && getToken();
+        const API_BASE = import.meta.env && import.meta.env.VITE_API_BASE ? import.meta.env.VITE_API_BASE : "http://localhost:5149";
+        const res = await fetch(`${API_BASE}/api/news`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        if (!isMounted) return;
+        setNews(Array.isArray(data) ? data : []);
+        // Unread logic: store read news IDs in localStorage
+        const readIds = JSON.parse(localStorage.getItem("readNewsIds") || "[]");
+        const unread = (Array.isArray(data) ? data : []).filter(
+          (n) => n.newsId && !readIds.includes(n.newsId)
+        );
+        setUnreadNews(unread);
+      } catch (err) {
+        if (!isMounted) return;
+        setNewsError(err?.message || "Failed to load news.");
+        setNews([]);
+        setUnreadNews([]);
       }
     };
 
     loadLivePrices();
+    loadNews();
     const intervalId = setInterval(loadLivePrices, 10000);
+    const newsInterval = setInterval(loadNews, 60000); // refresh news every 60s
 
     return () => {
       isMounted = false;
       clearInterval(intervalId);
+      clearInterval(newsInterval);
     };
   }, []);
+
+  // Mark news as read
+  const handleMarkNewsRead = (newsId) => {
+    const readIds = JSON.parse(localStorage.getItem("readNewsIds") || "[]");
+    if (!readIds.includes(newsId)) {
+      const updated = [...readIds, newsId];
+      localStorage.setItem("readNewsIds", JSON.stringify(updated));
+      setUnreadNews((prev) => prev.filter((n) => n.newsId !== newsId));
+    }
+  };
 
   return (
     <div className={`crypto-layout ${theme === "light" ? "light-mode" : ""}`}>
@@ -206,7 +239,68 @@ function Home({ theme, onToggleTheme }) {
           <button className="theme-toggle-btn" onClick={onToggleTheme} title="Toggle Theme">
             {theme === 'dark' ? 'Light Theme' : 'Dark Theme'}
           </button>
-          <button className="theme-toggle-btn" title="Announcements">{'📢'}</button>
+          <div style={{ position: 'relative', display: 'inline-block' }}>
+            <button
+              className="theme-toggle-btn"
+              title="Notifications"
+              onClick={() => setShowNotifications((v) => !v)}
+              style={{ position: 'relative' }}
+            >
+              <span role="img" aria-label="notifications">🔔</span>
+              {unreadNews.length > 0 && (
+                <span style={{
+                  position: 'absolute',
+                  top: 2,
+                  right: 2,
+                  background: '#ff7f50',
+                  color: '#fff',
+                  borderRadius: '50%',
+                  fontSize: 12,
+                  width: 18,
+                  height: 18,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 700,
+                  border: '2px solid #232323',
+                  zIndex: 2
+                }}>{unreadNews.length}</span>
+              )}
+            </button>
+            {showNotifications && (
+              <div style={{
+                position: 'absolute',
+                right: 0,
+                top: 36,
+                background: '#232323',
+                color: '#fff',
+                borderRadius: 8,
+                boxShadow: '0 2px 8px #181a20',
+                minWidth: 320,
+                zIndex: 1000,
+                padding: 12
+              }}>
+                <div style={{ fontWeight: 700, marginBottom: 8, color: '#ff7f50' }}>Unread News</div>
+                {newsError && <div style={{ color: '#ff4d4d', marginBottom: 8 }}>{newsError}</div>}
+                {unreadNews.length === 0 && <div style={{ color: '#aaa' }}>No new unread news.</div>}
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  {unreadNews.map((n) => (
+                    <li key={n.newsId} style={{ marginBottom: 8, borderBottom: '1px solid #333', paddingBottom: 6 }}>
+                      <a
+                        href={`/news/${n.newsId}`}
+                        style={{ color: '#fff', textDecoration: 'none', fontWeight: 600 }}
+                        onClick={() => handleMarkNewsRead(n.newsId)}
+                      >
+                        <span style={{ color: '#ff7f50', marginRight: 6 }}>●</span>
+                        {n.title}
+                      </a>
+                      <div style={{ fontSize: 12, color: '#aaa' }}>{n.publishedAt ? new Date(n.publishedAt).toLocaleString() : ''}</div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
         {/* Dashboard Overview Cards */}
         <div className="cards-grid" style={{ marginBottom: 30 }}>
