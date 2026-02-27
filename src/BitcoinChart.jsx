@@ -83,12 +83,12 @@ function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
         {
           label: `Price ${base}/${quote} (${sourceLabel})`,
           data: prices,
-          borderColor: "#357859ff",
-          backgroundColor: "rgba(0, 255, 204, 0.1)",
+          borderColor: "rgb(255, 127, 80)",
+          backgroundColor: " rgba(255, 127, 80, 0.1)",
           tension: 0.3,
           fill: true,
           pointRadius: 3,
-          pointBackgroundColor: "#00ffcc",
+          pointBackgroundColor: " rgb(255, 127, 80)",
         },
       ],
     });

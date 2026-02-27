@@ -332,25 +332,11 @@ function Home({ theme, onToggleTheme }) {
               <div className="currency-box" style={{ background: '#181818', color: '#ff7f50' }}>GBP <span style={{ color: '#fff' }}>£25,000.00</span></div>
             </div>
             <button className="btn-primary" style={{ marginTop: 12, background: '#ff7f50', color: '#fff', border: 'none' }}>+ Add new</button>
-          </div>
+          </div>    
         </div>
         {/* Cash Flow Chart */}
-        <div className="chart-container" style={{ background: '#232323', color: '#fff', boxShadow: '0 2px 8px #232323a0' }}>
-          <div className="chart-header" style={{ color: '#fff' }}>Cash Flow</div>
-          <div style={{ display: 'flex', alignItems: 'flex-end', height: 180, gap: 16 }}>
-            {[80, 120, 160, 220, 140, 100, 60].map((v, i) => (
-              <div key={i} style={{ width: 40, height: v, background: i === 3 ? 'linear-gradient(180deg, #ff7f50 0%, #ff4500 100%)' : '#222', borderRadius: 8, position: 'relative', boxShadow: i === 3 ? '0 4px 16px #ff7f50a0' : 'none' }}>
-                {i === 3 && (
-                  <div style={{ position: 'absolute', top: -32, left: -10, color: '#ff7f50', fontWeight: 700, fontSize: 18 }}>$540,323.45</div>
-                )}
-              </div>
-            ))}
-          </div>
-          <div style={{ marginTop: 12, display: 'flex', gap: 24 }}>
-            {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'].map((m, i) => (
-              <span key={i} style={{ color: '#ff7f50', fontWeight: 500 }}>{m}</span>
-            ))}
-          </div>
+        <div className="chart-container" style={{ margin: "24px 0" }}>
+          <BitcoinChart symbol="BTCUSD" />
         </div>
         {/* Recent Activities Table */}
         <div className="chart-container" style={{ background: '#232323', color: '#fff', boxShadow: '0 2px 8px #232323a0' }}>

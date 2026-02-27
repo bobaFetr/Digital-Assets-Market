@@ -352,7 +352,7 @@ export default function BuyAndSell() {
               <p className="reward-label" style={{ color: "#fff", margin: "8px 0 0 0" }}>Reward Rate</p>
               <h3
                 className={`coin-rate ${coin.rateValue == null || coin.rateValue >= 0 ? "rate-up" : "rate-down"}`}
-                style={{ color: coin.rateValue == null || coin.rateValue >= 0 ? "#7cf29a" : "#ff4d4d", margin: 0 }}
+                style={{ color: coin.rateValue == null || coin.rateValue >= 0 ? "rgb(255, 127, 80) 0%" : "#ff4d4d", margin: 0 }}
               >
                 {coin.rateText}
               </h3>
