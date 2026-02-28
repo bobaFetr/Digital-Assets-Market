@@ -1,0 +1,17 @@
+node_modules
+**/node_modules
+frontend/node_modules
+backend/**/bin
+backend/**/obj
+**/bin
+**/obj
+.git
+.vscode
+Dockerfile
+DockerFile
+dist
+build
+*.log
+*.cache
+*.env
+.env

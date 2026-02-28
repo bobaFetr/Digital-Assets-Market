@@ -1,42 +1,33 @@
-# ====== Build Frontend (Vite + React) ======
+# Frontend build (Vite + React)
 FROM node:20-alpine AS frontend-build
-WORKDIR /src/frontend
+WORKDIR /src
+COPY package*.json ./
+RUN npm ci || npm install
+COPY . .
+RUN npm run build
 
-# Copy only frontend package files first for caching
-COPY frontend/package*.json ./
-RUN npm install
-
-# Copy the rest of frontend
-COPY frontend/ ./
-RUN npm run build   # outputs to /src/frontend/dist
-
-# ====== Build Backend (.NET 8 Web API) ======
+# Backend build (.NET 8 Web API)
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS backend-build
 WORKDIR /src
 
-# Copy csproj files and restore first (for caching)
-COPY backend/MyWebApi/MyWebApi.csproj MyWebApi/
-COPY backend/NetServer.DAta1/NetServer.DAta1.csproj NetServer.DAta1/
+# copy csproj files for restore (cache-friendly)
+COPY MyWebApi/MyWebApi.csproj MyWebApi/
+COPY NetServer.DAta1/NetServer.DAta1.csproj NetServer.DAta1/
 RUN dotnet restore MyWebApi/MyWebApi.csproj
 
-# Copy the full backend source
-COPY backend/ ./
+# copy backend sources only
+COPY MyWebApi/ MyWebApi/
+COPY NetServer.DAta1/ NetServer.DAta1/
 
-# Copy frontend build into wwwroot
-COPY --from=frontend-build /src/frontend/dist ./MyWebApi/wwwroot
+# copy frontend build into backend wwwroot
+COPY --from=frontend-build /src/dist ./MyWebApi/wwwroot
 
-# Publish backend
+# publish backend
 RUN dotnet publish MyWebApi/MyWebApi.csproj -c Release -o /app/publish
 
-# ====== Final Runtime Image ======
+# Final runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
-
-# Expose port from Render
 EXPOSE 10000
-
-# Copy published backend
 COPY --from=backend-build /app/publish .
-
-# Run with dynamic port
 ENTRYPOINT ["sh", "-c", "ASPNETCORE_URLS=http://0.0.0.0:${PORT:-10000} dotnet MyWebApi.dll"]
