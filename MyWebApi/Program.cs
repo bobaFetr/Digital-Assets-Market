@@ -35,6 +35,7 @@ internal class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
+        // ✅ CORS policy с добавен домейн на деплойнатия фронтенд
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("DevCors", policy =>
@@ -43,7 +44,8 @@ internal class Program
                         "http://localhost:5173",
                         "http://localhost:5174",
                         "https://localhost:5173",
-                        "https://localhost:5174")
+                        "https://localhost:5174",
+                        "https://sudo-delete-web-service-crypto-inc-eood.onrender.com") // новият домейн
                     .AllowAnyHeader()
                     .AllowAnyMethod();
             });
