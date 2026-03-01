@@ -10,8 +10,8 @@ namespace NetServer.Data
         {
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
 
-            optionsBuilder.UseSqlServer(
-                "Server=(localdb)\\MSSQLLocalDB;Database=Digital_Assets2026;Trusted_Connection=True;TrustServerCertificate=True"
+            optionsBuilder.UseNpgsql(
+                "Host=localhost;Port=5432;Database=Digital_Assets2026;Username=postgres;Password=bobataevelik"
             );
 
             return new AppDbContext(optionsBuilder.Options);

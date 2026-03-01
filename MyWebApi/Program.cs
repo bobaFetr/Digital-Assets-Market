@@ -56,8 +56,8 @@ internal class Program
         builder.Services.AddSwaggerGen();
         builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
         builder.Services.AddScoped<WalletProvisioningService>();
-        builder.Services.AddDbContext<AppDbContext>(options =>//the reference from he old project was reoved
-            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+        builder.Services.AddDbContext<AppDbContext>(options =>
+            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
         var app = builder.Build();
 
@@ -65,6 +65,17 @@ internal class Program
         {
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var walletProvisioning = scope.ServiceProvider.GetRequiredService<WalletProvisioningService>();
+            // Ensure database is up-to-date with migrations on startup
+            try
+            {
+                db.Database.Migrate();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Database migration failed: {ex.Message}");
+                throw;
+            }
+
             var created = walletProvisioning.EnsureDefaultWalletsForAllUsers();
             if (created > 0)
             {

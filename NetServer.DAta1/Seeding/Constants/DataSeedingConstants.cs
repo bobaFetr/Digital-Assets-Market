@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.Identity.Client;
+// using Microsoft.Identity.Client; (not needed for seeding constants)
 using NetServer.Data.Models;
 using System;
 using System.Collections.Generic;
