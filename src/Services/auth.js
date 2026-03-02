@@ -1,13 +1,17 @@
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5149";
+const API_BASE = import.meta.env?.VITE_API_BASE ?? "";
 const TOKEN_STORAGE_KEY = "dam_token";
 
 const request = async (path, options = {}) => {
+  const headers = {
+    ...(options.headers || {}),
+  };
+  if (options.body != null) {
+    headers["Content-Type"] = headers["Content-Type"] || "application/json";
+  }
+
   const response = await fetch(`${API_BASE}${path}`, {
     ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    },
+    headers,
   });
 
   if (!response.ok) {
@@ -201,3 +205,5 @@ export const getSavedCardDetails = () => {
     },
   });
 };
+
+export { request };

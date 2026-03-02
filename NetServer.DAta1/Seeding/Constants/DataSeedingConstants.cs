@@ -19,7 +19,7 @@ namespace NetServer.Data.Seeding.Constants
             public const string Username1 = "Alice";
             public const string Email = "Alice@email.com";
             public const string Password = "Password";
-            public static readonly DateTime CreatedAt1 = new(2025, 11, 28);
+            public static readonly DateTime CreatedAt1 = new DateTime(2025, 11, 28, 0, 0, 0, DateTimeKind.Utc);
             public const User.StatusBit Status1 = User.StatusBit.Active;
             public const bool IsBanned1 = false;
             //public  CreatedAt = 
@@ -36,7 +36,7 @@ namespace NetServer.Data.Seeding.Constants
             public const decimal Balance1 = 1.5m;
             public const string Address1 = "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa";
             public const string Status1 = "Active";
-            public static readonly DateTime CreatedAt1 = new(2025, 11, 28);
+            public static readonly DateTime CreatedAt1 = new DateTime(2025, 11, 28, 0, 0, 0, DateTimeKind.Utc);
         }
 
         // //3
@@ -49,7 +49,7 @@ namespace NetServer.Data.Seeding.Constants
             public const decimal Price1 = 50000.0m;
             public const decimal Amount1 = 0.1m;
             public const OrderStatus OrderStatus1 = OrderStatus.Open;
-            public static readonly DateTime TimeStamp1 = new(2025, 8, 28);
+            public static readonly DateTime TimeStamp1 = new DateTime(2025, 8, 28, 0, 0, 0, DateTimeKind.Utc);
         }
 
         //4
@@ -62,7 +62,7 @@ namespace NetServer.Data.Seeding.Constants
             //public const OrderBook Buyorder = null!;
             public const decimal Price1 = 70000.0m;
             public const double Amount1 = 0.5;
-            public static readonly DateTime TimeStamp1 = new(2025, 11, 28);
+            public static readonly DateTime TimeStamp1 = new DateTime(2025, 11, 28, 0, 0, 0, DateTimeKind.Utc);
         }
 
         //5
@@ -73,7 +73,7 @@ namespace NetServer.Data.Seeding.Constants
             public const string Symbol1 = "BTCUSD";
             public const decimal Price1 = 50000.0m;
             public const decimal Amount1 = 0.1m;
-            public static readonly DateTime TimeStamp1 = new(2025, 11, 28);
+            public static readonly DateTime TimeStamp1 = new DateTime(2025, 11, 28, 0, 0, 0, DateTimeKind.Utc);
         }
 
 
@@ -86,11 +86,11 @@ namespace NetServer.Data.Seeding.Constants
             public const string FilePath1 = "/path/to/document1.pdf";
             public const string DocumentNumber1 = "A12345678";
             public const string FullName1 = "Alice Example";
-            public static readonly DateTime DateOfBirth1 = new(1994, 5, 20);
+            public static readonly DateTime DateOfBirth1 = new DateTime(1994, 5, 20, 0, 0, 0, DateTimeKind.Utc);
             public const string CountryOfResidence1 = "BG";
-            public static readonly DateTime ExpiryDate1 = new(2030, 11, 28);
+            public static readonly DateTime ExpiryDate1 = new DateTime(2030, 11, 28, 0, 0, 0, DateTimeKind.Utc);
             public const string Status1 = "Pending";
-            public static readonly DateTime UploadedAt1 = new(2025, 11, 28);
+            public static readonly DateTime UploadedAt1 = new DateTime(2025, 11, 28, 0, 0, 0, DateTimeKind.Utc);
         }
 
         //7
@@ -100,10 +100,12 @@ namespace NetServer.Data.Seeding.Constants
             public static readonly Guid Session1Id = Guid.Parse("c0733dc5-908b-42fd-8623-8cba9e9b1b7b");
             public static readonly Guid User1Id = DataSeedingConstants.UserConstants.User1Id;
             public const string Token = "sample_token";
-            public const string IpAddress1 = "89234.98324.2394.2948";
+            
+            // Use a valid placeholder IP for seeding; original value was invalid
+            public const string IpAddress1 = "127.0.0.1";
             public const string DeviceInfo1 = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3";
-            public static readonly DateTime CreatedAt1 = new(2025, 11, 28);
-            public static readonly DateTime ExpiresAt1 = new(2025, 11, 29);
+            public static readonly DateTime CreatedAt1 = new DateTime(2025, 11, 28, 0, 0, 0, DateTimeKind.Utc);
+            public static readonly DateTime ExpiresAt1 = new DateTime(2025, 11, 29, 0, 0, 0, DateTimeKind.Utc);
         }
 
         //8
@@ -113,7 +115,7 @@ namespace NetServer.Data.Seeding.Constants
             public static readonly Guid User1Id = DataSeedingConstants.UserConstants.User1Id;
             public const string Action1 = "User Login";
             public const string Details1 = "User Alice logged in successfully.";
-            public static readonly DateTime Timestamp1 = new(2025, 11, 28);
+            public static readonly DateTime Timestamp1 = new DateTime(2025, 11, 28, 0, 0, 0, DateTimeKind.Utc);
         }
 
         //9
@@ -124,7 +126,7 @@ namespace NetServer.Data.Seeding.Constants
             public const string TxHash1 = "2d6ea11f-071b-45db-8cc1-e4a31e7ae808";
             public const string EventType1 = "Deposit";
             public const string Status1 = "Confirmed";
-            public static readonly DateTime Timestamp1 = new(2025, 11, 28);
+            public static readonly DateTime Timestamp1 = new DateTime(2025, 11, 28, 0, 0, 0, DateTimeKind.Utc);
         }
 
         //10
@@ -137,7 +139,7 @@ namespace NetServer.Data.Seeding.Constants
             public const decimal Amount1 = 0.5m;
             public const string Status1 = "Completed";
             public const string BlockchainTransactionHash1 = "0000000000000000000a7b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4";
-            public static readonly DateTime TimeStamp1 = new(2025, 11, 28);
+            public static readonly DateTime TimeStamp1 = new DateTime(2025, 11, 28, 0, 0, 0, DateTimeKind.Utc);
         }
 
         //11
@@ -149,7 +151,7 @@ namespace NetServer.Data.Seeding.Constants
             public const string Symbol1 = "BTCUSD";
             public const decimal MakerFee1 = 0.1m;
             public const decimal TakerFee1 = 0.2m;
-            public static readonly DateTime UpdatedAt1 = new(2025, 11, 28);
+            public static readonly DateTime UpdatedAt1 = new DateTime(2025, 11, 28, 0, 0, 0, DateTimeKind.Utc);
         }
 
         //12
@@ -160,7 +162,7 @@ namespace NetServer.Data.Seeding.Constants
             public static readonly Guid ReferredId = Guid.Parse("2b3c4d5e-6f70-8910-abcd-ef1234567890");
             public const decimal BonusAmount1 = 50.0m;
             //public const DateTime Timestamp1 = new(2025, 11, 28);
-            public static readonly DateTime Timestamp1 = new(2025, 12, 5);
+            public static readonly DateTime Timestamp1 = new DateTime(2025, 12, 5, 0, 0, 0, DateTimeKind.Utc);
         }
 
         //13
@@ -169,11 +171,11 @@ namespace NetServer.Data.Seeding.Constants
             public static readonly Guid Faq1Id = Guid.Parse("1a2b3c4d-5e6f-7890-abcd-ef1234567890");
             public const string Question1 = "How to create an account?";
             public const string Answer1 = "To create an account, click on the Sign Up button and fill in the required information.";
-            public static readonly DateTime CreatedAt1 = new(2025, 11, 28);
-            public static readonly DateTime UpdatedAt1 = new(2025, 11, 29);
+            public static readonly DateTime CreatedAt1 = new DateTime(2025, 11, 28, 0, 0, 0, DateTimeKind.Utc);
+            public static readonly DateTime UpdatedAt1 = new DateTime(2025, 11, 29, 0, 0, 0, DateTimeKind.Utc);
             public static readonly Guid CategoryId1 = Guid.Parse("12345678-90ab-cdef-1234-567890abcdef");
             public static readonly Guid AuthorId1 = DataSeedingConstants.UserConstants.User1Id;
-            public static readonly DateTime PublishedAt1 = new(2025, 11, 30);
+            public static readonly DateTime PublishedAt1 = new DateTime(2025, 11, 30, 0, 0, 0, DateTimeKind.Utc);
         }
 
         
@@ -186,42 +188,42 @@ namespace NetServer.Data.Seeding.Constants
             public const string Title1 = "New Feature Release: Margin Trading";
             public const string Content1 = "We are excited to announce the release of margin trading on our platform. Users can now trade with leverage up to 5x on selected pairs.";
             public static readonly Guid Author = UserConstants.User1Id;
-            public static readonly DateTime PublishedAt1 = new(2025, 11, 28);
+            public static readonly DateTime PublishedAt1 = new DateTime(2025, 11, 28, 0, 0, 0, DateTimeKind.Utc);
 
-            public static readonly DateTime CreatedAt1 = new(2025, 11, 28);
+            public static readonly DateTime CreatedAt1 = new DateTime(2025, 11, 28, 0, 0, 0, DateTimeKind.Utc);
             public static readonly Guid CreatedBy = UserConstants.User1Id;
             public static readonly Guid EditedBy = UserConstants.User1Id;
-            public static readonly DateTime EditedOn = new(2025, 11, 29);
+            public static readonly DateTime EditedOn = new DateTime(2025, 11, 29, 0, 0, 0, DateTimeKind.Utc);
             public static readonly Guid DeletedBy = UserConstants.User1Id;
-            public static readonly DateTime DeletedOn = new(2025, 11, 30);
-            public static readonly DateTime UpdatedAt1 = new(2025, 11, 29); 
+            public static readonly DateTime DeletedOn = new DateTime(2025, 11, 30, 0, 0, 0, DateTimeKind.Utc);
+            public static readonly DateTime UpdatedAt1 = new DateTime(2025, 11, 29, 0, 0, 0, DateTimeKind.Utc); 
 
             public static readonly Guid News2Id = Guid.Parse("2b3c4d5e-6f70-8910-abcd-ef1234567890");
             public const string Title2 = "API Upgrade: Faster Order Book";
             public const string Content2 = "Our trading API now delivers order book snapshots with lower latency and improved depth support for BTCUSD, ETHUSD, and BNBUSD.";
-            public static readonly DateTime PublishedAt2 = new(2025, 12, 2);
-            public static readonly DateTime CreatedAt2 = new(2025, 12, 2);
-            public static readonly DateTime EditedOn2 = new(2025, 12, 3);
-            public static readonly DateTime DeletedOn2 = new(2025, 12, 4);
-            public static readonly DateTime UpdatedAt2 = new(2025, 12, 3);
+            public static readonly DateTime PublishedAt2 = new DateTime(2025, 12, 2, 0, 0, 0, DateTimeKind.Utc);
+            public static readonly DateTime CreatedAt2 = new DateTime(2025, 12, 2, 0, 0, 0, DateTimeKind.Utc);
+            public static readonly DateTime EditedOn2 = new DateTime(2025, 12, 3, 0, 0, 0, DateTimeKind.Utc);
+            public static readonly DateTime DeletedOn2 = new DateTime(2025, 12, 4, 0, 0, 0, DateTimeKind.Utc);
+            public static readonly DateTime UpdatedAt2 = new DateTime(2025, 12, 3, 0, 0, 0, DateTimeKind.Utc);
 
             public static readonly Guid News3Id = Guid.Parse("3c4d5e6f-7081-9210-abcd-ef1234567890");
             public const string Title3 = "Security Notice: New Withdrawal Safeguards";
             public const string Content3 = "We added device-aware withdrawal checks and optional 2FA prompts for high-risk activity to better protect your account.";
-            public static readonly DateTime PublishedAt3 = new(2025, 12, 8);
-            public static readonly DateTime CreatedAt3 = new(2025, 12, 8);
-            public static readonly DateTime EditedOn3 = new(2025, 12, 9);
-            public static readonly DateTime DeletedOn3 = new(2025, 12, 10);
-            public static readonly DateTime UpdatedAt3 = new(2025, 12, 9);
+            public static readonly DateTime PublishedAt3 = new DateTime(2025, 12, 8, 0, 0, 0, DateTimeKind.Utc);
+            public static readonly DateTime CreatedAt3 = new DateTime(2025, 12, 8, 0, 0, 0, DateTimeKind.Utc);
+            public static readonly DateTime EditedOn3 = new DateTime(2025, 12, 9, 0, 0, 0, DateTimeKind.Utc);
+            public static readonly DateTime DeletedOn3 = new DateTime(2025, 12, 10, 0, 0, 0, DateTimeKind.Utc);
+            public static readonly DateTime UpdatedAt3 = new DateTime(2025, 12, 9, 0, 0, 0, DateTimeKind.Utc);
 
             public static readonly Guid News4Id = Guid.Parse("4d5e6f70-8192-a210-abcd-ef1234567890");
             public const string Title4 = "New Listing: ALGO-EUR Spot";
             public const string Content4 = "ALGO-EUR spot trading is now live. Review the listing details and start trading with tighter spreads.";
-            public static readonly DateTime PublishedAt4 = new(2025, 12, 15);
-            public static readonly DateTime CreatedAt4 = new(2025, 12, 15);
-            public static readonly DateTime EditedOn4 = new(2025, 12, 16);
-            public static readonly DateTime DeletedOn4 = new(2025, 12, 17);
-            public static readonly DateTime UpdatedAt4 = new(2025, 12, 16);
+            public static readonly DateTime PublishedAt4 = new DateTime(2025, 12, 15, 0, 0, 0, DateTimeKind.Utc);
+            public static readonly DateTime CreatedAt4 = new DateTime(2025, 12, 15, 0, 0, 0, DateTimeKind.Utc);
+            public static readonly DateTime EditedOn4 = new DateTime(2025, 12, 16, 0, 0, 0, DateTimeKind.Utc);
+            public static readonly DateTime DeletedOn4 = new DateTime(2025, 12, 17, 0, 0, 0, DateTimeKind.Utc);
+            public static readonly DateTime UpdatedAt4 = new DateTime(2025, 12, 16, 0, 0, 0, DateTimeKind.Utc);
             
         }
 

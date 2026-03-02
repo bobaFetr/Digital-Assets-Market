@@ -8,7 +8,7 @@ import WithDraw from "./WithdrawPage.jsx";
 import BuyAndSell from "./BuyAndSell";
 import BCrypto from "./BCrypto.jsx";
 import VerifyIdentityPage from "./VerifyIdentityPage";
-import { getKycStatus, getToken } from "./Services/auth";
+import { getKycStatus, getToken, request } from "./Services/auth";
 import VerificationEmailPage from "./VerificationEmailPage";
 import SentSMSToNumberPage from "./SentSMSToNumberPage";
 
@@ -66,20 +66,14 @@ function UserBalanceCard() {
       setLoading(false);
       return;
     }
-    const API_BASE = import.meta.env && import.meta.env.VITE_API_BASE ? import.meta.env.VITE_API_BASE : "http://localhost:5149";
-    fetch(`${API_BASE}/api/wallets`, {
+    const API_BASE = import.meta.env?.VITE_API_BASE ?? "";
+    request(`/api/wallets`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then(async (res) => {
-        if (!res.ok) {
-          throw new Error(await res.text());
-        }
-        return res.json();
-      })
       .then((wallets) => {
-        const total = wallets.reduce((sum, wallet) => sum + Number(wallet.balance || 0), 0);
+        const total = (Array.isArray(wallets) ? wallets : []).reduce((sum, wallet) => sum + Number(wallet.balance || 0), 0);
         setBalance(total);
         setLoading(false);
       })
@@ -163,12 +157,9 @@ function Home({ theme, onToggleTheme }) {
       setNewsError("");
       try {
         const token = getToken && getToken();
-        const API_BASE = import.meta.env && import.meta.env.VITE_API_BASE ? import.meta.env.VITE_API_BASE : "http://localhost:5149";
-        const res = await fetch(`${API_BASE}/api/news`, {
+        const data = await request(`/api/news`, {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
-        if (!res.ok) throw new Error(await res.text());
-        const data = await res.json();
         if (!isMounted) return;
         setNews(Array.isArray(data) ? data : []);
         // Unread logic: store read news IDs in localStorage
@@ -484,17 +475,19 @@ function KycGate({ children }) {
       return;
     }
 
+    // Identity verification is optional. Query the backend for status but do not force navigation.
     let isActive = true;
     getKycStatus()
       .then((status) => {
         if (!isActive) return;
         if (!status?.verified) {
-          navigate("/VerifyIdentityPage", { replace: true });
+          // Non-blocking: you may show a banner or notify the user instead of redirecting.
+          console.info("KYC not verified — identity verification is optional.");
         }
       })
       .catch(() => {
         if (!isActive) return;
-        navigate("/VerifyIdentityPage", { replace: true });
+        console.info("Unable to determine KYC status — identity verification is optional.");
       });
 
     return () => {

@@ -52,7 +52,7 @@ Core controllers in [MyWebApi/Controllers](MyWebApi/Controllers):
 - News, Faq, FeeTables, Referrals, BlockchainEvents: platform content and configuration.
 
 ## Configuration
-- Frontend API base: `VITE_API_BASE` (defaults to http://localhost:5149).
+- Frontend API base: `VITE_API_BASE` (set to your backend URL during frontend build; when unset the app will call relative `/api/*`).
 - Backend JWT settings and connection string are in appsettings files under [MyWebApi](MyWebApi).
 - CORS allows local dev origins for Vite (see [MyWebApi/Program.cs](MyWebApi/Program.cs)).
 

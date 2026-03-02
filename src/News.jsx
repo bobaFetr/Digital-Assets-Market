@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import Sidebar from "./Components/Sidebar";
-import { getToken } from "./Services/auth";
+import { getToken, request } from "./Services/auth";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5149";
+const API_BASE = import.meta.env?.VITE_API_BASE ?? "";
 
 export default function News() {
     const [articles, setArticles] = useState([]);
@@ -19,15 +19,13 @@ export default function News() {
             setError("");
             try {
                 const token = getToken();
-                const res = await fetch(`${API_BASE}/api/news`, {
+                const data = await request(`/api/news`, {
                     headers: token ? { Authorization: `Bearer ${token}` } : undefined,
                 });
 
-                if (!res.ok) {
-                    throw new Error(await res.text());
+                if (typeof data === "string") {
+                    throw new Error(data || "Unexpected non-JSON response from server");
                 }
-
-                const data = await res.json();
                 if (!isActive) return;
                 setArticles(Array.isArray(data) ? data : []);
             } catch (fetchError) {

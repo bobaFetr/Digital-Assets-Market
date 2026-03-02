@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Sidebar from "./Components/Sidebar";
-import { getToken } from "./Services/auth";
+import { getToken, request } from "./Services/auth";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5149";
+const API_BASE = import.meta.env?.VITE_API_BASE ?? "";
 
 export default function NewsDetail() {
     const { id } = useParams();
@@ -23,15 +23,13 @@ export default function NewsDetail() {
             setError("");
             try {
                 const token = getToken();
-                const res = await fetch(`${API_BASE}/api/news/${id}`, {
+                const data = await request(`/api/news/${id}`, {
                     headers: token ? { Authorization: `Bearer ${token}` } : undefined,
                 });
 
-                if (!res.ok) {
-                    throw new Error(await res.text());
+                if (typeof data === "string") {
+                    throw new Error(data || "Unexpected non-JSON response from server");
                 }
-
-                const data = await res.json();
                 if (!isActive) return;
                 setArticle(data);
             } catch (fetchError) {

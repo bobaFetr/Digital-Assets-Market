@@ -91,7 +91,11 @@ public class KycDocumentsController : ApiControllerBase
             return BadRequest("Date of birth is required.");
         }
 
-        if (!IsAtLeast18(request.DateOfBirth))
+        // Normalize incoming dates to UTC to satisfy PostgreSQL timestamptz requirements
+        var dobUtc = DateTime.SpecifyKind(request.DateOfBirth, DateTimeKind.Utc);
+        var expiryUtc = request.ExpiryDate == default ? default : DateTime.SpecifyKind(request.ExpiryDate, DateTimeKind.Utc);
+
+        if (!IsAtLeast18(dobUtc))
         {
             return BadRequest("User must be at least 18 years old.");
         }
@@ -110,9 +114,9 @@ public class KycDocumentsController : ApiControllerBase
             FilePath = request.FilePath,
             DocumentNumber = request.DocumentNumber,
             FullName = request.FullName,
-            DateOfBirth = request.DateOfBirth,
+            DateOfBirth = dobUtc,
             CountryOfResidence = request.CountryOfResidence,
-            ExpiryDate = request.ExpiryDate,
+            ExpiryDate = expiryUtc,
             Status = string.IsNullOrWhiteSpace(request.Status) ? "Verified" : request.Status,
             UploadedAt = DateTime.UtcNow
         };
@@ -169,7 +173,7 @@ public class KycDocumentsController : ApiControllerBase
                 return BadRequest("User must be at least 18 years old.");
             }
 
-            doc.DateOfBirth = request.DateOfBirth.Value;
+            doc.DateOfBirth = DateTime.SpecifyKind(request.DateOfBirth.Value, DateTimeKind.Utc);
         }
 
         if (request.CountryOfResidence != null)
@@ -179,7 +183,7 @@ public class KycDocumentsController : ApiControllerBase
 
         if (request.ExpiryDate.HasValue)
         {
-            doc.ExpiryDate = request.ExpiryDate.Value;
+            doc.ExpiryDate = DateTime.SpecifyKind(request.ExpiryDate.Value, DateTimeKind.Utc);
         }
 
         if (request.Status != null)

@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { NavLink, Routes, Route } from "react-router-dom";
 import "./Admin.css";
 import UserSidebar from "../Components/Sidebar";
-import { getToken } from "../Services/auth";
+import { getToken, request } from "../Services/auth";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5149";
+const API_BASE = import.meta.env?.VITE_API_BASE ?? "";
 
 const quickMetrics = [
   { label: "24h Volume", value: "$48.2M", trend: "+12.4%", tone: "success" },
@@ -302,17 +302,12 @@ const Users = () => {
     setError("");
     try {
       const query = nextStatus === "all" ? "" : `?status=${nextStatus}`;
-      const response = await fetch(`${API_BASE}/api/users${query}`, {
+      const data = await request(`/api/users${query}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
-
-      const data = await response.json();
       setUsers(Array.isArray(data) ? data : []);
     } catch (fetchError) {
       setError(fetchError?.message || "Failed to load users.");
@@ -355,18 +350,13 @@ const Users = () => {
 
     try {
       const payload = directId ? { id: value } : resolveIdentifierPayload(value);
-      const response = await fetch(`${API_BASE}/api/users/${action}`, {
+      await request(`/api/users/${action}`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       });
-
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
 
       setStatusMessage(`User ${action === "ban" ? "banned" : "unbanned"}.`);
       setIdentifier("");
@@ -514,11 +504,7 @@ const News = () => {
     let isActive = true;
     const loadNews = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/news`);
-        if (!res.ok) {
-          throw new Error(await res.text());
-        }
-        const data = await res.json();
+        const data = await request(`/api/news`);
         if (!isActive) return;
         setItems(Array.isArray(data) ? data : []);
       } catch (fetchError) {
@@ -557,20 +543,13 @@ const News = () => {
         publishedAt: publishedAt ? new Date(publishedAt).toISOString() : null,
       };
 
-      const res = await fetch(`${API_BASE}/api/news`, {
+      const created = await request(`/api/news`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
-
-      if (!res.ok) {
-        throw new Error(await res.text());
-      }
-
-      const created = await res.json();
       setItems((prev) => [created, ...prev]);
       setTitle("");
       setContent("");
@@ -653,12 +632,7 @@ const Faqs = () => {
     setIsLoading(true);
     setError("");
     try {
-      const response = await fetch(`${API_BASE}/api/faq`);
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
-
-      const data = await response.json();
+      const data = await request(`/api/faq`);
       setItems(Array.isArray(data) ? data : []);
     } catch (fetchError) {
       setError(fetchError?.message || "Failed to load FAQs.");
@@ -689,10 +663,9 @@ const Faqs = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(`${API_BASE}/api/faq`, {
+      await request(`/api/faq`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
@@ -700,10 +673,6 @@ const Faqs = () => {
           answer: answer.trim(),
         }),
       });
-
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
 
       setQuestion("");
       setAnswer("");
@@ -748,10 +717,9 @@ const Faqs = () => {
 
     setIsSavingEdit(true);
     try {
-      const response = await fetch(`${API_BASE}/api/faq/${editingId}`, {
+      await request(`/api/faq/${editingId}`, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
@@ -759,10 +727,6 @@ const Faqs = () => {
           answer: editAnswer,
         }),
       });
-
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
 
       setStatus("FAQ updated.");
       cancelEdit();
@@ -789,16 +753,12 @@ const Faqs = () => {
     setDeletingId(faqId);
 
     try {
-      const response = await fetch(`${API_BASE}/api/faq/${faqId}`, {
+      await request(`/api/faq/${faqId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
 
       if (editingId === faqId) {
         cancelEdit();

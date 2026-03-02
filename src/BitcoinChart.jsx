@@ -28,7 +28,7 @@ ChartJS.register(
   Legend
 );
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5149";
+const API_BASE = import.meta.env?.VITE_API_BASE ?? "";
 const COIN_GECKO_ID_BY_BASE = {
   BTC: "bitcoin",
   ETH: "ethereum",

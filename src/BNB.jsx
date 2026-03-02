@@ -13,7 +13,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import axios from 'axios';
+import { request } from './Services/auth';
 import './App.css';
 
 // ✅ Register required components
@@ -34,12 +34,13 @@ function BitcoinChart() {
   });
 
   const fetchData = async () => {
-    try {//http://localhost:3001/api/Bnb/history
-      const res = await axios.get('http://localhost:3001/api/Bnb/history');
-      const labels = res.data.map(item =>
+    try {
+      const data = await request('/api/Bnb/history');
+      const rows = Array.isArray(data) ? data : [];
+      const labels = rows.map(item =>
         new Date(item.time).toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' })
       );
-      const prices = res.data.map(item => item.price);
+      const prices = rows.map(item => item.price);
 
       setChartData({
         labels,

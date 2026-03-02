@@ -46,23 +46,40 @@ public class AuthController : ControllerBase
             return BadRequest("Username already exists.");
         }
 
-        if (string.IsNullOrWhiteSpace(request.FullName)
-            || string.IsNullOrWhiteSpace(request.IdNumber)
-            || string.IsNullOrWhiteSpace(request.Country)
-            || request.DateOfBirth == default
-            || request.ExpiryDate == default)
-        {
-            return BadRequest("ID verification fields are required during registration.");
-        }
+        // KYC is optional. If any KYC field is supplied require the full set and validate.
+        var hasKycProvided = !string.IsNullOrWhiteSpace(request.FullName)
+                     || !string.IsNullOrWhiteSpace(request.IdNumber)
+                     || !string.IsNullOrWhiteSpace(request.Country)
+                     || request.DateOfBirth.HasValue
+                     || request.ExpiryDate.HasValue;
 
-        if (!IsAtLeast18(request.DateOfBirth))
-        {
-            return BadRequest("User must be at least 18 years old.");
-        }
+        DateTime? dobUtc = null;
+        DateTime? expiryUtc = null;
 
-        if (request.ExpiryDate <= DateTime.UtcNow.Date)
+        if (hasKycProvided)
         {
-            return BadRequest("ID document is expired.");
+            if (string.IsNullOrWhiteSpace(request.FullName)
+                || string.IsNullOrWhiteSpace(request.IdNumber)
+                || string.IsNullOrWhiteSpace(request.Country)
+                || !request.DateOfBirth.HasValue
+                || !request.ExpiryDate.HasValue)
+            {
+                return BadRequest("When providing identity verification, all ID fields are required: FullName, IdNumber, Country, DateOfBirth, ExpiryDate.");
+            }
+
+            // Normalize incoming dates to UTC to satisfy PostgreSQL timestamptz requirements
+            dobUtc = DateTime.SpecifyKind(request.DateOfBirth.Value, DateTimeKind.Utc);
+            expiryUtc = DateTime.SpecifyKind(request.ExpiryDate.Value, DateTimeKind.Utc);
+
+            if (!IsAtLeast18(dobUtc.Value))
+            {
+                return BadRequest("User must be at least 18 years old.");
+            }
+
+            if (expiryUtc.Value <= DateTime.UtcNow.Date)
+            {
+                return BadRequest("ID document is expired.");
+            }
         }
 
         var user = new User
@@ -81,20 +98,23 @@ public class AuthController : ControllerBase
         user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
         _db.Users.Add(user);
 
-        _db.KycDocuments.Add(new KycDocument
+        if (hasKycProvided)
         {
-            DocId = Guid.NewGuid(),
-            UserId = user.Id,
-            Type = string.IsNullOrWhiteSpace(request.DocumentType) ? "Passport" : request.DocumentType.Trim(),
-            FilePath = request.IdFilePath?.Trim() ?? string.Empty,
-            DocumentNumber = request.IdNumber.Trim(),
-            FullName = request.FullName.Trim(),
-            DateOfBirth = request.DateOfBirth,
-            CountryOfResidence = request.Country.Trim(),
-            ExpiryDate = request.ExpiryDate,
-            Status = "Verified",
-            UploadedAt = DateTime.UtcNow
-        });
+            _db.KycDocuments.Add(new KycDocument
+            {
+                DocId = Guid.NewGuid(),
+                UserId = user.Id,
+                Type = string.IsNullOrWhiteSpace(request.DocumentType) ? "Passport" : request.DocumentType.Trim(),
+                FilePath = request.IdFilePath?.Trim() ?? string.Empty,
+                DocumentNumber = request.IdNumber.Trim(),
+                FullName = request.FullName.Trim(),
+                DateOfBirth = dobUtc.Value,
+                CountryOfResidence = request.Country.Trim(),
+                ExpiryDate = expiryUtc.Value,
+                Status = "Verified",
+                UploadedAt = DateTime.UtcNow
+            });
+        }
 
         _walletProvisioning.EnsureDefaultWalletsForUser(user.Id);
         _db.SaveChanges();
@@ -443,7 +463,12 @@ public class AuthController : ControllerBase
         if (user != null)
         {
             var resetToken = CreatePasswordResetToken(user);
-            var frontendBaseUrl = _config["Frontend:BaseUrl"] ?? "http://localhost:5173";
+            var frontendBaseUrl = _config["Frontend:BaseUrl"];
+            if (string.IsNullOrWhiteSpace(frontendBaseUrl))
+            {
+                // If no configured frontend URL, derive from the current request (avoids hardcoded localhost fallbacks)
+                frontendBaseUrl = $"{Request.Scheme}://{Request.Host.Value}";
+            }
             var resetUrl = $"{frontendBaseUrl.TrimEnd('/')}/reset-password?token={Uri.EscapeDataString(resetToken)}";
 
             var subject = "Reset your password";
@@ -606,8 +631,8 @@ public class RegisterRequest
 
     public string FullName { get; set; } = "";
     public string IdNumber { get; set; } = "";
-    public DateTime DateOfBirth { get; set; }
-    public DateTime ExpiryDate { get; set; }
+    public DateTime? DateOfBirth { get; set; }
+    public DateTime? ExpiryDate { get; set; }
     public string Country { get; set; } = "";
     public string? DocumentType { get; set; }
     public string? IdFilePath { get; set; }

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "./Components/Sidebar";
-import { getToken } from "./Services/auth";
+import { getToken, request } from "./Services/auth";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5149";
+const API_BASE = import.meta.env?.VITE_API_BASE ?? "";
 const DEFAULT_PROFILE_PICTURE = `${API_BASE}/OIP.webp`;
 
 const resolveProfileImageUrl = (value) => {
@@ -35,12 +35,7 @@ export default function Faq() {
   const loadFaqs = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/api/faq?page=1&pageSize=20`);
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
-
-      const data = await response.json();
+      const data = await request(`/api/faq?page=1&pageSize=20`);
       setItems(Array.isArray(data) ? data : []);
     } catch (error) {
       setStatusMessage(error?.message || "Failed to load FAQ.");
@@ -103,10 +98,10 @@ export default function Faq() {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/api/faq/questions`, {
+
+      await request(`/api/faq/questions`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
@@ -114,10 +109,6 @@ export default function Faq() {
           questionImageUrl: questionImageUrl || null,
         }),
       });
-
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
 
       setQuestionText("");
       setQuestionImageUrl("");
@@ -143,18 +134,14 @@ export default function Faq() {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/api/faq/${faqId}/replies`, {
+
+      await request(`/api/faq/${faqId}/replies`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ answer }),
       });
-
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
 
       setReplyDrafts((prev) => ({ ...prev, [faqId]: "" }));
       setStatusMessage("Reply posted.");

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { addMoneyFromCard, changePassword, deleteAccount, getProfile, getSavedCardDetails, getToken, logoutUser, updateProfilePicture, updateUserName } from "./Services/auth";
+import { addMoneyFromCard, changePassword, deleteAccount, getProfile, getSavedCardDetails, getToken, logoutUser, updateProfilePicture, updateUserName, request } from "./Services/auth";
 import Sidebar from "./Components/Sidebar";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5149";
+const API_BASE = import.meta.env?.VITE_API_BASE ?? "";
 const DEFAULT_PROFILE_PICTURE = `${API_BASE}/OIP.webp`;
 
 const resolveProfileImageUrl = (value) => {
@@ -73,18 +73,13 @@ export default function Profile() {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/api/wallets`, {
+      const wallets = await request(`/api/wallets`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
-
-      const wallets = await response.json();
-      const total = wallets.reduce((sum, wallet) => sum + Number(wallet.balance || 0), 0);
+      const total = (Array.isArray(wallets) ? wallets : []).reduce((sum, wallet) => sum + Number(wallet.balance || 0), 0);
 
       setBalance(total);
       setBalanceError("");
@@ -314,17 +309,12 @@ export default function Profile() {
 
     setIsDownloadingInfo(true);
     try {
-      const response = await fetch(`${API_BASE}/api/users/me/export`, {
+      const data = await request(`/api/users/me/export`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
-
-      const data = await response.json();
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");

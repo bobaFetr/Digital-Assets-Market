@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import BitcoinChart from "./BitcoinChart";
 import Sidebar from "./Components/Sidebar";
-import { getToken } from "./Services/auth";
+import { getToken, request } from "./Services/auth";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5149";
+const API_BASE = import.meta.env?.VITE_API_BASE ?? "";
 const BUY_SELL_FROM_CURRENCY_KEY = "buySell.fromCurrency";
 const BUY_SELL_TO_CURRENCY_KEY = "buySell.toCurrency";
 
@@ -95,18 +95,13 @@ export default function BuyAndSell() {
       }
 
       try {
-        const res = await fetch(`${API_BASE}/api/wallets`, {
+        const data = await request(`/api/wallets`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        if (!res.ok) {
-          throw new Error(await res.text());
-        }
-
-        const data = await res.json();
-        const total = data
+        const total = (Array.isArray(data) ? data : [])
           .filter((wallet) => wallet.currency === balanceCurrency)
           .reduce((sum, wallet) => sum + Number(wallet.balance || 0), 0);
         setAvailable(total);
@@ -139,18 +134,13 @@ export default function BuyAndSell() {
       }
 
       try {
-        const res = await fetch(`${API_BASE}/api/trades?symbol=${mappedSymbol}`, {
+        const data = await request(`/api/trades?symbol=${mappedSymbol}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        if (!res.ok) {
-          throw new Error(await res.text());
-        }
-
-        const data = await res.json();
-        if (!data.length) {
+        if (!Array.isArray(data) || !data.length) {
           return;
         }
 
@@ -195,18 +185,13 @@ export default function BuyAndSell() {
 
       try {
         setOrderBookError("");
-        const res = await fetch(`${API_BASE}/api/orderbook?symbol=${mappedSymbol}`, {
+        const data = await request(`/api/orderbook?symbol=${mappedSymbol}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        if (!res.ok) {
-          throw new Error(await res.text());
-        }
-
-        const data = await res.json();
-        const sorted = [...data].sort((a, b) => Number(b.price) - Number(a.price));
+        const sorted = Array.isArray(data) ? [...data].sort((a, b) => Number(b.price) - Number(a.price)) : [];
         setOrderBook(sorted.slice(0, 12));
       } catch (error) {
         console.error("Error loading order book:", error);
@@ -233,17 +218,12 @@ export default function BuyAndSell() {
               return { ...coin, rateText: "--", rateValue: null };
             }
 
-            const res = await fetch(`${API_BASE}/api/trades?symbol=${symbol}`, {
+            const data = await request(`/api/trades?symbol=${symbol}`, {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
             });
 
-            if (!res.ok) {
-              throw new Error(await res.text());
-            }
-
-            const data = await res.json();
             if (!Array.isArray(data) || data.length < 2) {
               return { ...coin, rateText: "--", rateValue: null };
             }
@@ -295,10 +275,9 @@ export default function BuyAndSell() {
 
     setIsSubmitting(true);
     try {
-      const res = await fetch(`${API_BASE}/api/orders`, {
+      await request(`/api/orders`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
@@ -309,10 +288,6 @@ export default function BuyAndSell() {
           amount: amountValue,
         }),
       });
-
-      if (!res.ok) {
-        throw new Error(await res.text());
-      }
 
       setStatusMessage("Order placed successfully.");
       setAmountCrypto(0);
