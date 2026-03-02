@@ -19,29 +19,45 @@ public class NewsController : ApiControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetNews()
     {
-        var items = await _db.News
-            .AsNoTracking()
-            .OrderByDescending(n => n.PublishedAt)
-            .Select(n => ToDto(n))
-            .ToListAsync();
+        try
+        {
+            var items = await _db.News
+                .AsNoTracking()
+                .OrderByDescending(n => n.PublishedAt)
+                .Select(n => ToDto(n))
+                .ToListAsync();
 
-        return Ok(items);
+            return Ok(items);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"GetNews exception: {ex}");
+            return StatusCode(500, "Internal server error. Check server logs for details.");
+        }
     }
 
     [HttpGet("{id:guid}")]
     [AllowAnonymous]
     public async Task<IActionResult> GetNewsItem(Guid id)
     {
-        var item = await _db.News
-            .AsNoTracking()
-            .FirstOrDefaultAsync(n => n.NewsId == id);
-
-        if (item == null)
+        try
         {
-            return NotFound();
-        }
+            var item = await _db.News
+                .AsNoTracking()
+                .FirstOrDefaultAsync(n => n.NewsId == id);
 
-        return Ok(ToDto(item));
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(ToDto(item));
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"GetNewsItem exception: {ex}");
+            return StatusCode(500, "Internal server error. Check server logs for details.");
+        }
     }
 
     [HttpPost]

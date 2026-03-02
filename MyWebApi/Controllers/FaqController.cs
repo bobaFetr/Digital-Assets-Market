@@ -5,19 +5,20 @@ using NetServer.Data;
 using NetServer.Data.Models;
 using System.Text.RegularExpressions;
 using System;
+using System.Collections.Generic;
 
 [ApiController]
 [Route("api/faq")]
 public class FaqController : ApiControllerBase
 {
 	private readonly AppDbContext _db;
-	private static readonly string[] BlockedWords =
-	[
-		"Fuck",
-		"Kill",
-		"Mainata",
-		"Shit"
-	];
+	private static readonly string[] BlockedWords = new[]
+	{
+		"fuck",
+		"kill",
+		"mainata",
+		"shit"
+	};
 
 	public FaqController(AppDbContext db)
 	{
@@ -28,6 +29,8 @@ public class FaqController : ApiControllerBase
 	[AllowAnonymous]
 	public async Task<IActionResult> GetFaqs([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
 	{
+        try
+        {
 		page = page < 1 ? 1 : page;
 		pageSize = pageSize < 1 ? 20 : pageSize;
 		if (pageSize > 100)
@@ -70,6 +73,12 @@ public class FaqController : ApiControllerBase
 			.ToListAsync();
 
 		return Ok(faqs);
+		}
+		catch (Exception ex)
+		{
+			Console.Error.WriteLine($"GetFaqs exception: {ex}");
+			return StatusCode(500, "Internal server error. Check server logs for details.");
+		}
 	}
 
 	[HttpPost("questions")]
@@ -278,7 +287,7 @@ public class FaqController : ApiControllerBase
 
 	private static bool ContainsBlockedWords(string? text, out List<string> matches)
 	{
-		matches = [];
+		matches = new List<string>();
 		if (string.IsNullOrWhiteSpace(text))
 		{
 			return false;
