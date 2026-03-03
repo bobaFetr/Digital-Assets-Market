@@ -14,7 +14,7 @@ import {
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import axios from 'axios';
-import { getToken } from './Services/auth';
+import { getToken, request } from './Services/auth';
 import './App.css';
 
 // ✅ Register required components
@@ -102,24 +102,22 @@ function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
       return false;
     }
 
-    const res = await axios.get(
-      `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart`,
-      {
-        params: {
-          vs_currency: vsCurrency,
-          days: 1,
-          interval: "hourly",
-        },
-      }
-    );
+    try {
+      const data = await request(
+        `/api/external/coingecko/${coinId}/market_chart?vs_currency=${encodeURIComponent(vsCurrency)}&days=1&interval=hourly`
+      );
 
-    const points = (res.data?.prices ?? []).map(([time, price]) => ({ time, price }));
-    if (!points.length) {
+      const points = (data?.prices ?? []).map(([time, price]) => ({ time, price }));
+      if (!points.length) {
+        return false;
+      }
+
+      applySeries(points, "market");
+      return true;
+    } catch (err) {
+      console.warn(`CoinGecko proxy failed for ${coinId}:`, err?.message || err);
       return false;
     }
-
-    applySeries(points, "market");
-    return true;
   };
 
   const fetchOrderBookSeries = async (token) => {
@@ -127,25 +125,30 @@ function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
       return false;
     }
 
-    const res = await axios.get(`${API_BASE}/api/orderbook`, {
-      params: { symbol },
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    try {
+      const data = await request(`/api/orderbook?symbol=${encodeURIComponent(symbol)}`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    const points = (res.data ?? [])
-      .map((item) => ({
-        time: item.timestamp,
-        price: item.price,
-      }))
-      .filter((item) => item.time != null && item.price != null)
-      .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+      const points = (data ?? [])
+        .map((item) => ({
+          time: item.timestamp,
+          price: item.price,
+        }))
+        .filter((item) => item.time != null && item.price != null)
+        .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
 
-    if (!points.length) {
+      if (!points.length) {
+        return false;
+      }
+
+      applySeries(points, "orderbook");
+      return true;
+    } catch (err) {
+      console.warn("Orderbook fetch failed:", err?.message || err);
       return false;
     }
-
-    applySeries(points, "orderbook");
-    return true;
   };
 
   const fetchData = async () => {
@@ -160,12 +163,12 @@ function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
         return;
       }
 
-      const res = await axios.get(`${API_BASE}/api/trades`, {
-        params: { symbol },
+      const data = await request(`/api/trades?symbol=${encodeURIComponent(symbol)}`, {
+        method: "GET",
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const sorted = [...res.data].sort(
+      const sorted = [...(data || [])].sort(
         (a, b) => new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime()
       );
 
@@ -188,7 +191,7 @@ function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
         applySeries(points, "trades");
       }
     } catch (error) {
-      console.error(`Error fetching ${symbol} data:`, error);
+      console.error(`Error fetching ${symbol} data:`, error?.message || error);
       try {
         const loadedExternal = await fetchExternalSeries();
         if (loadedExternal) {

@@ -178,7 +178,8 @@ public class WalletsController : ApiControllerBase
         var card = await _db.CreditCardDetails.AsNoTracking().FirstOrDefaultAsync(c => c.UserId == currentUserId);
         if (card == null)
         {
-            return NotFound();
+            // No saved card for the user — return 204 No Content so the browser doesn't treat it as an error
+            return NoContent();
         }
 
         return Ok(ToCardDetailsDto(card));
