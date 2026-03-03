@@ -14,7 +14,12 @@ public class ExternalController : ControllerBase
 
         try
         {
-            using var resp = await _http.GetAsync(target);
+            using var req = new HttpRequestMessage(HttpMethod.Get, target);
+            // CoinGecko requests require a descriptive User-Agent; include an app identifier and contact URL/email
+            req.Headers.Add("User-Agent", "DAM-WebApi/1.0 (+https://example.com, dev@yourdomain.example)");
+            req.Headers.Add("Accept", "application/json");
+
+            using var resp = await _http.SendAsync(req);
             var body = await resp.Content.ReadAsStringAsync();
             if (!resp.IsSuccessStatusCode)
             {
