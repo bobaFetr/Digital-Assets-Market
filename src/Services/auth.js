@@ -34,7 +34,7 @@ export const registerUser = (payload) =>
     body: JSON.stringify(payload),
   });
 
-export const loginUser = async (payload, _remember = false) => {
+export const loginUser = async (payload, remember = false) => {
   const data = await request("/api/auth/login", {
     method: "POST",
     body: JSON.stringify(payload),
@@ -44,7 +44,16 @@ export const loginUser = async (payload, _remember = false) => {
     throw new Error("No token returned by server");
   }
 
-  sessionStorage.setItem(TOKEN_STORAGE_KEY, data.token);
+  try {
+    if (remember) {
+      localStorage.setItem(TOKEN_STORAGE_KEY, data.token);
+    } else {
+      sessionStorage.setItem(TOKEN_STORAGE_KEY, data.token);
+    }
+  } catch (e) {
+    // fallback to sessionStorage if localStorage access fails
+    sessionStorage.setItem(TOKEN_STORAGE_KEY, data.token);
+  }
 
   return data.token;
 };
@@ -94,11 +103,20 @@ export const updateUserName = (userName) => {
 };
 
 export const logoutUser = () => {
-  sessionStorage.removeItem(TOKEN_STORAGE_KEY);
+  try {
+    sessionStorage.removeItem(TOKEN_STORAGE_KEY);
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+  } catch (e) {
+    // ignore
+  }
 };
 
 export const getToken = () => {
-  return sessionStorage.getItem(TOKEN_STORAGE_KEY) || "";
+  try {
+    return sessionStorage.getItem(TOKEN_STORAGE_KEY) || localStorage.getItem(TOKEN_STORAGE_KEY) || "";
+  } catch (e) {
+    return sessionStorage.getItem(TOKEN_STORAGE_KEY) || "";
+  }
 };
 
 export const getKycStatus = () => {

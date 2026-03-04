@@ -29,6 +29,9 @@ export default function BuyAndSell() {
   const [amountQuote, setAmountQuote] = useState(0);
   const [lastEdited, setLastEdited] = useState("crypto");
   const [available, setAvailable] = useState(null);
+  const [isLoadingAvailable, setIsLoadingAvailable] = useState(false);
+  const [rawWallets, setRawWallets] = useState([]);
+  const [showWalletsDebug, setShowWalletsDebug] = useState(false);
   const [quoteRate, setQuoteRate] = useState(24.5);
   const [statusMessage, setStatusMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -86,32 +89,47 @@ export default function BuyAndSell() {
     }
   }, [searchParams]);
 
+  const loadWallets = async () => {
+    const token = getToken();
+    if (!token) {
+      setAvailable(null);
+      setRawWallets([]);
+      return;
+    }
+
+    setIsLoadingAvailable(true);
+    try {
+      const data = await request(`/api/wallets`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.debug("/api/wallets response:", data);
+      const list = Array.isArray(data) ? data : [];
+      setRawWallets(list);
+
+      const total = list.reduce((sum, wallet) => sum + Number(wallet.balance || 0), 0);
+      setAvailable(total);
+    } catch (error) {
+      console.error("Error loading wallets:", error);
+      setAvailable(null);
+    } finally {
+      setIsLoadingAvailable(false);
+    }
+  };
+
   useEffect(() => {
-    const loadWallets = async () => {
-      const token = getToken();
-      if (!token) {
-        setAvailable(null);
-        return;
-      }
-
-      try {
-        const data = await request(`/api/wallets`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const total = (Array.isArray(data) ? data : [])
-          .filter((wallet) => wallet.currency === balanceCurrency)
-          .reduce((sum, wallet) => sum + Number(wallet.balance || 0), 0);
-        setAvailable(total);
-      } catch (error) {
-        console.error("Error loading wallets:", error);
-        setAvailable(null);
-      }
-    };
-
     loadWallets();
+  }, [balanceCurrency]);
+
+  // Poll available balance periodically while on page
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const token = getToken();
+      if (token) loadWallets();
+    }, 10000); // every 10s
+
+    return () => clearInterval(interval);
   }, [balanceCurrency]);
 
   useEffect(() => {
@@ -292,7 +310,13 @@ export default function BuyAndSell() {
       setStatusMessage("Order placed successfully.");
       setAmountCrypto(0);
       setAmountQuote(0);
-      setChartRefreshTick((tick) => tick + 1);
+        setChartRefreshTick((tick) => tick + 1);
+        // refresh wallets after placing an order so user sees updated balance
+        try {
+          await loadWallets();
+        } catch (e) {
+          // ignore; loadWallets logs errors
+        }
     } catch (error) {
       console.error("Error placing order:", error);
       setStatusMessage(error?.message || "Failed to place order.");
@@ -311,12 +335,31 @@ export default function BuyAndSell() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h2 className="chart-header" style={{ color: "#ff7f50" }}>Buy & Sell</h2>
           <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-            <div style={{ color: "#ff7f50" }}>
-              Available: <strong>{available == null ? "--" : `${available.toFixed(6)} ${balanceCurrency}`}</strong>
+            <div style={{ color: "#ff7f50", display: "flex", gap: 8, alignItems: "center" }}>
+              <span>Available:</span>
+              <strong>{available == null ? "--" : `${available.toFixed(6)} ${balanceCurrency}`}</strong>
+              {isLoadingAvailable ? (
+                <span style={{ fontSize: 12, color: "#fff", opacity: 0.8 }}>Refreshing...</span>
+              ) : (
+                <>
+                  <button onClick={loadWallets} style={{ background: "transparent", color: "#ff7f50", border: "1px solid #ff7f50", borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: 12 }}>Refresh</button>
+                  <button onClick={() => setShowWalletsDebug((s) => !s)} style={{ background: "transparent", color: "#fff", border: "1px dashed rgba(255,127,80,0.5)", borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: 12 }}>Show wallets</button>
+                </>
+              )}
             </div>
             <button className="btn-primary" style={{ background: "#ff7f50", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600 }}>Deposit</button>
           </div>
         </div>
+
+        {showWalletsDebug && (
+          <div style={{ marginTop: 12, background: "#1f2330", padding: 12, borderRadius: 8, color: "#fff" }}>
+            <div style={{ marginBottom: 8, color: "#ff7f50" }}>Debug: raw wallets (from /api/wallets)</div>
+            <pre style={{ maxHeight: 220, overflow: "auto", fontSize: 12 }}>{JSON.stringify(rawWallets, null, 2)}</pre>
+            <div style={{ marginTop: 8, fontSize: 12 }}>
+              Token: <span style={{ color: getToken() ? "#8fe38f" : "#ff6b6b" }}>{getToken() ? "present" : "missing"}</span>
+            </div>
+          </div>
+        )}
 
         <div className="cards-grid" style={{ marginTop: "18px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 18 }}>
           {marketCards.map((coin) => (
