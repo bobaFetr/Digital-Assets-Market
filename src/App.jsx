@@ -8,7 +8,7 @@ import WithDraw from "./WithdrawPage.jsx";
 import BuyAndSell from "./BuyAndSell";
 import BCrypto from "./BCrypto.jsx";
 import VerifyIdentityPage from "./VerifyIdentityPage";
-import { getKycStatus, getToken, request } from "./Services/auth";
+import { getKycStatus, getToken, request, getProfile } from "./Services/auth";
 import VerificationEmailPage from "./VerificationEmailPage";
 import SentSMSToNumberPage from "./SentSMSToNumberPage";
 
@@ -105,6 +105,7 @@ function Home({ theme, onToggleTheme }) {
   const [loadingPrices, setLoadingPrices] = useState(true);
   const [priceError, setPriceError] = useState("");
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [profile, setProfile] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -185,6 +186,25 @@ function Home({ theme, onToggleTheme }) {
       isMounted = false;
       clearInterval(intervalId);
       clearInterval(newsInterval);
+    };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    const token = getToken && getToken();
+    if (!token) return;
+
+    getProfile()
+      .then((p) => {
+        if (!mounted) return;
+        setProfile(p);
+      })
+      .catch(() => {
+        /* ignore */
+      });
+
+    return () => {
+      mounted = false;
     };
   }, []);
 
@@ -291,6 +311,41 @@ function Home({ theme, onToggleTheme }) {
                 </ul>
               </div>
             )}
+          </div>
+          <div className="top-profile" title={profile?.userName || 'Profile'} onClick={() => navigate('/profile')}>
+            <img
+              src={
+                profile?.profilePictureUrl
+                  ? (profile.profilePictureUrl.startsWith('data:image/') || /^https?:\/\//i.test(profile.profilePictureUrl)
+                      ? profile.profilePictureUrl
+                      : profile.profilePictureUrl.startsWith('/')
+                      ? `${import.meta.env?.VITE_API_BASE ?? ''}${profile.profilePictureUrl}`
+                      : profile.profilePictureUrl)
+                  : `${import.meta.env?.VITE_API_BASE ?? ''}/OIP.webp`
+              }
+              alt="Profile"
+              onError={(e) => {
+                e.currentTarget.src = `${import.meta.env?.VITE_API_BASE ?? ''}/OIP.webp`;
+              }}
+              style={{ width: 48, height: 48, objectFit: 'cover', display: 'block' }}
+            />
+          </div>
+        </div>
+        {/* Most Visited Crypto */}
+        <div style={{ marginBottom: 20 }}>
+          <h3 style={{ color: '#fff', marginBottom: 12 }}>Most visited crypto</h3>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            {AVAILABLE_CURRENCIES.slice(0, 3).map((c) => {
+              const p = livePrices.find((lp) => lp.code === c.code);
+              const price = p?.price ?? null;
+              return (
+                <div key={c.code} style={{ background: '#181818', color: '#fff', padding: 12, borderRadius: 8, minWidth: 140 }}>
+                  <div style={{ fontWeight: 700 }}>{c.code}</div>
+                  <div style={{ fontSize: 12, color: '#aaa' }}>{c.name}</div>
+                  <div style={{ marginTop: 8, fontSize: 16 }}>{price !== null ? formatUsd(price) : '--'}</div>
+                </div>
+              );
+            })}
           </div>
         </div>
         {/* Dashboard Overview Cards */}
