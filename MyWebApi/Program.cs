@@ -81,18 +81,29 @@ internal class Program
 
         var app = builder.Build();
 
+        // Always attempt to apply pending EF Core migrations and ensure default wallets.
+        // Wrap in try/catch so the application can still start if migrations fail; errors are logged.
+        try
+        {
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var walletProvisioning = scope.ServiceProvider.GetRequiredService<WalletProvisioningService>();
+
+                db.Database.Migrate();
+
+                var created = walletProvisioning.EnsureDefaultWalletsForAllUsers();
+                if (created > 0)
+                    db.SaveChanges();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Database migration or provisioning failed: {ex}");
+        }
+
         if (app.Environment.IsDevelopment())
         {
-            using var scope = app.Services.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var walletProvisioning = scope.ServiceProvider.GetRequiredService<WalletProvisioningService>();
-
-            db.Database.Migrate();
-
-            var created = walletProvisioning.EnsureDefaultWalletsForAllUsers();
-            if (created > 0)
-                db.SaveChanges();
-
             app.UseSwagger();
             app.UseSwaggerUI();
         }
