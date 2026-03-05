@@ -21,6 +21,26 @@ internal class Program
         }
 
         if (string.IsNullOrWhiteSpace(jwtKey))
+        {
+            foreach (System.Collections.DictionaryEntry de in Environment.GetEnvironmentVariables())
+            {
+                var name = de.Key as string;
+                var val = de.Value as string;
+                if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(val))
+                    continue;
+
+                if (name.IndexOf("JWT", StringComparison.OrdinalIgnoreCase) >= 0 &&
+                    (name.IndexOf("KEY", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                     name.IndexOf("SECRET", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                     name.IndexOf("TOKEN", StringComparison.OrdinalIgnoreCase) >= 0))
+                {
+                    jwtKey = val;
+                    break;
+                }
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(jwtKey))
             throw new InvalidOperationException("Jwt:Key is missing. Set environment variable 'Jwt__Key' or configuration 'Jwt:Key'.");
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
