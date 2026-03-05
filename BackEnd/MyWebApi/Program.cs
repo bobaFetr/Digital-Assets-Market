@@ -30,9 +30,11 @@ internal class Program
                     continue;
 
                 if (name.IndexOf("JWT", StringComparison.OrdinalIgnoreCase) >= 0 &&
-                    (name.IndexOf("KEY", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                     name.IndexOf("SECRET", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                     name.IndexOf("TOKEN", StringComparison.OrdinalIgnoreCase) >= 0))
+                    (
+                        name.Equals("JWT", StringComparison.OrdinalIgnoreCase) ||
+                        name.IndexOf("KEY", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                        name.IndexOf("SECRET", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                        name.IndexOf("TOKEN", StringComparison.OrdinalIgnoreCase) >= 0)
                 {
                     jwtKey = val;
                     break;
