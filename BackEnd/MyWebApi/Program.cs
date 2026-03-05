@@ -12,8 +12,16 @@ internal class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        var jwtKey = builder.Configuration["Jwt:Key"]
-            ?? throw new InvalidOperationException("Jwt:Key is missing.");
+        string? jwtKey = builder.Configuration["Jwt:Key"];
+        if (string.IsNullOrWhiteSpace(jwtKey))
+        {
+            jwtKey = Environment.GetEnvironmentVariable("Jwt__Key")
+                     ?? Environment.GetEnvironmentVariable("JWT__KEY")
+                     ?? Environment.GetEnvironmentVariable("Jwt:Key");
+        }
+
+        if (string.IsNullOrWhiteSpace(jwtKey))
+            throw new InvalidOperationException("Jwt:Key is missing. Set environment variable 'Jwt__Key' or configuration 'Jwt:Key'.");
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
