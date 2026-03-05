@@ -53,12 +53,35 @@ internal class Program
                     envNames.Add(name);
             }
             if (envNames.Count > 0)
-                Console.WriteLine($"Diagnostic: environment variable names containing 'JWT': {string.Join(", ", envNames)}");
+                {
+                    Console.WriteLine($"Diagnostic: environment variable names containing 'JWT': {string.Join(", ", envNames)}");
+                    // Also print non-sensitive length info for each to confirm values exist
+                    foreach (var n in envNames)
+                    {
+                        try
+                        {
+                            var v = Environment.GetEnvironmentVariable(n) ?? string.Empty;
+                            Console.WriteLine($"Diagnostic: env '{n}' length={v.Length}");
+                        }
+                        catch { }
+                    }
+                }
             else
                 Console.WriteLine("Diagnostic: no environment variable names containing 'JWT' were found.");
 
             var cfgPresent = !string.IsNullOrWhiteSpace(builder.Configuration["Jwt:Key"]);
             Console.WriteLine($"Diagnostic: configuration key 'Jwt:Key' present: {cfgPresent}");
+                // Also report lengths of common env var names checked explicitly
+                try
+                {
+                    var namesToCheck = new[] { "Jwt__Key", "JWT__KEY", "JWT" };
+                    foreach (var nm in namesToCheck)
+                    {
+                        var vv = Environment.GetEnvironmentVariable(nm) ?? string.Empty;
+                        Console.WriteLine($"Diagnostic: env '{nm}' length={vv.Length}");
+                    }
+                }
+                catch { }
         }
         catch
         {
