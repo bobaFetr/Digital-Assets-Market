@@ -40,6 +40,29 @@ internal class Program
             }
         }
 
+        // Diagnostic: list environment variable names that contain "JWT" so we can see what's present
+        try
+        {
+            var envNames = new System.Collections.Generic.List<string>();
+            foreach (System.Collections.DictionaryEntry de in Environment.GetEnvironmentVariables())
+            {
+                var name = de.Key as string;
+                if (!string.IsNullOrWhiteSpace(name) && name.IndexOf("JWT", StringComparison.OrdinalIgnoreCase) >= 0)
+                    envNames.Add(name);
+            }
+            if (envNames.Count > 0)
+                Console.WriteLine($"Diagnostic: environment variable names containing 'JWT': {string.Join(", ", envNames)}");
+            else
+                Console.WriteLine("Diagnostic: no environment variable names containing 'JWT' were found.");
+
+            var cfgPresent = !string.IsNullOrWhiteSpace(builder.Configuration["Jwt:Key"]);
+            Console.WriteLine($"Diagnostic: configuration key 'Jwt:Key' present: {cfgPresent}");
+        }
+        catch
+        {
+            // swallow diagnostic errors to avoid breaking startup
+        }
+
         if (string.IsNullOrWhiteSpace(jwtKey))
             throw new InvalidOperationException("Jwt:Key is missing. Set environment variable 'Jwt__Key' or configuration 'Jwt:Key'.");
 
