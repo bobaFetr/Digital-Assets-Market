@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.3.11408.92
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyWebApi", "MyWebApi\MyWebApi.csproj", "{328BD01B-A0BC-4165-9C57-E15536B62BA0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyWebApi", "BackEnd\MyWebApi\MyWebApi.csproj", "{328BD01B-A0BC-4165-9C57-E15536B62BA0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetServer.Data", "NetServer.Data\NetServer.Data.csproj", "{E4743E2A-A026-4DE8-9E0A-6C82A72F9D4D}"
 EndProject
