@@ -3,12 +3,12 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # copy csproj files for restore (cache-friendly)
-COPY BackEnd/MyWebApi/MyWebApi.csproj MyWebApi/
+COPY MyWebApi/MyWebApi.csproj MyWebApi/
 COPY NetServer.DAta1/NetServer.DAta1.csproj NetServer.DAta1/
 RUN dotnet restore MyWebApi/MyWebApi.csproj
 
 # copy backend sources
-COPY BackEnd/MyWebApi/ MyWebApi/
+COPY MyWebApi/ MyWebApi/
 COPY NetServer.DAta1/ NetServer.DAta1/
 
 # publish backend
