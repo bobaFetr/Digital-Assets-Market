@@ -1,15 +1,18 @@
 # Frontend Dockerfile - build Vite app and serve with nginx for Render
 FROM node:20-alpine AS build
 WORKDIR /app
-COPY FrontEnd/package*.json ./
+# when build context is the FrontEnd directory, copy package files directly
+COPY package*.json ./
 RUN npm ci
-COPY FrontEnd/ ./
+# copy all frontend source from context
+COPY . ./
 RUN npm run build
 
 FROM nginx:alpine
+WORKDIR /usr/share/nginx/html
 # copy built files
 COPY --from=build /app/dist /usr/share/nginx/html
-# copy nginx config (fallback to index.html for SPA)
-COPY FrontEnd/nginx.conf /etc/nginx/conf.d/default.conf
+# copy nginx config template (we'll substitute PORT at runtime)
+COPY nginx.conf /etc/nginx/conf.d/default.conf.template
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+CMD sh -c ": \${PORT:=80} ; envsubst '\$PORT' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
