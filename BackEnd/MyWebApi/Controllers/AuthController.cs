@@ -31,6 +31,10 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public IActionResult Register([FromBody] RegisterRequest request)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
         if (_db.Users.Any(u => u.Email == request.Email))
         {
              return BadRequest("User already exists.");
@@ -90,10 +94,10 @@ public class AuthController : ControllerBase
             Role = string.IsNullOrWhiteSpace(request.Role) ? "User" : request.Role
         };
 
-        user.Role = string.IsNullOrWhiteSpace(user.Role) ? "User" : user.Role;
+        user.Role = string.IsNullOrWhiteSpace(user.Role) ? "User" : user.Role;//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         user.CreatedAt = user.CreatedAt == default ? DateTime.UtcNow : user.CreatedAt;
         user.Status = user.Status == default ? NetServer.Data.Models.User.StatusBit.Active : user.Status;
-        user.IsBanned = false;
+        user.IsBanned = false;///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
         _db.Users.Add(user);
@@ -156,6 +160,9 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public IActionResult Login([FromBody] LoginRequest request)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         var existing = _db.Users
             .FirstOrDefault(u => u.Email == request.Email);
 
@@ -327,6 +334,9 @@ public class AuthController : ControllerBase
     [HttpPost("change-password")]
     public IActionResult ChangePassword([FromBody] ChangePasswordRequest request)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(request.NewPassword))
         {
             return BadRequest("Current and new password are required.");
@@ -452,6 +462,9 @@ public class AuthController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         if (string.IsNullOrWhiteSpace(request.Email))
         {
             return BadRequest("Email is required.");
@@ -490,6 +503,9 @@ public class AuthController : ControllerBase
     [AllowAnonymous]
     public IActionResult ResetPassword([FromBody] ResetPasswordRequest request)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         if (string.IsNullOrWhiteSpace(request.Token) || string.IsNullOrWhiteSpace(request.NewPassword))
         {
             return BadRequest("Token and new password are required.");
@@ -621,10 +637,11 @@ public class RegisterRequest
     public string UserName { get; set; } = "";
 
     [Required]
-    [EmailAddress]
+    [RegularExpression(@"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$", ErrorMessage = "Invalid email format")]
     public string Email { get; set; } = "";
 
     [Required]
+    [RegularExpression(@"^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$", ErrorMessage = "Password must be at least 8 characters and include an uppercase letter, a number and a special character")]
     public string Password { get; set; } = "";
 
     public string? Role { get; set; }
@@ -641,17 +658,18 @@ public class RegisterRequest
 public class LoginRequest
 {
     [Required]
-    [EmailAddress]
+    [RegularExpression(@"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$", ErrorMessage = "Invalid email format")]
     public string Email { get; set; } = "";
 
     [Required]
+    [RegularExpression(@"^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$", ErrorMessage = "Password must be at least 8 characters and include an uppercase letter, a number and a special character")]
     public string Password { get; set; } = "";
 }
 
 public class ForgotPasswordRequest
 {
     [Required]
-    [EmailAddress]
+    [RegularExpression(@"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$", ErrorMessage = "Invalid email format")]
     public string Email { get; set; } = "";
 }
 
@@ -661,7 +679,7 @@ public class ResetPasswordRequest
     public string Token { get; set; } = "";
 
     [Required]
-    [MinLength(8)]
+    [RegularExpression(@"^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$", ErrorMessage = "Password must be at least 8 characters and include an uppercase letter, a number and a special character")]
     public string NewPassword { get; set; } = "";
 }
 
@@ -671,7 +689,7 @@ public class ChangePasswordRequest
     public string CurrentPassword { get; set; } = "";
 
     [Required]
-    [MinLength(8)]
+    [RegularExpression(@"^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$", ErrorMessage = "Password must be at least 8 characters and include an uppercase letter, a number and a special character")]
     public string NewPassword { get; set; } = "";
 }
 
