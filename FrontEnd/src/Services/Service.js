@@ -17,7 +17,7 @@ const request = async (path, options = {}) => {
   if (!response.ok) {
     const message = await response.text();
     const details = message ? `: ${message}` : "";
-    throw new Error(`Request failed (${response.status})${details}`);
+    throw new Error(`(${response.status})${details}`);
   }
 
   const contentType = response.headers.get("content-type") || "";
@@ -56,6 +56,69 @@ export const loginUser = async (payload, remember = false) => {
   }
 
   return data.token;
+};
+
+export const createDefaultWallets = (payload) => {
+  const token = getToken();
+  if (!token) return Promise.reject(new Error('Not authenticated'));
+
+  return request('/api/wallets/ensure-default', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+};
+
+export const getBankAccounts = () => {
+  const token = getToken();
+  if (!token) return Promise.reject(new Error('Not authenticated'));
+
+  return request('/api/bank-accounts', {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+export const createBankAccount = (payload) => {
+  const token = getToken();
+  if (!token) return Promise.reject(new Error('Not authenticated'));
+
+  return request('/api/bank-accounts', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+};
+
+export const updateBankAccount = (id, payload) => {
+  const token = getToken();
+  if (!token) return Promise.reject(new Error('Not authenticated'));
+
+  return request(`/api/bank-accounts/${id}`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+};
+
+export const deleteBankAccount = (id) => {
+  const token = getToken();
+  if (!token) return Promise.reject(new Error('Not authenticated'));
+
+  return request(`/api/bank-accounts/${id}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 };
 
 export const getProfile = () => {

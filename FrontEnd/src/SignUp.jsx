@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./Login.css"; // reuse login styles so signup matches the login design
 import { Link, useNavigate } from "react-router-dom";
-import { loginUser, registerUser } from "./Services/Service";
+import { loginUser, registerUser, createDefaultWallets } from "./Services/Service";
 import Sidebar from "./Components/Sidebar";
 
 const COOKIE_CONSENT_TRIGGER_KEY = "crypto_cookie_consent_trigger_v1";
@@ -21,6 +21,9 @@ export default function SignUp() {
     });
     const [error, setError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showCurrencyChoice, setShowCurrencyChoice] = useState(false);
+    const [bankChoices, setBankChoices] = useState({ USD: false, EUR: false });
+    const [cryptoChoices, setCryptoChoices] = useState({ USDT: false, BTC: false, ETH: false, BNB: false, ALGO: false });
     const [fileName, setFileName] = useState("");
     const [uploadInfo, setUploadInfo] = useState("");
     const navigate = useNavigate();
@@ -100,7 +103,24 @@ export default function SignUp() {
         }
 
         setError("");
+        // show currency choice modal before sending registration so wallets are created on register
+        setShowCurrencyChoice(true);
+    };
+
+    const handleBankToggle = (code) => {
+        setBankChoices((prev) => ({ ...prev, [code]: !prev[code] }));
+    };
+
+    const handleCryptoToggle = (code) => {
+        setCryptoChoices((prev) => ({ ...prev, [code]: !prev[code] }));
+    };
+
+    const submitWithChoices = async () => {
         setIsSubmitting(true);
+        setError("");
+        const bankSelected = Object.keys(bankChoices).filter((k) => bankChoices[k]);
+        const cryptoSelected = Object.keys(cryptoChoices).filter((k) => cryptoChoices[k]);
+
         try {
             await registerUser({
                 UserName: form.username.trim(),
@@ -113,14 +133,28 @@ export default function SignUp() {
                 country: form.country,
                 documentType: form.documentType,
                 idFilePath: fileName,
+                BankAccountCurrencies: bankSelected.length ? bankSelected : null,
+                InitialCryptoCurrencies: cryptoSelected.length ? cryptoSelected : null,
             });
             window.localStorage.setItem(COOKIE_CONSENT_TRIGGER_KEY, "true");
             await loginUser({ email: form.email, password: form.password }, true);
+
+            // create wallets post-login for robustness (idempotent)
+            try {
+                if ((bankSelected && bankSelected.length) || (cryptoSelected && cryptoSelected.length)) {
+                    await createDefaultWallets({ BankAccountCurrencies: bankSelected.length ? bankSelected : null, InitialCryptoCurrencies: cryptoSelected.length ? cryptoSelected : null });
+                }
+            } catch (walletErr) {
+                // non-fatal: log to console; user still navigates to profile
+                console.warn('createDefaultWallets failed', walletErr);
+            }
+
             navigate("/profile");
         } catch (err) {
             setError(err.message || "Registration failed.");
         } finally {
             setIsSubmitting(false);
+            setShowCurrencyChoice(false);
         }
     };
 
@@ -223,6 +257,43 @@ export default function SignUp() {
                                     {isSubmitting ? "Creating..." : "Create account"}
                                 </button>
                             </form>
+
+                            {showCurrencyChoice && (
+                                <div className="currency-modal" style={{ position: 'fixed', left: 0, top: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <div style={{ background: '#fff', padding: 20, borderRadius: 8, width: 520, maxWidth: '95%' }}>
+                                        <h3>Choose bank accounts & initial crypto wallets</h3>
+                                        <p className="subtext">Select which bank account currencies and crypto wallets you want created now.</p>
+
+                                        <div style={{ marginTop: 12 }}>
+                                            <strong>Bank account currencies</strong>
+                                            <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+                                                <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                                    <input type="checkbox" checked={bankChoices.USD} onChange={() => handleBankToggle('USD')} /> USD
+                                                </label>
+                                                <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                                    <input type="checkbox" checked={bankChoices.EUR} onChange={() => handleBankToggle('EUR')} /> EUR
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div style={{ marginTop: 12 }}>
+                                            <strong>Initial crypto wallets</strong>
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 8 }}>
+                                                {Object.keys(cryptoChoices).map((code) => (
+                                                    <label key={code} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                                        <input type="checkbox" checked={cryptoChoices[code]} onChange={() => handleCryptoToggle(code)} /> {code}
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 20 }}>
+                                            <button onClick={() => setShowCurrencyChoice(false)} style={{ padding: '8px 12px' }} disabled={isSubmitting}>Back</button>
+                                            <button onClick={submitWithChoices} style={{ padding: '8px 12px' }} disabled={isSubmitting}>{isSubmitting ? 'Creating...' : 'Confirm & Create account'}</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="login-divider">
                                 <span>or continue with</span>

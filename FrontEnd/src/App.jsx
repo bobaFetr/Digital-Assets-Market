@@ -3,6 +3,7 @@ import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import BitcoinChart from "./BitcoinChart";
 import BNBChart from "./BNB";
 import Profile from "./Profile";
+import Wallet from "./Wallet";
 //import Profile from "./Profile";
 import WithDraw from "./WithdrawPage.jsx";
 import BuyAndSell from "./BuyAndSell";
@@ -481,6 +482,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home theme={theme} onToggleTheme={toggleTheme} />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/wallets" element={<Wallet />} />
           <Route path="/withdraw" element={<WithDraw />} />
           <Route path="/buy-sell" element={<BuyAndSell />} />
           <Route path="/VerifyIdentityPage" element={<VerifyIdentityPage />} />

@@ -43,6 +43,13 @@ public class UpdateWalletRequest
     public string? Status { get; set; }
 }
 
+public class EnsureDefaultWalletsRequest
+{
+    public Guid? UserId { get; set; }
+    public IEnumerable<string>? BankAccountCurrencies { get; set; }
+    public IEnumerable<string>? InitialCryptoCurrencies { get; set; }
+}
+
 public class AddMoneyByCardRequest
 {
     public string? CardNumber { get; set; }

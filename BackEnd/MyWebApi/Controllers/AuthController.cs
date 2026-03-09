@@ -33,7 +33,14 @@ public class AuthController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest(ModelState);
+            var errors = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => string.IsNullOrWhiteSpace(e.ErrorMessage) ? e.Exception?.Message : e.ErrorMessage)
+                .Where(msg => !string.IsNullOrWhiteSpace(msg))
+                .Distinct()
+                .ToList();
+
+            return BadRequest(new { errors });
         }
         if (_db.Users.Any(u => u.Email == request.Email))
         {
@@ -120,7 +127,8 @@ public class AuthController : ControllerBase
             });
         }
 
-        _walletProvisioning.EnsureDefaultWalletsForUser(user.Id);
+        // Create wallets according to user choices provided at registration (bank and initial crypto)
+        _walletProvisioning.EnsureDefaultWalletsForUser(user.Id, request.BankAccountCurrencies, request.InitialCryptoCurrencies);
         _db.SaveChanges();
         return Ok("User registered successfully");
     }
@@ -161,7 +169,15 @@ public class AuthController : ControllerBase
     public IActionResult Login([FromBody] LoginRequest request)
     {
         if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+        {
+            var errs = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => string.IsNullOrWhiteSpace(e.ErrorMessage) ? e.Exception?.Message : e.ErrorMessage)
+                .Where(msg => !string.IsNullOrWhiteSpace(msg))
+                .Distinct()
+                .ToList();
+            return BadRequest(new { errors = errs });
+        }
 
         var existing = _db.Users
             .FirstOrDefault(u => u.Email == request.Email);
@@ -335,7 +351,15 @@ public class AuthController : ControllerBase
     public IActionResult ChangePassword([FromBody] ChangePasswordRequest request)
     {
         if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+        {
+            var errs = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => string.IsNullOrWhiteSpace(e.ErrorMessage) ? e.Exception?.Message : e.ErrorMessage)
+                .Where(msg => !string.IsNullOrWhiteSpace(msg))
+                .Distinct()
+                .ToList();
+            return BadRequest(new { errors = errs });
+        }
 
         if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(request.NewPassword))
         {
@@ -463,7 +487,15 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
     {
         if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+        {
+            var errs = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => string.IsNullOrWhiteSpace(e.ErrorMessage) ? e.Exception?.Message : e.ErrorMessage)
+                .Where(msg => !string.IsNullOrWhiteSpace(msg))
+                .Distinct()
+                .ToList();
+            return BadRequest(new { errors = errs });
+        }
 
         if (string.IsNullOrWhiteSpace(request.Email))
         {
@@ -504,7 +536,15 @@ public class AuthController : ControllerBase
     public IActionResult ResetPassword([FromBody] ResetPasswordRequest request)
     {
         if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+        {
+            var errs = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => string.IsNullOrWhiteSpace(e.ErrorMessage) ? e.Exception?.Message : e.ErrorMessage)
+                .Where(msg => !string.IsNullOrWhiteSpace(msg))
+                .Distinct()
+                .ToList();
+            return BadRequest(new { errors = errs });
+        }
 
         if (string.IsNullOrWhiteSpace(request.Token) || string.IsNullOrWhiteSpace(request.NewPassword))
         {
@@ -653,23 +693,28 @@ public class RegisterRequest
     public string Country { get; set; } = "";
     public string? DocumentType { get; set; }
     public string? IdFilePath { get; set; }
+
+    // New: bank account currencies user wants to create at registration, e.g. ["USD"] or ["EUR"] or ["USD","EUR"]
+    public string[]? BankAccountCurrencies { get; set; }
+
+    // New: initial crypto wallets to create, e.g. ["USDT","BTC"]. If omitted, no crypto wallets are created by default.
+    public string[]? InitialCryptoCurrencies { get; set; }
 }
 
 public class LoginRequest
 {
     [Required]
-    [RegularExpression(@"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$", ErrorMessage = "Invalid email format")]
+    [EmailAddress]
     public string Email { get; set; } = "";
 
     [Required]
-    [RegularExpression(@"^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$", ErrorMessage = "Password must be at least 8 characters and include an uppercase letter, a number and a special character")]
     public string Password { get; set; } = "";
 }
 
 public class ForgotPasswordRequest
 {
     [Required]
-    [RegularExpression(@"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$", ErrorMessage = "Invalid email format")]
+    [EmailAddress]
     public string Email { get; set; } = "";
 }
 
@@ -679,7 +724,7 @@ public class ResetPasswordRequest
     public string Token { get; set; } = "";
 
     [Required]
-    [RegularExpression(@"^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$", ErrorMessage = "Password must be at least 8 characters and include an uppercase letter, a number and a special character")]
+    [MinLength(8)]
     public string NewPassword { get; set; } = "";
 }
 
@@ -689,7 +734,7 @@ public class ChangePasswordRequest
     public string CurrentPassword { get; set; } = "";
 
     [Required]
-    [RegularExpression(@"^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$", ErrorMessage = "Password must be at least 8 characters and include an uppercase letter, a number and a special character")]
+    [MinLength(8)]
     public string NewPassword { get; set; } = "";
 }
 

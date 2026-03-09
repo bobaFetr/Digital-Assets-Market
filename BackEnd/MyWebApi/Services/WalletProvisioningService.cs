@@ -5,7 +5,14 @@ namespace MyWebApi.Services;
 
 public class WalletProvisioningService
 {
-    public static readonly string[] DefaultWalletCurrencies = ["USD", "EUR", "BTC", "ETH", "BNB", "ALGO", "USDT"];
+    // Backwards-compatible list used by other parts of the codebase
+    public static readonly string[] DefaultWalletCurrencies = new[] { "USD", "EUR", "BTC", "ETH", "BNB", "ALGO", "USDT" };
+
+    // Known bank currencies
+    private static readonly string[] BankCurrencies = new[] { "USD", "EUR" };
+
+    // Known crypto currencies we may create on demand
+    private static readonly string[] KnownCryptoCurrencies = new[] { "BTC", "ETH", "BNB", "ALGO", "USDT" };
 
     private readonly AppDbContext _db;
 
@@ -29,6 +36,38 @@ public class WalletProvisioningService
 
     public int EnsureDefaultWalletsForUser(Guid userId)
     {
+        // Backwards-compatible: if no preferences are provided, do not create any wallets automatically here.
+        // Use the overload EnsureDefaultWalletsForUser(userId, bankCurrencies, cryptoCurrencies) to create specific wallets.
+        return 0;
+    }
+
+    // Create wallets for requested bank currencies (USD/EUR) and requested crypto currencies (e.g. USDT)
+    public int EnsureDefaultWalletsForUser(Guid userId, IEnumerable<string>? bankCurrencies, IEnumerable<string>? cryptoCurrencies)
+    {
+        var requested = new System.Collections.Generic.List<string>();
+
+        if (bankCurrencies != null)
+        {
+            foreach (var b in bankCurrencies)
+            {
+                if (string.IsNullOrWhiteSpace(b)) continue;
+                var code = b.Trim().ToUpperInvariant();
+                if (BankCurrencies.Contains(code)) requested.Add(code);
+            }
+        }
+
+        if (cryptoCurrencies != null)
+        {
+            foreach (var c in cryptoCurrencies)
+            {
+                if (string.IsNullOrWhiteSpace(c)) continue;
+                var code = c.Trim().ToUpperInvariant();
+                if (KnownCryptoCurrencies.Contains(code)) requested.Add(code);
+            }
+        }
+
+        if (!requested.Any()) return 0;
+
         var existingCurrencies = _db.Wallets
             .Where(w => w.UserId == userId)
             .Select(w => w.Currency)
@@ -37,12 +76,9 @@ public class WalletProvisioningService
             .ToHashSet();
 
         var created = 0;
-        foreach (var currency in DefaultWalletCurrencies)
+        foreach (var currency in requested.Distinct())
         {
-            if (existingCurrencies.Contains(currency))
-            {
-                continue;
-            }
+            if (existingCurrencies.Contains(currency)) continue;
 
             _db.Wallets.Add(new WalletTable
             {
@@ -54,10 +90,10 @@ public class WalletProvisioningService
                 Status = "Active",
                 CreatedAt = DateTime.UtcNow
             });
-
             created++;
         }
 
+        if (created > 0) _db.SaveChanges();
         return created;
     }
 }

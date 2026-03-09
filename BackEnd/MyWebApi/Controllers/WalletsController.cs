@@ -11,10 +11,18 @@ using System.Text.RegularExpressions;
 public class WalletsController : ApiControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly MyWebApi.Services.WalletProvisioningService? _walletProvisioning;
 
     public WalletsController(AppDbContext db)
     {
         _db = db;
+        _walletProvisioning = new MyWebApi.Services.WalletProvisioningService(db);
+    }
+
+    public WalletsController(AppDbContext db, MyWebApi.Services.WalletProvisioningService walletProvisioning)
+    {
+        _db = db;
+        _walletProvisioning = walletProvisioning;
     }
 
     [HttpGet]
@@ -45,6 +53,24 @@ public class WalletsController : ApiControllerBase
 
         var wallets = await query.Select(w => ToDto(w)).ToListAsync();
         return Ok(wallets);
+    }
+
+    [HttpPost("ensure-default")]
+    public IActionResult EnsureDefaultWallets([FromBody] EnsureDefaultWalletsRequest request)
+    {
+        if (!TryGetUserId(out var currentUserId))
+        {
+            return Unauthorized();
+        }
+
+        var targetUserId = request?.UserId ?? currentUserId;
+        if (!IsAdmin() && targetUserId != currentUserId)
+        {
+            return Forbid();
+        }
+
+        var created = _walletProvisioning?.EnsureDefaultWalletsForUser(targetUserId, request?.BankAccountCurrencies, request?.InitialCryptoCurrencies) ?? 0;
+        return Ok(new { created });
     }
 
     [HttpGet("{id:guid}")]

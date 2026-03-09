@@ -508,6 +508,14 @@ export default function Profile() {
               {isBalanceLoading && <p>Balance: Loading...</p>}
               {!isBalanceLoading && balanceError && <p style={{ color: "#ff8d8d" }}>Balance: unavailable</p>}
               {!isBalanceLoading && !balanceError && <p>Balance: <span style={{ color: "#ff7f50" }}>${formattedBalance}</span></p>}
+              <div style={{ marginTop: 8 }}>
+                <button onClick={() => navigate('/wallets')} style={{ padding: '8px 12px', borderRadius: 8, background: '#ff7f50', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 600 }} aria-label="manage-wallets">Manage wallets</button>
+              </div>
+
+              {/* Debug: show balance load state (remove in production) */}
+              <div style={{ marginTop: 6, fontSize: 12, color: '#aaa' }}>
+                Debug: isBalanceLoading={String(isBalanceLoading)}, balanceError="{balanceError}"
+              </div>
             </>
           )}
           <form onSubmit={handleUpdateUserName} style={{ marginTop: "14px", display: "grid", gap: "8px", maxWidth: "320px" }}>
@@ -784,6 +792,7 @@ export default function Profile() {
             <button style={{ background: "#23263a", color: "#ff7f50", border: "1px solid #ff7f50", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "pointer" }}>API Management</button>
             <button style={{ background: "#23263a", color: "#ff7f50", border: "1px solid #ff7f50", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "pointer" }}>Payment Methods</button>
             <button style={{ background: "#23263a", color: "#ff7f50", border: "1px solid #ff7f50", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "pointer" }}>Withdrawal Addresses</button>
+            <button onClick={() => navigate('/wallets')} style={{ background: "#23263a", color: "#ff7f50", border: "1px solid #ff7f50", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "pointer" }}>Bank Accounts</button>
             <button style={{ background: "#23263a", color: "#ff7f50", border: "1px solid #ff7f50", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "pointer" }}>Notifications</button>
             <button style={{ background: "#23263a", color: "#ff7f50", border: "1px solid #ff7f50", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "pointer" }}>Preferences</button>
             <button style={{ background: "#23263a", color: "#ff7f50", border: "1px solid #ff7f50", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "pointer" }}>Linked Accounts</button>

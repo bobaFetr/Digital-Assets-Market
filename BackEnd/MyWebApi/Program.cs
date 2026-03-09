@@ -108,6 +108,12 @@ internal class Program
             });
 
         builder.Services.AddControllers();
+        // Prevent ASP.NET Core from auto-returning 400 ProblemDetails for invalid ModelState
+        // so controllers can format validation errors in a concise, consistent way.
+        builder.Services.Configure<Microsoft.AspNetCore.Mvc.ApiBehaviorOptions>(options =>
+        {
+            options.SuppressModelStateInvalidFilter = true;
+        });
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
