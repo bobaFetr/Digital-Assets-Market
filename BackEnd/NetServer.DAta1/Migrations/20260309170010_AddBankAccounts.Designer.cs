@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetServer.Data;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace NetServer.DAta1.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260309170010_AddBankAccounts")]
+    partial class AddBankAccounts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -170,84 +173,6 @@ namespace NetServer.DAta1.Migrations
                     b.HasKey("UserId");
 
                     b.ToTable("CreditCardDetails");
-                });
-
-            modelBuilder.Entity("NetServer.Data.Models.DollarBankAccountTable", b =>
-                {
-                    b.Property<Guid>("BankAccountId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("AccountHolderName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("BankName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Iban")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("SwiftCode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("BankAccountId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("DollarBankAccounts");
-                });
-
-            modelBuilder.Entity("NetServer.Data.Models.EuroBankAccountTable", b =>
-                {
-                    b.Property<Guid>("BankAccountId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("AccountHolderName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("BankName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Iban")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("SwiftCode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("BankAccountId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("EuroBankAccounts");
                 });
 
             modelBuilder.Entity("NetServer.Data.Models.ExchangeTransaction", b =>
@@ -608,7 +533,7 @@ namespace NetServer.DAta1.Migrations
                         {
                             OrderId = new Guid("23279bc0-3f81-4bbd-b44e-b61b92b01ba4"),
                             Amount = 0.1m,
-                            OrderBookId = new Guid("392b7739-193b-4261-8f09-3a52dca07e1c"),
+                            OrderBookId = new Guid("6172ea6f-ebb1-4f3d-8fcb-449668255501"),
                             Price = 50000.0m,
                             Symbol = "BTCUSD",
                             Timestamp = new DateTime(2025, 8, 28, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -928,28 +853,6 @@ namespace NetServer.DAta1.Migrations
                     b.HasOne("NetServer.Data.Models.User", "User")
                         .WithOne()
                         .HasForeignKey("NetServer.Data.Models.CreditCardDetailsTable", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("NetServer.Data.Models.DollarBankAccountTable", b =>
-                {
-                    b.HasOne("NetServer.Data.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("NetServer.Data.Models.EuroBankAccountTable", b =>
-                {
-                    b.HasOne("NetServer.Data.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

@@ -38,6 +38,8 @@ namespace NetServer.Data
         public DbSet<NewsTable> News { get; set; } = null!;
         public DbSet<CreditCardDetailsTable> CreditCardDetails { get; set; } = null!;
         public DbSet<BankAccountTable> BankAccounts { get; set; } = null!;
+        public DbSet<EuroBankAccountTable> EuroBankAccounts { get; set; } = null!;
+        public DbSet<DollarBankAccountTable> DollarBankAccounts { get; set; } = null!;
         // public DbSet<ChatTable> Messages { get; set; } = null!;
          
 
@@ -64,6 +66,8 @@ namespace NetServer.Data
             modelBuilder.Entity<FeeTable>().HasKey(f => f.FeeTableId);
             modelBuilder.Entity<CreditCardDetailsTable>().HasKey(c => c.UserId);
             modelBuilder.Entity<BankAccountTable>().HasKey(b => b.BankAccountId);
+            modelBuilder.Entity<EuroBankAccountTable>().HasKey(e => e.BankAccountId);
+            modelBuilder.Entity<DollarBankAccountTable>().HasKey(d => d.BankAccountId);
             // modelBuilder.Entity<WalletTable>().HasKey(w => w.WalletID);
             // modelBuilder.Entity<KycDocument>().HasKey(k => k.DocId);
             // modelBuilder.Entity<AuditLog>().HasKey(a => a.LogId);
@@ -93,6 +97,18 @@ namespace NetServer.Data
                 .HasOne(b => b.User)
                 .WithMany()
                 .HasForeignKey(b => b.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<EuroBankAccountTable>()
+                .HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<DollarBankAccountTable>()
+                .HasOne(d => d.User)
+                .WithMany()
+                .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<OrdersTable>()
