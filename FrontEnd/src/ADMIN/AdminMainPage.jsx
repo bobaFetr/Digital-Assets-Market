@@ -4,8 +4,6 @@ import "./Admin.css";
 import UserSidebar from "../Components/Sidebar";
 import { getToken, request } from "../Services/Service";
 
-const API_BASE = import.meta.env?.VITE_API_BASE ?? "";
-
 const quickMetrics = [
   { label: "24h Volume", value: "$48.2M", trend: "+12.4%", tone: "success" },
   { label: "New Users", value: "1,294", trend: "+5.8%", tone: "success" },

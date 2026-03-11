@@ -10,6 +10,7 @@ import BuyAndSell from "./BuyAndSell";
 import BCrypto from "./BCrypto.jsx";
 import VerifyIdentityPage from "./VerifyIdentityPage";
 import { getKycStatus, getToken, request, getProfile } from "./Services/Service";
+import { buildUrl } from "./config/api";
 import VerificationEmailPage from "./VerificationEmailPage";
 import SentSMSToNumberPage from "./SentSMSToNumberPage";
 
@@ -67,7 +68,6 @@ function UserBalanceCard() {
       setLoading(false);
       return;
     }
-    const API_BASE = import.meta.env?.VITE_API_BASE ?? "";
     request(`/api/wallets`, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -195,21 +195,14 @@ function Home({ theme, onToggleTheme }) {
   // Poll server endpoint for BTC data so it's visible on the main page
   useEffect(() => {
     let mounted = true;
-    const serverBase = import.meta.env?.VITE_SERVER_BASE ?? 'http://localhost:4000';
-
     const fetchServerInfo = async () => {
       try {
-        const resp = await fetch(`${serverBase}/api/binance/btc`);
+        const data = await request(`/api/binance/btc`);
         if (!mounted) return;
-        if (!resp.ok) {
-          setServerInfo({ error: 'Server returned ' + resp.status });
-          return;
-        }
-        const data = await resp.json();
         setServerInfo(data);
       } catch (err) {
         if (!mounted) return;
-        setServerInfo({ error: String(err) });
+        setServerInfo({ error: err?.message || String(err) });
       }
     };
 
@@ -351,13 +344,13 @@ function Home({ theme, onToggleTheme }) {
                   ? (profile.profilePictureUrl.startsWith('data:image/') || /^https?:\/\//i.test(profile.profilePictureUrl)
                       ? profile.profilePictureUrl
                       : profile.profilePictureUrl.startsWith('/')
-                      ? `${import.meta.env?.VITE_API_BASE ?? ''}${profile.profilePictureUrl}`
+                      ? buildUrl(profile.profilePictureUrl)
                       : profile.profilePictureUrl)
-                  : `${import.meta.env?.VITE_API_BASE ?? ''}/OIP.webp`
+                  : buildUrl('/OIP.webp')
               }
               alt="Profile"
               onError={(e) => {
-                e.currentTarget.src = `${import.meta.env?.VITE_API_BASE ?? ''}/OIP.webp`;
+                e.currentTarget.src = buildUrl('/OIP.webp');
               }}
               style={{ width: 48, height: 48, objectFit: 'cover', display: 'block' }}
             />
@@ -375,12 +368,10 @@ function Home({ theme, onToggleTheme }) {
                       setSelectedCurrency(c.code);
                       if (c.code === 'BTC') {
                         try {
-                          const serverBase = import.meta.env?.VITE_SERVER_BASE ?? 'http://localhost:4000';
-                          const resp = await fetch(`${serverBase}/api/binance/btc`);
-                          if (resp.ok) setServerInfo(await resp.json());
-                          else setServerInfo({ error: 'Server returned ' + resp.status });
+                          const data = await request(`/api/binance/btc`);
+                          setServerInfo(data);
                         } catch (err) {
-                          setServerInfo({ error: String(err) });
+                          setServerInfo({ error: err?.message || String(err) });
                         }
                       } else {
                         setServerInfo(null);

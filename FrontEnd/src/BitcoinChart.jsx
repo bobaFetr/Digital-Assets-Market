@@ -30,7 +30,7 @@ ChartJS.register(
   Filler
 );
 
-const API_BASE = import.meta.env?.VITE_API_BASE ?? "";
+// API base is provided by Services/Service via centralized config
 const COIN_GECKO_ID_BY_BASE = {
   BTC: "bitcoin",
   ETH: "ethereum",

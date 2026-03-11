@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "./Components/Sidebar";
 import { getToken, request } from "./Services/Service";
+import { buildUrl } from "./config/api";
 
-const API_BASE = import.meta.env?.VITE_API_BASE ?? "";
-const DEFAULT_PROFILE_PICTURE = `${API_BASE}/OIP.webp`;
+const DEFAULT_PROFILE_PICTURE = buildUrl("/OIP.webp");
 
 const resolveProfileImageUrl = (value) => {
   if (!value) {
@@ -15,7 +15,7 @@ const resolveProfileImageUrl = (value) => {
   }
 
   if (value.startsWith("/")) {
-    return `${API_BASE}${value}`;
+    return buildUrl(value);
   }
 
   return value;

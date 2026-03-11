@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { addMoneyFromCard, changePassword, deleteAccount, getProfile, getSavedCardDetails, getToken, logoutUser, updateProfilePicture, updateUserName, request } from "./Services/Service";
+import { buildUrl } from "./config/api";
 import Sidebar from "./Components/Sidebar";
 
-const API_BASE = import.meta.env?.VITE_API_BASE ?? "";
-const DEFAULT_PROFILE_PICTURE = `${API_BASE}/OIP.webp`;
+const DEFAULT_PROFILE_PICTURE = buildUrl("/OIP.webp");
 
 const resolveProfileImageUrl = (value) => {
   if (!value) {
@@ -16,7 +16,7 @@ const resolveProfileImageUrl = (value) => {
   }
 
   if (value.startsWith("/")) {
-    return `${API_BASE}${value}`;
+    return buildUrl(value);
   }
 
   return value;

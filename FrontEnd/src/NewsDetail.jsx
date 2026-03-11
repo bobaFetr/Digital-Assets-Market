@@ -3,8 +3,6 @@ import { Link, useParams } from "react-router-dom";
 import Sidebar from "./Components/Sidebar";
 import { getToken, request } from "./Services/Service";
 
-const API_BASE = import.meta.env?.VITE_API_BASE ?? "";
-
 export default function NewsDetail() {
     const { id } = useParams();
     const [article, setArticle] = useState(null);

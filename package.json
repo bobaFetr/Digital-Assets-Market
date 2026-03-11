@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "scripts": {
     "dev:web": "cd FrontEnd && npm run dev",
-    "dev:api": "dotnet run --project BackEnd/MyWebApi",
+    "dev:api": "cd BackEnd/MyWebApi && dotnet run",
     "dev:full": "npx concurrently -k -n api,web -c blue,green \"npm run dev:api\" \"npm run dev:web\"",
     "build:web": "cd FrontEnd && npm run build",
     "lint:web": "cd FrontEnd && npm run lint",

@@ -3,8 +3,6 @@ import { useSearchParams } from "react-router-dom";
 import BitcoinChart from "./BitcoinChart";
 import Sidebar from "./Components/Sidebar";
 import { getToken, request } from "./Services/Service";
-
-const API_BASE = import.meta.env?.VITE_API_BASE ?? "";
 const BUY_SELL_FROM_CURRENCY_KEY = "buySell.fromCurrency";
 const BUY_SELL_TO_CURRENCY_KEY = "buySell.toCurrency";
 

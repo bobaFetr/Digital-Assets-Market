@@ -1,4 +1,5 @@
-const API_BASE = import.meta.env?.VITE_API_BASE ?? "";
+import { buildUrl } from "../config/api";
+
 const TOKEN_STORAGE_KEY = "dam_token";
 
 const request = async (path, options = {}) => {
@@ -9,14 +10,26 @@ const request = async (path, options = {}) => {
     headers["Content-Type"] = headers["Content-Type"] || "application/json";
   }
 
-  const response = await fetch(`${API_BASE}${path}`, {
+  const url = buildUrl(path);
+
+  const response = await fetch(url, {
     ...options,
     headers,
   });
 
   if (!response.ok) {
-    const message = await response.text();
-    const details = message ? `: ${message}` : "";
+    let errDetail = null;
+    try {
+      const json = await response.json();
+      errDetail = json?.message || JSON.stringify(json);
+    } catch (e) {
+      try {
+        errDetail = await response.text();
+      } catch (e2) {
+        errDetail = null;
+      }
+    }
+    const details = errDetail ? `: ${errDetail}` : "";
     throw new Error(`(${response.status})${details}`);
   }
 

@@ -134,7 +134,7 @@ internal class Program
                 "http://localhost:5174",
                 "https://localhost:5173",
                 "https://localhost:5174",
-                "https://sudo-delete-web-service-crypto-inc-eood.onrender.com"
+                "https://crypto-inc-eood-front-end.onrender.com"
             };
         }
 
@@ -148,12 +148,38 @@ internal class Program
             });
         });
 
-        var connectionString =
-            builder.Configuration.GetConnectionString("DefaultConnection")
-            ?? Environment.GetEnvironmentVariable("DATABASE_URL");
+        // var connectionString =
+        //     builder.Configuration.GetConnectionString("DefaultConnection")
+        //     ?? Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+        //     ?? Environment.GetEnvironmentVariable("DATABASE_URL");
 
-        if (string.IsNullOrWhiteSpace(connectionString))
-            throw new InvalidOperationException("Database connection string is missing.");
+        // if (string.IsNullOrWhiteSpace(connectionString))
+        //     throw new InvalidOperationException("Database connection string is missing.");
+        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+}
+
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
+}
+
+Console.WriteLine("Diagnostic: config ConnectionStrings:DefaultConnection present = " +
+    !string.IsNullOrWhiteSpace(builder.Configuration["ConnectionStrings:DefaultConnection"]));
+Console.WriteLine("Diagnostic: GetConnectionString(DefaultConnection) present = " +
+    !string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("DefaultConnection")));
+Console.WriteLine("Diagnostic: env ConnectionStrings__DefaultConnection present = " +
+    !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")));
+Console.WriteLine("Diagnostic: env DATABASE_URL present = " +
+    !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("DATABASE_URL")));
+
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException("Database connection string is missing.");
+}
 
         builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
