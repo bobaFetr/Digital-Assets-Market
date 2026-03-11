@@ -119,7 +119,7 @@ internal class Program
 
         // CORS: allow origins from configuration or environment for Render deploys
         var configuredOrigins = builder.Configuration["Frontend:AllowedOrigins"]
-                               ?? Environment.GetEnvironmentVariable("FRONTEND_URLS");
+                               ?? Environment.GetEnvironmentVariable("CORS_ALLOWED_ORIGINS");
 
         string[] allowedOrigins;
         if (!string.IsNullOrWhiteSpace(configuredOrigins))

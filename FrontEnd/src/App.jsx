@@ -107,6 +107,8 @@ function Home({ theme, onToggleTheme }) {
   const [priceError, setPriceError] = useState("");
   const [lastUpdated, setLastUpdated] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [selectedCurrency, setSelectedCurrency] = useState(null);
+  const [serverInfo, setServerInfo] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -187,6 +189,35 @@ function Home({ theme, onToggleTheme }) {
       isMounted = false;
       clearInterval(intervalId);
       clearInterval(newsInterval);
+    };
+  }, []);
+
+  // Poll server endpoint for BTC data so it's visible on the main page
+  useEffect(() => {
+    let mounted = true;
+    const serverBase = import.meta.env?.VITE_SERVER_BASE ?? 'http://localhost:4000';
+
+    const fetchServerInfo = async () => {
+      try {
+        const resp = await fetch(`${serverBase}/api/binance/btc`);
+        if (!mounted) return;
+        if (!resp.ok) {
+          setServerInfo({ error: 'Server returned ' + resp.status });
+          return;
+        }
+        const data = await resp.json();
+        setServerInfo(data);
+      } catch (err) {
+        if (!mounted) return;
+        setServerInfo({ error: String(err) });
+      }
+    };
+
+    fetchServerInfo();
+    const id = setInterval(fetchServerInfo, 10000);
+    return () => {
+      mounted = false;
+      clearInterval(id);
     };
   }, []);
 
@@ -340,10 +371,38 @@ function Home({ theme, onToggleTheme }) {
               const p = livePrices.find((lp) => lp.code === c.code);
               const price = p?.price ?? null;
               return (
-                <div key={c.code} style={{ background: '#181818', color: '#fff', padding: 12, borderRadius: 8, minWidth: 140 }}>
+                  <div key={c.code} onClick={async () => {
+                      setSelectedCurrency(c.code);
+                      if (c.code === 'BTC') {
+                        try {
+                          const serverBase = import.meta.env?.VITE_SERVER_BASE ?? 'http://localhost:4000';
+                          const resp = await fetch(`${serverBase}/api/binance/btc`);
+                          if (resp.ok) setServerInfo(await resp.json());
+                          else setServerInfo({ error: 'Server returned ' + resp.status });
+                        } catch (err) {
+                          setServerInfo({ error: String(err) });
+                        }
+                      } else {
+                        setServerInfo(null);
+                      }
+                    }} style={{ background: '#181818', color: '#fff', padding: 12, borderRadius: 8, minWidth: 140, cursor: 'pointer' }}>
                   <div style={{ fontWeight: 700 }}>{c.code}</div>
                   <div style={{ fontSize: 12, color: '#aaa' }}>{c.name}</div>
                   <div style={{ marginTop: 8, fontSize: 16 }}>{price !== null ? formatUsd(price) : '--'}</div>
+                    {c.code === 'BTC' && serverInfo && (
+                      <div style={{ marginTop: 8, fontSize: 12, color: '#cdd6ff' }}>
+                        {serverInfo.error ? (
+                          <div style={{ color: '#ff8d8d' }}>Error: {serverInfo.error}</div>
+                        ) : (
+                          <div>
+                            <div>Last: {serverInfo.lastPrice}</div>
+                            <div>24h Change: {serverInfo.priceChangePercent}%</div>
+                            <div>High: {serverInfo.highPrice}</div>
+                            <div>Low: {serverInfo.lowPrice}</div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                 </div>
               );
             })}
