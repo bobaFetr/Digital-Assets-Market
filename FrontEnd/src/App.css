@@ -864,3 +864,76 @@ li {
     width: auto;
   }
 }
+
+/* Mobile layout adjustments */
+@media (max-width: 860px) {
+  .crypto-layout {
+    flex-direction: column;
+  }
+
+  .crypto-sidebar {
+    display: none;
+  }
+
+  .crypto-right-sidebar {
+    display: none;
+  }
+
+  .crypto-main {
+    padding: 16px;
+  }
+
+  .app-logo {
+    position: relative;
+    left: 0;
+    top: 0;
+    width: 80px;
+  }
+
+  /* mobile bottom navigation */
+  .mobile-bottom-nav {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .crypto-main {
+    padding: 12px;
+  }
+
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: var(--sidebar-bg);
+    border-top: 1px solid var(--glass-border);
+    align-items: center;
+    justify-content: space-around;
+    z-index: 1100;
+    padding: 8px 12px;
+    gap: 6px;
+  }
+
+  .mobile-bottom-nav a {
+    color: var(--text-primary);
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 12px;
+    gap: 4px;
+  }
+
+  .mobile-bottom-nav .mobile-icon {
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  /* ensure footer doesn't overlap content */
+  .app-shell-content {
+    padding-bottom: 72px;
+  }
+}

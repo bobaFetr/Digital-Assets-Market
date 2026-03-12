@@ -181,3 +181,53 @@
     color: #60a5fa;
     text-decoration: none;
   }
+
+  @media (max-width: 860px) {
+    .login-shell {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .login-hero {
+      display: none;
+    }
+
+    .login-panel {
+      padding: 32px 16px;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 20px;
+      border-radius: 14px;
+    }
+
+    .hero-content h1 {
+      font-size: 28px;
+    }
+
+    .login-card h2 {
+      font-size: 22px;
+    }
+
+    .login-form input[type="email"],
+    .login-form input[type="password"] {
+      padding: 14px 12px;
+      font-size: 16px;
+    }
+
+    .login-submit {
+      padding: 14px 0;
+      font-size: 16px;
+    }
+
+    .social-buttons {
+      flex-direction: column;
+    }
+
+    .social-buttons button {
+      width: 100%;
+    }
+  }

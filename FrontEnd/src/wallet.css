@@ -1,0 +1,33 @@
+/* Basic responsive styles for wallet page */
+.wallet-shell {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.wallet-panel {
+  flex: 1;
+  background: var(--card-bg, #1a1d2e);
+  padding: 18px;
+  border-radius: 12px;
+}
+
+.wallet-actions {
+  display: flex;
+  gap: 12px;
+}
+
+@media (max-width: 860px) {
+  .wallet-shell {
+    flex-direction: column;
+  }
+
+  .wallet-panel {
+    width: 100%;
+    padding: 14px;
+  }
+
+  .wallet-actions {
+    flex-direction: column;
+  }
+}

@@ -235,6 +235,14 @@ export default function Sidebar() {
           );
         })}
       </nav>
+      <nav className="mobile-bottom-nav" role="navigation" aria-label="Mobile navigation">
+        <Link to="/" className="mobile-link"><span className="mobile-icon">🏠</span><span className="mobile-label">Home</span></Link>
+        <Link to="/news" className="mobile-link"><span className="mobile-icon">💬</span><span className="mobile-label">News</span></Link>
+        <Link to="/BitcoinChart" className="mobile-link"><span className="mobile-icon">💰</span><span className="mobile-label">Markets</span></Link>
+        <Link to="/buy-sell" className="mobile-link"><span className="mobile-icon">🛒</span><span className="mobile-label">Trade</span></Link>
+        <Link to="/profile" className="mobile-link"><span className="mobile-icon">👤</span><span className="mobile-label">Profile</span></Link>
+      </nav>
     </aside>
   );
 }
+

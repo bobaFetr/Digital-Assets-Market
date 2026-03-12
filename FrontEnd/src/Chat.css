@@ -267,3 +267,42 @@
     font-weight: 600;
     cursor: pointer;
   }
+
+  @media (max-width: 860px) {
+    .chat-shell {
+      flex-direction: column;
+      height: auto;
+    }
+
+    .chat-list {
+      width: 100%;
+      border-right: none;
+      border-bottom: 1px solid #1f2937;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .chat-room {
+      width: 100%;
+      min-height: 60vh;
+    }
+
+    .bubble-group {
+      max-width: 100%;
+    }
+
+    .message-bubble {
+      font-size: 15px;
+      padding: 12px 14px;
+    }
+
+    .chat-room-input {
+      padding: 12px;
+      gap: 8px;
+    }
+
+    .chat-room-input textarea {
+      font-size: 15px;
+      padding: 12px;
+    }
+  }
