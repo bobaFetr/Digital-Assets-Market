@@ -537,10 +537,32 @@ export default function App() {
     setTheme((prevTheme) => (prevTheme === "dark" ? "light" : "dark"));
   };
 
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    if (mobileOpen) {
+      document.body.classList.add('sidebar-open');
+    } else {
+      document.body.classList.remove('sidebar-open');
+    }
+  }, [mobileOpen]);
+
   return (
     <KycGate>
       <div className={`app-shell ${theme === "light" ? "light-mode" : ""}`}>
         <div className="app-shell-content">
+          <button
+            className="mobile-hamburger"
+            aria-label="Toggle navigation"
+            onClick={() => setMobileOpen((v) => !v)}
+            style={{ position: 'fixed', top: 12, left: 12, zIndex: 1300 }}
+          >
+            ☰
+          </button>
+          {mobileOpen && (
+            <div className="mobile-sidebar-backdrop" onClick={() => setMobileOpen(false)} />
+          )}
         <Routes>
           <Route path="/" element={<Home theme={theme} onToggleTheme={toggleTheme} />} />
           <Route path="/profile" element={<Profile />} />

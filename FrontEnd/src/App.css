@@ -871,20 +871,40 @@ li {
     flex-direction: column;
   }
 
-  /* keep sidebar element present so mobile nav (inside it) can be visible
-     but hide the desktop links and compact the sidebar */
+  /* off-canvas sidebar: fixed and hidden by default to avoid pushing content */
   .crypto-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: 260px;
+    background: var(--sidebar-bg);
+    padding: 24px;
     display: flex;
-    width: 100%;
-    padding: 8px 12px;
-    justify-content: center;
-    align-items: center;
-    background: transparent;
-    border-right: none;
+    flex-direction: column;
+    transform: translateX(-110%);
+    transition: transform 0.25s ease-in-out;
+    z-index: 1200;
+    border-right: 1px solid var(--sidebar-border);
   }
 
   .crypto-sidebar .nav-links {
-    display: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  /* collapsed/default hidden state keeps logo small inside the fixed sidebar */
+  .crypto-sidebar img {
+    max-width: 120px;
+    height: auto;
+    display: block;
+  }
+
+  /* prevent horizontal scroll while sidebar is hidden */
+  html, body, #root {
+    overflow-x: hidden;
   }
 
   .crypto-right-sidebar {
@@ -920,35 +940,19 @@ li {
   }
 }
 
-/* Off-canvas sidebar for mobile when toggled */
-.crypto-sidebar.mobile-open {
-  position: fixed;
-  left: 0;
-  top: 0;
-  height: 100vh;
-  width: 260px;
-  background: var(--sidebar-bg);
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  z-index: 1200;
-  border-right: 1px solid var(--sidebar-border);
+
+/* Off-canvas visible state (controlled via body.sidebar-open) */
+body.sidebar-open .crypto-sidebar {
+  transform: translateX(0);
 }
 
-.crypto-sidebar.mobile-open .nav-links {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 18px;
-}
-
-/* overlay behind sidebar */
+/* overlay behind sidebar (hidden by default) */
 .mobile-sidebar-backdrop {
   display: none;
 }
 
 @media (max-width: 860px) {
-  .mobile-sidebar-backdrop {
+  body.sidebar-open .mobile-sidebar-backdrop {
     display: block;
     position: fixed;
     inset: 0;

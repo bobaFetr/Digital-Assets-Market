@@ -96,6 +96,13 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
     return baseBtn;
   };
 
+  const closeMobileSidebar = () => {
+    try {
+      if (typeof document !== 'undefined') document.body.classList.remove('sidebar-open');
+    } catch (_) {}
+    if (setMobileOpen) setMobileOpen(false);
+  };
+
   return (
     <aside className={`crypto-sidebar ${mobileOpen ? 'mobile-open' : ''}`}>
       <Link to="/" aria-label="Go to home page" style={{ display: "inline-block", marginBottom: "30px" }}>
@@ -107,7 +114,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
             style={getBtnStyle('Admin')}
             onMouseEnter={() => setHovered('Admin')}
             onMouseLeave={() => setHovered(null)}
-            onClick={() => setMobileOpen && setMobileOpen(false)}
+            onClick={() => closeMobileSidebar()}
           >
             <span>{ICONS.Admin}</span> Admin Panel
           </Link>
@@ -131,41 +138,41 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
                     {item === "Tools" && [
                       <Link to="/buy-sell" className="nav-dropdown-item" style={getBtnStyle('Tools')}
                         onMouseEnter={() => setHovered('Tools')}
-                        onMouseLeave={() => setHovered(null)} key="buy" onClick={() => setMobileOpen && setMobileOpen(false)}>Buy and Sell</Link>,
+                        onMouseLeave={() => setHovered(null)} key="buy" onClick={() => closeMobileSidebar()}>Buy and Sell</Link>,
                       <Link to="/withdraw" className="nav-dropdown-item" style={getBtnStyle('Tools')}
                         onMouseEnter={() => setHovered('Tools')}
-                        onMouseLeave={() => setHovered(null)} key="withdraw" onClick={() => setMobileOpen && setMobileOpen(false)}>Withdraw</Link>,
+                        onMouseLeave={() => setHovered(null)} key="withdraw" onClick={() => closeMobileSidebar()}>Withdraw</Link>,
                     ]}
                     {item === "Social" && [
                       <Link to="/news" className="nav-dropdown-item" style={getBtnStyle('Social')}
                         onMouseEnter={() => setHovered('Social')}
-                        onMouseLeave={() => setHovered(null)} key="news" onClick={() => setMobileOpen && setMobileOpen(false)}>News</Link>,
+                        onMouseLeave={() => setHovered(null)} key="news" onClick={() => closeMobileSidebar()}>News</Link>,
                       <Link to="/education" className="nav-dropdown-item" style={getBtnStyle('Social')}
                         onMouseEnter={() => setHovered('Social')}
-                        onMouseLeave={() => setHovered(null)} key="edu" onClick={() => setMobileOpen && setMobileOpen(false)}>Education</Link>,
+                        onMouseLeave={() => setHovered(null)} key="edu" onClick={() => closeMobileSidebar()}>Education</Link>,
                       <Link to="/rug-pull" className="nav-dropdown-item" style={getBtnStyle('Social')}
                         onMouseEnter={() => setHovered('Social')}
-                        onMouseLeave={() => setHovered(null)} key="rug" onClick={() => setMobileOpen && setMobileOpen(false)}>Rug Pull</Link>,
+                        onMouseLeave={() => setHovered(null)} key="rug" onClick={() => closeMobileSidebar()}>Rug Pull</Link>,
                       <Link to="/faq" className="nav-dropdown-item" style={getBtnStyle('Social')}
                         onMouseEnter={() => setHovered('Social')}
-                        onMouseLeave={() => setHovered(null)} key="faq" onClick={() => setMobileOpen && setMobileOpen(false)}>Questions and Answers</Link>,
+                        onMouseLeave={() => setHovered(null)} key="faq" onClick={() => closeMobileSidebar()}>Questions and Answers</Link>,
                       <Link to="/support" className="nav-dropdown-item" style={getBtnStyle('Social')}
                         onMouseEnter={() => setHovered('Social')}
-                        onMouseLeave={() => setHovered(null)} key="support" onClick={() => setMobileOpen && setMobileOpen(false)}>Support</Link>,
+                        onMouseLeave={() => setHovered(null)} key="support" onClick={() => closeMobileSidebar()}>Support</Link>,
                       <Link to="/feedback" className="nav-dropdown-item" style={getBtnStyle('Social')}
                         onMouseEnter={() => setHovered('Social')}
-                        onMouseLeave={() => setHovered(null)} key="feedback" onClick={() => setMobileOpen && setMobileOpen(false)}>Feedback</Link>,
+                        onMouseLeave={() => setHovered(null)} key="feedback" onClick={() => closeMobileSidebar()}>Feedback</Link>,
                     ]}
                     {item === "Crypto" && [
                       <Link to="/BitcoinChart" className="nav-dropdown-item" style={getBtnStyle('Crypto')}
                         onMouseEnter={() => setHovered('Crypto')}
-                        onMouseLeave={() => setHovered(null)} key="btc" onClick={() => setMobileOpen && setMobileOpen(false)}>BTC</Link>,
+                        onMouseLeave={() => setHovered(null)} key="btc" onClick={() => closeMobileSidebar()}>BTC</Link>,
                       <Link to="/BNBChart" className="nav-dropdown-item" style={getBtnStyle('Crypto')}
                         onMouseEnter={() => setHovered('Crypto')}
-                        onMouseLeave={() => setHovered(null)} key="bnb" onClick={() => setMobileOpen && setMobileOpen(false)}>BNB</Link>,
+                        onMouseLeave={() => setHovered(null)} key="bnb" onClick={() => closeMobileSidebar()}>BNB</Link>,
                       <Link to="/BCrypto" className="nav-dropdown-item" style={getBtnStyle('Crypto')}
                         onMouseEnter={() => setHovered('Crypto')}
-                        onMouseLeave={() => setHovered(null)} key="bcrypto" onClick={() => setMobileOpen && setMobileOpen(false)}>BCrypto</Link>,
+                        onMouseLeave={() => setHovered(null)} key="bcrypto" onClick={() => closeMobileSidebar()}>BCrypto</Link>,
                       <Link to="/withdraw" className="nav-dropdown-item" style={getBtnStyle('Crypto')}
                         onMouseEnter={() => setHovered('Crypto')}
                         onMouseLeave={() => setHovered(null)} key="withdraw2"></Link>,
@@ -173,10 +180,10 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
                     {item === "Temp" && [
                       <Link to="/VerificationEmailPage" className="nav-dropdown-item" style={getBtnStyle('Temp')}
                         onMouseEnter={() => setHovered('Temp')}
-                        onMouseLeave={() => setHovered(null)} key="verify" onClick={() => setMobileOpen && setMobileOpen(false)}>Verify Email</Link>,
+                        onMouseLeave={() => setHovered(null)} key="verify" onClick={() => closeMobileSidebar()}>Verify Email</Link>,
                       <Link to="/SentSMSToNumberPage" className="nav-dropdown-item" style={getBtnStyle('Temp')}
                         onMouseEnter={() => setHovered('Temp')}
-                        onMouseLeave={() => setHovered(null)} key="sms" onClick={() => setMobileOpen && setMobileOpen(false)}>Sent SMS</Link>,
+                        onMouseLeave={() => setHovered(null)} key="sms" onClick={() => closeMobileSidebar()}>Sent SMS</Link>,
                       isAdmin && <Link to="/Admin" className="nav-dropdown-item" style={getBtnStyle('Admin')}
                         onMouseEnter={() => setHovered('Admin')}
                         onMouseLeave={() => setHovered(null)} key="admin">Admin</Link>,
@@ -192,7 +199,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
                     style={getBtnStyle(item)}
                     onMouseEnter={() => setHovered(item)}
                     onMouseLeave={() => setHovered(null)}
-                    onClick={() => setMobileOpen && setMobileOpen(false)}
+                    onClick={() => closeMobileSidebar()}
                   >
                     <span>{icon}</span> {item}
                   </Link>
@@ -207,7 +214,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
                 style={getBtnStyle(item)}
                 onMouseEnter={() => setHovered(item)}
                 onMouseLeave={() => setHovered(null)}
-                onClick={() => setMobileOpen && setMobileOpen(false)}
+                onClick={() => closeMobileSidebar()}
               >
                 <span>{icon}</span> Sign Up
               </Link>
@@ -222,7 +229,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
                 style={getBtnStyle(item)}
                 onMouseEnter={() => setHovered(item)}
                 onMouseLeave={() => setHovered(null)}
-                onClick={() => setMobileOpen && setMobileOpen(false)}
+                onClick={() => closeMobileSidebar()}
               >
                 <span>{icon}</span> Sign In
               </Link>
@@ -240,11 +247,11 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
         })}
       </nav>
       <nav className="mobile-bottom-nav" role="navigation" aria-label="Mobile navigation">
-        <Link to="/" className="mobile-link" onClick={() => setMobileOpen && setMobileOpen(false)}><span className="mobile-icon">🏠</span><span className="mobile-label">Home</span></Link>
-        <Link to="/news" className="mobile-link" onClick={() => setMobileOpen && setMobileOpen(false)}><span className="mobile-icon">💬</span><span className="mobile-label">News</span></Link>
-        <Link to="/BitcoinChart" className="mobile-link" onClick={() => setMobileOpen && setMobileOpen(false)}><span className="mobile-icon">💰</span><span className="mobile-label">Markets</span></Link>
-        <Link to="/buy-sell" className="mobile-link" onClick={() => setMobileOpen && setMobileOpen(false)}><span className="mobile-icon">🛒</span><span className="mobile-label">Trade</span></Link>
-        <Link to="/profile" className="mobile-link" onClick={() => setMobileOpen && setMobileOpen(false)}><span className="mobile-icon">👤</span><span className="mobile-label">Profile</span></Link>
+        <Link to="/" className="mobile-link" onClick={() => closeMobileSidebar()}><span className="mobile-icon">🏠</span><span className="mobile-label">Home</span></Link>
+        <Link to="/news" className="mobile-link" onClick={() => closeMobileSidebar()}><span className="mobile-icon">💬</span><span className="mobile-label">News</span></Link>
+        <Link to="/BitcoinChart" className="mobile-link" onClick={() => closeMobileSidebar()}><span className="mobile-icon">💰</span><span className="mobile-label">Markets</span></Link>
+        <Link to="/buy-sell" className="mobile-link" onClick={() => closeMobileSidebar()}><span className="mobile-icon">🛒</span><span className="mobile-label">Trade</span></Link>
+        <Link to="/profile" className="mobile-link" onClick={() => closeMobileSidebar()}><span className="mobile-icon">👤</span><span className="mobile-label">Profile</span></Link>
       </nav>
     </aside>
   );
