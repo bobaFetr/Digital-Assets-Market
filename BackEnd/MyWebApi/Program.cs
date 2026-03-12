@@ -42,52 +42,6 @@ internal class Program
             }
         }
 
-        // Diagnostic: list environment variable names that contain "JWT" so we can see what's present
-        try
-        {
-            var envNames = new System.Collections.Generic.List<string>();
-            foreach (System.Collections.DictionaryEntry de in Environment.GetEnvironmentVariables())
-            {
-                var name = de.Key as string;
-                if (!string.IsNullOrWhiteSpace(name) && name.IndexOf("JWT", StringComparison.OrdinalIgnoreCase) >= 0)
-                    envNames.Add(name);
-            }
-            if (envNames.Count > 0)
-                {
-                    Console.WriteLine($"Diagnostic: environment variable names containing 'JWT': {string.Join(", ", envNames)}");
-                    // Also print non-sensitive length info for each to confirm values exist
-                    foreach (var n in envNames)
-                    {
-                        try
-                        {
-                            var v = Environment.GetEnvironmentVariable(n) ?? string.Empty;
-                            Console.WriteLine($"Diagnostic: env '{n}' length={v.Length}");
-                        }
-                        catch { }
-                    }
-                }
-            else
-                Console.WriteLine("Diagnostic: no environment variable names containing 'JWT' were found.");
-
-            var cfgPresent = !string.IsNullOrWhiteSpace(builder.Configuration["Jwt:Key"]);
-            Console.WriteLine($"Diagnostic: configuration key 'Jwt:Key' present: {cfgPresent}");
-                // Also report lengths of common env var names checked explicitly
-                try
-                {
-                    var namesToCheck = new[] { "Jwt__Key", "JWT__KEY", "JWT" };
-                    foreach (var nm in namesToCheck)
-                    {
-                        var vv = Environment.GetEnvironmentVariable(nm) ?? string.Empty;
-                        Console.WriteLine($"Diagnostic: env '{nm}' length={vv.Length}");
-                    }
-                }
-                catch { }
-        }
-        catch
-        {
-            // swallow diagnostic errors to avoid breaking startup
-        }
-
         if (string.IsNullOrWhiteSpace(jwtKey))
             throw new InvalidOperationException("Jwt:Key is missing. Set environment variable 'Jwt__Key' or configuration 'Jwt:Key'.");
 
@@ -108,27 +62,22 @@ internal class Program
             });
 
         builder.Services.AddControllers();
-        // Prevent ASP.NET Core from auto-returning 400 ProblemDetails for invalid ModelState
-        // so controllers can format validation errors in a concise, consistent way.
+
         builder.Services.Configure<Microsoft.AspNetCore.Mvc.ApiBehaviorOptions>(options =>
         {
             options.SuppressModelStateInvalidFilter = true;
         });
+
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
-        // CORS: allow origins from configuration or environment for Render deploys
+        // CORS
         var configuredOrigins = builder.Configuration["Frontend:AllowedOrigins"]
                                ?? Environment.GetEnvironmentVariable("CORS_ALLOWED_ORIGINS");
 
-        string[] allowedOrigins;
-        if (!string.IsNullOrWhiteSpace(configuredOrigins))
-        {
-            allowedOrigins = configuredOrigins.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        }
-        else
-        {
-            allowedOrigins = new[]
+        string[] allowedOrigins = !string.IsNullOrWhiteSpace(configuredOrigins)
+            ? configuredOrigins.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            : new[]
             {
                 "http://localhost:5173",
                 "http://localhost:5174",
@@ -136,11 +85,10 @@ internal class Program
                 "https://localhost:5174",
                 "https://crypto-inc-eood-front-end.onrender.com"
             };
-        }
 
         builder.Services.AddCors(options =>
         {
-            options.AddPolicy("DevCors", policy =>
+            options.AddPolicy("FrontendCors", policy =>
             {
                 policy.WithOrigins(allowedOrigins)
                       .AllowAnyHeader()
@@ -148,38 +96,22 @@ internal class Program
             });
         });
 
-        // var connectionString =
-        //     builder.Configuration.GetConnectionString("DefaultConnection")
-        //     ?? Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
-        //     ?? Environment.GetEnvironmentVariable("DATABASE_URL");
-
-        // if (string.IsNullOrWhiteSpace(connectionString))
-        //     throw new InvalidOperationException("Database connection string is missing.");
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-if (string.IsNullOrWhiteSpace(connectionString))
-{
-    connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
-}
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+        }
 
-if (string.IsNullOrWhiteSpace(connectionString))
-{
-    connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
-}
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
+        }
 
-Console.WriteLine("Diagnostic: config ConnectionStrings:DefaultConnection present = " +
-    !string.IsNullOrWhiteSpace(builder.Configuration["ConnectionStrings:DefaultConnection"]));
-Console.WriteLine("Diagnostic: GetConnectionString(DefaultConnection) present = " +
-    !string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("DefaultConnection")));
-Console.WriteLine("Diagnostic: env ConnectionStrings__DefaultConnection present = " +
-    !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")));
-Console.WriteLine("Diagnostic: env DATABASE_URL present = " +
-    !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("DATABASE_URL")));
-
-if (string.IsNullOrWhiteSpace(connectionString))
-{
-    throw new InvalidOperationException("Database connection string is missing.");
-}
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException("Database connection string is missing.");
+        }
 
         builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
@@ -189,8 +121,6 @@ if (string.IsNullOrWhiteSpace(connectionString))
 
         var app = builder.Build();
 
-        // Always attempt to apply pending EF Core migrations and ensure default wallets.
-        // Wrap in try/catch so the application can still start if migrations fail; errors are logged.
         try
         {
             using (var scope = app.Services.CreateScope())
@@ -198,7 +128,7 @@ if (string.IsNullOrWhiteSpace(connectionString))
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 var walletProvisioning = scope.ServiceProvider.GetRequiredService<WalletProvisioningService>();
 
-                //db.Database.Migrate();
+                // db.Database.Migrate();
 
                 var created = walletProvisioning.EnsureDefaultWalletsForAllUsers();
                 if (created > 0)
@@ -221,7 +151,7 @@ if (string.IsNullOrWhiteSpace(connectionString))
         app.UseDefaultFiles();
         app.UseStaticFiles();
 
-        app.UseCors("DevCors");
+        app.UseCors("FrontendCors");
 
         app.UseAuthentication();
         app.UseAuthorization();
