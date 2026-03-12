@@ -871,7 +871,19 @@ li {
     flex-direction: column;
   }
 
+  /* keep sidebar element present so mobile nav (inside it) can be visible
+     but hide the desktop links and compact the sidebar */
   .crypto-sidebar {
+    display: flex;
+    width: 100%;
+    padding: 8px 12px;
+    justify-content: center;
+    align-items: center;
+    background: transparent;
+    border-right: none;
+  }
+
+  .crypto-sidebar .nav-links {
     display: none;
   }
 
@@ -892,7 +904,75 @@ li {
 
   /* mobile bottom navigation */
   .mobile-bottom-nav {
-    display: none;
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: var(--sidebar-bg);
+    border-top: 1px solid var(--glass-border);
+    align-items: center;
+    justify-content: space-around;
+    z-index: 1100;
+    padding: 8px 12px;
+    gap: 6px;
+  }
+}
+
+/* Off-canvas sidebar for mobile when toggled */
+.crypto-sidebar.mobile-open {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 260px;
+  background: var(--sidebar-bg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  z-index: 1200;
+  border-right: 1px solid var(--sidebar-border);
+}
+
+.crypto-sidebar.mobile-open .nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+/* overlay behind sidebar */
+.mobile-sidebar-backdrop {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  .mobile-sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 1100;
+  }
+}
+
+/* Hamburger button styling */
+.mobile-hamburger {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 22px;
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+
+@media (max-width: 860px) {
+  .mobile-hamburger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 

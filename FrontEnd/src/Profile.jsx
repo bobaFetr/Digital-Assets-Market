@@ -23,6 +23,7 @@ const resolveProfileImageUrl = (value) => {
 };
 
 export default function Profile() {
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [profile, setProfile] = useState(null);
   const [balance, setBalance] = useState(null);
   const [balanceError, setBalanceError] = useState("");
@@ -430,11 +431,21 @@ export default function Profile() {
       }}
     >
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar mobileOpen={mobileSidebarOpen} setMobileOpen={setMobileSidebarOpen} />
+      {mobileSidebarOpen && <div className="mobile-sidebar-backdrop" onClick={() => setMobileSidebarOpen(false)} />}
+
 
 
       {/* Main Content */}
       <div style={{ flex: 1, padding: "20px", overflowY: "auto" }}>
+        <button
+          className="mobile-hamburger"
+          aria-label="Toggle navigation"
+          onClick={() => setMobileSidebarOpen((v) => !v)}
+          style={{ marginBottom: 12 }}
+        >
+          ☰
+        </button>
         <h2 style={{ color: "#ff7f50" }}>Profile Page</h2>
 
         {/* User Info Section */}

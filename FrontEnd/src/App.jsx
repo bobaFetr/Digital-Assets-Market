@@ -89,6 +89,7 @@ function UserBalanceCard() {
 }
 
 function Home({ theme, onToggleTheme }) {
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchTerms, setSearchTerms] = useState([]);
   const [news, setNews] = useState([]);
@@ -245,9 +246,20 @@ function Home({ theme, onToggleTheme }) {
 
   return (
     <div className={`crypto-layout ${theme === "light" ? "light-mode" : ""}`}>
-      <Sidebar />
+      <Sidebar mobileOpen={mobileSidebarOpen} setMobileOpen={setMobileSidebarOpen} />
+      {mobileSidebarOpen && (
+        <div className="mobile-sidebar-backdrop" onClick={() => setMobileSidebarOpen(false)} />
+      )}
       <div className="crypto-main">
         <div className="top-bar">
+          <button
+            className="mobile-hamburger"
+            aria-label="Toggle navigation"
+            onClick={() => setMobileSidebarOpen((v) => !v)}
+            style={{ marginRight: 8 }}
+          >
+            ☰
+          </button>
           <div className="search-container">
             <span className="search-icon">🔍</span>
             <input
