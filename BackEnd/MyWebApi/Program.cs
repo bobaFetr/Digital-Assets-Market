@@ -198,7 +198,7 @@ if (string.IsNullOrWhiteSpace(connectionString))
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 var walletProvisioning = scope.ServiceProvider.GetRequiredService<WalletProvisioningService>();
 
-                db.Database.Migrate();
+                //db.Database.Migrate();
 
                 var created = walletProvisioning.EnsureDefaultWalletsForAllUsers();
                 if (created > 0)
