@@ -13,4 +13,5 @@ export const buildUrl = (path) => {
 console.log("VITE_API_BASE =", import.meta.env.VITE_API_BASE);
 console.log("API_BASE =", API_BASE);
 console.log("Register URL =", buildUrl("/api/auth/register"));
+console.log("ALL ENV =", import.meta.env);
 export { API_BASE };
