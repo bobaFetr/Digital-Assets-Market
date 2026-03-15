@@ -72,7 +72,7 @@ internal class Program
         builder.Services.AddSwaggerGen();
 
         // CORS
-        var configuredOrigins = builder.Configuration["Frontend:AllowedOrigins"]
+        var configuredOrigins = builder.Configuration["Frontend:CORS_ALLOWED_ORIGINS"]
                                ?? Environment.GetEnvironmentVariable("CORS_ALLOWED_ORIGINS");
 
         string[] allowedOrigins = !string.IsNullOrWhiteSpace(configuredOrigins)
