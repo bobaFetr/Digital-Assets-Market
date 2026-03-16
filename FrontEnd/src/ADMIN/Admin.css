@@ -525,6 +525,10 @@
   }
 
   .admin-user-sidebar .crypto-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
     background: var(--sidebar-bg, #11131f);
     z-index: 1200;
   }
