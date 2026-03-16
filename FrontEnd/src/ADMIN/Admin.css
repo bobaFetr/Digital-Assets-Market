@@ -514,6 +514,8 @@
   .admin-user-sidebar {
     display: block;
     width: 0;
+    position: relative;
+    z-index: 1300;
     border-right: none;
     background: transparent;
   }
@@ -530,7 +532,7 @@
     left: 0;
     height: 100vh;
     background: var(--sidebar-bg, #11131f);
-    z-index: 1200;
+    z-index: 1301;
   }
 
   .admin-header {
