@@ -512,13 +512,21 @@
   }
 
   .admin-user-sidebar {
-    display: none;
+    display: block;
+    width: 0;
+    border-right: none;
+    background: transparent;
   }
 
   .admin-sidebar {
     position: sticky;
     top: 0;
     z-index: 2;
+  }
+
+  .admin-user-sidebar .crypto-sidebar {
+    background: var(--sidebar-bg, #11131f);
+    z-index: 1200;
   }
 
   .admin-header {
