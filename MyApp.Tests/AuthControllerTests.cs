@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using MyWebApi.Services;
 using NetServer.Data.Models;
+using System.Reflection;
 
 namespace MyApp.Tests;
 
@@ -78,9 +80,8 @@ public class AuthControllerTests
 
         var controller = new AuthController(db, BuildConfig(), new FakeEmailSender(), new WalletProvisioningService(db));
 
-        var result = controller.RegisterAdmin(new User
+        var result = controller.RegisterAdmin(new RegisterAdminRequest
         {
-            Id = Guid.NewGuid(),
             UserName = "  admintaken ",
             Email = "new-admin@test.com",
             Password = "Password123!"
@@ -92,7 +93,31 @@ public class AuthControllerTests
     }
 
     [Test]
-    public void Register_ReturnsBadRequest_WhenIdentityVerificationDataMissing()
+    public void RegisterAdmin_RequiresAdminRoleAuthorization()
+    {
+        var method = typeof(AuthController).GetMethod(nameof(AuthController.RegisterAdmin));
+
+        Assert.That(method, Is.Not.Null);
+
+        var authorizeAttribute = method!.GetCustomAttribute<AuthorizeAttribute>();
+        Assert.That(authorizeAttribute, Is.Not.Null);
+        Assert.That(authorizeAttribute!.Roles, Is.EqualTo("Admin"));
+    }
+
+    [Test]
+    public void RegisterAdmin_UsesDedicatedRequestDto_InsteadOfUserEntity()
+    {
+        var method = typeof(AuthController).GetMethod(nameof(AuthController.RegisterAdmin));
+
+        Assert.That(method, Is.Not.Null);
+
+        var parameters = method!.GetParameters();
+        Assert.That(parameters.Length, Is.EqualTo(1));
+        Assert.That(parameters[0].ParameterType, Is.EqualTo(typeof(RegisterAdminRequest)));
+    }
+
+    [Test]
+    public void Register_AllowsRegistration_WhenIdentityVerificationDataIsOmitted()
     {
         using var db = ControllerTestHelpers.CreateDbContext();
         var controller = new AuthController(db, BuildConfig(), new FakeEmailSender(), new WalletProvisioningService(db));
@@ -104,9 +129,11 @@ public class AuthControllerTests
             Password = "Password123!"
         });
 
-        var badRequest = result as BadRequestObjectResult;
-        Assert.That(badRequest, Is.Not.Null);
-        Assert.That(badRequest!.Value, Is.EqualTo("ID verification fields are required during registration."));
+        Assert.That(result, Is.InstanceOf<OkObjectResult>());
+
+        var createdUser = db.Users.SingleOrDefault(u => u.Email == "new@test.com");
+        Assert.That(createdUser, Is.Not.Null);
+        Assert.That(db.KycDocuments.Count(), Is.EqualTo(0));
     }
 
     [Test]

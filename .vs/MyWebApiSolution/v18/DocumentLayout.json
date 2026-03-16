@@ -3,12 +3,12 @@
   "WorkspaceRootPath": "C:\\Users\\Lenovo\\Desktop\\diplomna\\dam\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{328BD01B-A0BC-4165-9C57-E15536B62BA0}|MyWebApi\\MyWebApi.csproj|c:\\users\\lenovo\\desktop\\diplomna\\dam\\mywebapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{328BD01B-A0BC-4165-9C57-E15536B62BA0}|MyWebApi\\MyWebApi.csproj|solutionrelative:mywebapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Lenovo\\Desktop\\diplomna\\dam\\MyWebApi\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:MyWebApi\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8508E6AB-B222-4306-AB93-183C8B399D19}|NetServer.DAta1\\NetServer.DAta1.csproj|c:\\users\\lenovo\\desktop\\diplomna\\dam\\netserver.data1\\class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8508E6AB-B222-4306-AB93-183C8B399D19}|NetServer.DAta1\\NetServer.DAta1.csproj|solutionrelative:netserver.data1\\class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Lenovo\\Desktop\\diplomna\\dam\\NetServer.DAta1\\Class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:NetServer.DAta1\\Class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -18,8 +18,12 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 1,
           "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+            },
             {
               "$type": "Document",
               "DocumentIndex": 0,
@@ -28,10 +32,8 @@
               "RelativeDocumentMoniker": "MyWebApi\\Program.cs",
               "ToolTip": "C:\\Users\\Lenovo\\Desktop\\diplomna\\dam\\MyWebApi\\Program.cs",
               "RelativeToolTip": "MyWebApi\\Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAmAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-21T11:45:04.312Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-01-21T11:45:04.312Z"
             },
             {
               "$type": "Document",
@@ -44,18 +46,6 @@
               "ViewState": "AgIAAAcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-01-21T08:12:49.915Z"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:2:0:{d212f56b-c48a-434c-a121-1c5d80b59b9f}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:8:0:{d212f56b-c48a-434c-a121-1c5d80b59b9f}"
             }
           ]
         }

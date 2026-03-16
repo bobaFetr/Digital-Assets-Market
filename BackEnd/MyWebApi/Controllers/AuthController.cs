@@ -133,26 +133,45 @@ public class AuthController : ControllerBase
         return Ok("User registered successfully");
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("register-admin")]
-    public IActionResult RegisterAdmin(User user)
+    public IActionResult RegisterAdmin([FromBody] RegisterAdminRequest request)
     {
-         if (_db.Users.Any(u => u.Email == user.Email))
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => string.IsNullOrWhiteSpace(e.ErrorMessage) ? e.Exception?.Message : e.ErrorMessage)
+                .Where(msg => !string.IsNullOrWhiteSpace(msg))
+                .Distinct()
+                .ToList();
+
+            return BadRequest(new { errors });
+        }
+
+         if (_db.Users.Any(u => u.Email == request.Email))
         {
              return BadRequest("User already exists.");
         }
 
-        if (string.IsNullOrWhiteSpace(user.UserName))
+        if (string.IsNullOrWhiteSpace(request.UserName))
             return BadRequest("UserName is required.");
 
-        var normalizedUserName = user.UserName.Trim();
+        var normalizedUserName = request.UserName.Trim();
         var normalizedUserNameLower = normalizedUserName.ToLowerInvariant();
         if (_db.Users.Any(u => u.UserName.ToLower() == normalizedUserNameLower))
         {
             return BadRequest("Username already exists.");
         }
 
-        user.UserName = normalizedUserName;
-        user.Role = "Admin";
+        var user = new User
+        {
+            UserName = normalizedUserName,
+            Email = request.Email.Trim(),
+            Password = request.Password,
+            Role = "Admin"
+        };
+
         user.CreatedAt = user.CreatedAt == default ? DateTime.UtcNow : user.CreatedAt;
         user.Status = user.Status == default ? NetServer.Data.Models.User.StatusBit.Active : user.Status;
         user.IsBanned = false;
@@ -699,6 +718,20 @@ public class RegisterRequest
 
     // New: initial crypto wallets to create, e.g. ["USDT","BTC"]. If omitted, no crypto wallets are created by default.
     public string[]? InitialCryptoCurrencies { get; set; }
+}
+
+public class RegisterAdminRequest
+{
+    [Required]
+    public string UserName { get; set; } = "";
+
+    [Required]
+    [RegularExpression(@"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$", ErrorMessage = "Invalid email format")]
+    public string Email { get; set; } = "";
+
+    [Required]
+    [RegularExpression(@"^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$", ErrorMessage = "Password must be at least 8 characters and include an uppercase letter, a number and a special character")]
+    public string Password { get; set; } = "";
 }
 
 public class LoginRequest
