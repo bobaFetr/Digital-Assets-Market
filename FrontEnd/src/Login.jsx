@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "./Login.css"; // create this file with the styles below
 import { getProfile, loginUser } from "./Services/Service";
 import Sidebar from "./Components/Sidebar";
@@ -9,6 +9,14 @@ export default function Login() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const nextError = location.state?.error;
+    if (typeof nextError === "string" && nextError.trim()) {
+      setError(nextError);
+    }
+  }, [location.state]);
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;

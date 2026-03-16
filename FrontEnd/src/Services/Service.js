@@ -1,6 +1,28 @@
 import { buildUrl } from "../config/api";
 
 const TOKEN_STORAGE_KEY = "dam_token";
+const AUTH_BLOCKED_EVENT = "auth:blocked";
+
+const clearStoredToken = () => {
+  try {
+    sessionStorage.removeItem(TOKEN_STORAGE_KEY);
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+  } catch (e) {
+    // ignore
+  }
+};
+
+const notifyBlockedAuth = (reason) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.dispatchEvent(
+    new CustomEvent(AUTH_BLOCKED_EVENT, {
+      detail: { reason },
+    })
+  );
+};
 
 const request = async (path, options = {}) => {
   const headers = {
@@ -29,8 +51,22 @@ const request = async (path, options = {}) => {
         errDetail = null;
       }
     }
+
+    const isBlockedUser =
+      response.status === 403 &&
+      typeof errDetail === "string" &&
+      /user is banned/i.test(errDetail);
+
+    if (isBlockedUser) {
+      clearStoredToken();
+      notifyBlockedAuth("banned");
+    }
+
     const details = errDetail ? `: ${errDetail}` : "";
-    throw new Error(`(${response.status})${details}`);
+    const error = new Error(`(${response.status})${details}`);
+    error.status = response.status;
+    error.authBlocked = isBlockedUser;
+    throw error;
   }
 
   const contentType = response.headers.get("content-type") || "";
@@ -179,12 +215,7 @@ export const updateUserName = (userName) => {
 };
 
 export const logoutUser = () => {
-  try {
-    sessionStorage.removeItem(TOKEN_STORAGE_KEY);
-    localStorage.removeItem(TOKEN_STORAGE_KEY);
-  } catch (e) {
-    // ignore
-  }
+  clearStoredToken();
 };
 
 export const getToken = () => {
@@ -301,3 +332,4 @@ export const getSavedCardDetails = () => {
 };
 
 export { request };
+export { AUTH_BLOCKED_EVENT };

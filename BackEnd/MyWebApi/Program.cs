@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using MyWebApi.Services;
 using NetServer.Data;
 using NetServer.DAta1;
+using System.Security.Claims;
 using System.Text;
 
 internal class Program
@@ -58,6 +59,51 @@ internal class Program
                     ValidAudience = builder.Configuration["Jwt:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(
                         Encoding.UTF8.GetBytes(jwtKey))
+                };
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = async context =>
+                    {
+                        var userIdValue = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+                        if (!Guid.TryParse(userIdValue, out var userId))
+                        {
+                            context.Fail("Invalid token.");
+                            return;
+                        }
+
+                        await using var scope = context.HttpContext.RequestServices.CreateAsyncScope();
+                        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                        var user = await db.Users
+                            .AsNoTracking()
+                            .Where(u => u.Id == userId)
+                            .Select(u => new { u.IsBanned })
+                            .FirstOrDefaultAsync();
+
+                        if (user == null)
+                        {
+                            context.Fail("User not found.");
+                            return;
+                        }
+
+                        if (user.IsBanned)
+                        {
+                            context.Fail("User is banned");
+                        }
+                    },
+                    OnChallenge = async context =>
+                    {
+                        if (!string.Equals(context.AuthenticateFailure?.Message, "User is banned", StringComparison.Ordinal))
+                        {
+                            return;
+                        }
+
+                        context.HandleResponse();
+                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        context.Response.ContentType = "application/json";
+                        await context.Response.WriteAsync("{\"message\":\"User is banned\"}");
+                    }
                 };
             });
 

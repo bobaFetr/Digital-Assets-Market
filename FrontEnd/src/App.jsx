@@ -9,7 +9,7 @@ import WithDraw from "./WithdrawPage.jsx";
 import BuyAndSell from "./BuyAndSell";
 import BCrypto from "./BCrypto.jsx";
 import VerifyIdentityPage from "./VerifyIdentityPage";
-import { getKycStatus, getToken, request, getProfile } from "./Services/Service";
+import { AUTH_BLOCKED_EVENT, getKycStatus, getToken, request, getProfile } from "./Services/Service";
 import { buildUrl } from "./config/api";
 import VerificationEmailPage from "./VerificationEmailPage";
 import SentSMSToNumberPage from "./SentSMSToNumberPage";
@@ -518,6 +518,8 @@ function BNBChartPage() {
   );
 }
 export default function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [theme, setTheme] = useState(() => {
     if (typeof window === "undefined") {
       return "dark";
@@ -547,6 +549,31 @@ export default function App() {
       document.body.classList.remove('sidebar-open');
     }
   }, [mobileOpen]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const handleBlockedAuth = (event) => {
+      const reason = event?.detail?.reason;
+      if (reason !== "banned") {
+        return;
+      }
+
+      if (location.pathname !== "/sign-in") {
+        navigate("/sign-in", {
+          replace: true,
+          state: { error: "Your account has been banned. Access has been disabled." },
+        });
+      }
+    };
+
+    window.addEventListener(AUTH_BLOCKED_EVENT, handleBlockedAuth);
+    return () => {
+      window.removeEventListener(AUTH_BLOCKED_EVENT, handleBlockedAuth);
+    };
+  }, [location.pathname, navigate]);
 
   return (
     <KycGate>
@@ -616,8 +643,21 @@ function KycGate({ children }) {
       return;
     }
 
-    // Identity verification is optional. Query the backend for status but do not force navigation.
     let isActive = true;
+
+    getProfile()
+      .catch((error) => {
+        if (!isActive || !error?.authBlocked) {
+          return;
+        }
+
+        navigate("/sign-in", {
+          replace: true,
+          state: { error: "Your account has been banned. Access has been disabled." },
+        });
+      });
+
+    // Identity verification is optional. Query the backend for status but do not force navigation.
     getKycStatus()
       .then((status) => {
         if (!isActive) return;
