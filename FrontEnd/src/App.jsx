@@ -606,7 +606,7 @@ export default function App() {
           <Route path="/BitcoinChart" element={<BitcoinChartPage />} />
           <Route path="/BNBChart" element={<BNBChartPage />} />
 
-          <Route path="/Admin/*" element={<Admin />} />
+          <Route path="/Admin/*" element={<Admin mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />} />
           <Route path="/BCrypto" element={<BCrypto assets={[]} />} />
 
           <Route path="/news" element={<News />} />

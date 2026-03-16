@@ -1068,12 +1068,12 @@ function AdminHeader() {
 }
 
 /* ===== Admin Layout ===== */
-export default function Admin() {
+export default function Admin({ mobileOpen, setMobileOpen }) {
   return (
     <div className="admin-shell admin-shell--dual">
       <div className="admin-backdrop" />
       <div className="admin-user-sidebar">
-        <UserSidebar />
+        <UserSidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
       </div>
       <Sidebar />
       <main className="admin-content">
