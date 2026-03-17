@@ -34,7 +34,7 @@ export default function BuyAndSell() {
   const [statusMessage, setStatusMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderType, setOrderType] = useState("Sell");
-  const [orderKind, setOrderKind] = useState("Market");
+  const [orderKind, setOrderKind] = useState("Limit");
   const [limitPrice, setLimitPrice] = useState("");
   const [isLimitPriceTouched, setIsLimitPriceTouched] = useState(false);
   const [chartRefreshTick, setChartRefreshTick] = useState(0);
@@ -60,6 +60,8 @@ export default function BuyAndSell() {
   const pairSymbol = mappedSymbol;
   const chartSymbol = mappedSymbol;
   const balanceCurrency = orderType === "Buy" ? toCurrency : fromCurrency;
+  const effectiveRate =
+    orderKind === "Limit" && Number(limitPrice) > 0 ? Number(limitPrice) : Number(quoteRate);
   const cardCoins = [
     { name: "Ethereum", code: "ETH" },
     { name: "Bitcoin", code: "BTC" },
@@ -169,10 +171,12 @@ export default function BuyAndSell() {
           if (orderKind === "Limit" && !isLimitPriceTouched && !limitPrice) {
             setLimitPrice(String(latest.price));
           }
+          const nextRate =
+            orderKind === "Limit" && Number(limitPrice) > 0 ? Number(limitPrice) : Number(latest.price);
           if (lastEdited === "crypto") {
-            setAmountQuote(Number(amountCrypto) * Number(latest.price));
-          } else {
-            setAmountCrypto(Number(amountQuote) / Number(latest.price));
+            setAmountQuote(Number(amountCrypto) * Number(nextRate));
+          } else if (Number(nextRate) > 0) {
+            setAmountCrypto(Number(amountQuote) / Number(nextRate));
           }
         }
       } catch (error) {
@@ -184,11 +188,28 @@ export default function BuyAndSell() {
   }, [mappedSymbol, orderKind, limitPrice, lastEdited, amountCrypto, amountQuote, isLimitPriceTouched]);
 
   useEffect(() => {
+    const rate = Number(effectiveRate);
+    if (!rate || rate <= 0) {
+      return;
+    }
+
+    if (lastEdited === "crypto") {
+      setAmountQuote(Number(amountCrypto) * rate);
+    } else {
+      setAmountCrypto(Number(amountQuote) / rate);
+    }
+  }, [effectiveRate, lastEdited]);
+
+  useEffect(() => {
     if (orderKind !== "Limit") {
       setIsLimitPriceTouched(false);
-      setLimitPrice("");
+      return;
     }
-  }, [orderKind]);
+
+    if (!isLimitPriceTouched && !limitPrice && Number(quoteRate) > 0) {
+      setLimitPrice(String(Number(quoteRate)));
+    }
+  }, [orderKind, quoteRate, isLimitPriceTouched, limitPrice]);
 
   useEffect(() => {
     const loadOrderBook = async () => {
@@ -281,6 +302,26 @@ export default function BuyAndSell() {
     if (!amountValue || amountValue <= 0) {
       setStatusMessage("Enter a valid amount.");
       return;
+    }
+
+    if (orderKind === "Limit" && (!Number(limitPrice) || Number(limitPrice) <= 0)) {
+      setStatusMessage("Enter a valid limit price.");
+      return;
+    }
+
+    if (orderKind === "Market") {
+      const relevantEntries = (orderBook || []).filter((entry) => Number(entry.price) > 0);
+      const liquidityAmount = relevantEntries.reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
+
+      if (!relevantEntries.length) {
+        setStatusMessage("No market liquidity right now. Switch to Limit to place an order.");
+        return;
+      }
+
+      if (liquidityAmount < amountValue) {
+        setStatusMessage("Market liquidity is too low for this amount. Reduce size or use Limit.");
+        return;
+      }
     }
 
     const token = getToken();
@@ -493,8 +534,8 @@ export default function BuyAndSell() {
                 onChange={(e) => {
                   setLastEdited("crypto");
                   setAmountCrypto(e.target.value);
-                  if (Number(quoteRate) > 0) {
-                    setAmountQuote(Number(e.target.value) * Number(quoteRate));
+                  if (Number(effectiveRate) > 0) {
+                    setAmountQuote(Number(e.target.value) * Number(effectiveRate));
                   }
                 }}
                 placeholder={orderType === "Buy" ? "Amount to buy (coin)" : "Amount to sell (coin)"}
@@ -511,6 +552,14 @@ export default function BuyAndSell() {
                   onChange={(e) => {
                     setIsLimitPriceTouched(true);
                     setLimitPrice(e.target.value);
+                    const numericLimit = Number(e.target.value);
+                    if (numericLimit > 0) {
+                      if (lastEdited === "crypto") {
+                        setAmountQuote(Number(amountCrypto) * numericLimit);
+                      } else {
+                        setAmountCrypto(Number(amountQuote) / numericLimit);
+                      }
+                    }
                   }}
                   placeholder={`Price in ${toCurrency}`}
                   style={{ flex: 1, background: "#23263a", color: "#fff", border: "1px solid #ff7f50", borderRadius: 8, padding: "6px 10px" }}
@@ -533,8 +582,8 @@ export default function BuyAndSell() {
                   onChange={(e) => {
                     setLastEdited("quote");
                     setAmountQuote(e.target.value);
-                    if (Number(quoteRate) > 0) {
-                      setAmountCrypto(Number(e.target.value) / Number(quoteRate));
+                    if (Number(effectiveRate) > 0) {
+                      setAmountCrypto(Number(e.target.value) / Number(effectiveRate));
                     }
                   }}
                   placeholder={

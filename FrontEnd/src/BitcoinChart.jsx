@@ -14,9 +14,7 @@ import {
   Filler,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import axios from 'axios';
 import { getToken, request } from './Services/Service';
-import './App.css';
 
 // ✅ Register required components
 ChartJS.register(
@@ -122,95 +120,58 @@ function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
     }
   };
 
-  const fetchOrderBookSeries = async (token) => {
-    if (!token) {
-      return false;
-    }
-
-    try {
-      const data = await request(`/api/orderbook?symbol=${encodeURIComponent(symbol)}`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const points = (data ?? [])
-        .map((item) => ({
-          time: item.timestamp,
-          price: item.price,
-        }))
-        .filter((item) => item.time != null && item.price != null)
-        .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
-
-      if (!points.length) {
-        return false;
-      }
-
-      applySeries(points, "orderbook");
-      return true;
-    } catch (err) {
-      console.warn("Orderbook fetch failed:", err?.message || err);
-      return false;
-    }
-  };
-
   const fetchData = async () => {
     try {
-      const token = getToken();
-      if (!token) {
-        const loaded = await fetchExternalSeries();
-        if (!loaded) {
-          setMeta({ count: 0, lastPrice: null, lastTime: null });
-          setChartData({ labels: [], datasets: [] });
-        }
-        return;
-      }
-
-      const data = await request(`/api/trades?symbol=${encodeURIComponent(symbol)}`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const sorted = [...(data || [])].sort(
-        (a, b) => new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime()
-      );
-
-      const points = sorted.map((item) => ({ time: item.timeStamp, price: item.price }));
-      const hasVariance =
-        points.length > 1 && points.some((point) => Number(point.price) !== Number(points[0].price));
-
-      if (points.length > 1 && hasVariance) {
-        applySeries(points, "trades");
-        return;
-      }
-
       const loadedExternal = await fetchExternalSeries();
       if (loadedExternal) {
         return;
       }
 
-      const loadedOrderBook = await fetchOrderBookSeries(token);
-      if (!loadedOrderBook) {
-        applySeries(points, "trades");
-      }
-    } catch (error) {
-      console.error(`Error fetching ${symbol} data:`, error?.message || error);
-      try {
-        const loadedExternal = await fetchExternalSeries();
-        if (loadedExternal) {
-          return;
-        }
-
-        const token = getToken();
-        const loadedOrderBook = await fetchOrderBookSeries(token);
-        if (!loadedOrderBook) {
-          setMeta({ count: 0, lastPrice: null, lastTime: null });
-          setChartData({ labels: [], datasets: [] });
-        }
-      } catch (externalError) {
-        console.error(`Error fetching ${symbol} market data:`, externalError);
+      const token = getToken();
+      if (!token) {
         setMeta({ count: 0, lastPrice: null, lastTime: null });
         setChartData({ labels: [], datasets: [] });
+        return;
       }
+
+      const trades = await request(`/api/trades?symbol=${encodeURIComponent(symbol)}`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const sortedTrades = [...(trades || [])].sort(
+        (a, b) => new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime()
+      );
+      const tradePoints = sortedTrades
+        .map((item) => ({ time: item.timeStamp, price: item.price }))
+        .filter((item) => item.time != null && item.price != null);
+
+      if (tradePoints.length > 0) {
+        applySeries(tradePoints, "platform-trades");
+        return;
+      }
+
+      const orderBook = await request(`/api/orderbook?symbol=${encodeURIComponent(symbol)}`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const orderBookPoints = (orderBook ?? [])
+        .map((item) => ({ time: item.timestamp, price: item.price }))
+        .filter((item) => item.time != null && item.price != null)
+        .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+
+      if (orderBookPoints.length > 0) {
+        applySeries(orderBookPoints, "platform-orderbook");
+        return;
+      }
+
+      setMeta({ count: 0, lastPrice: null, lastTime: null });
+      setChartData({ labels: [], datasets: [] });
+    } catch (error) {
+      console.error(`Error fetching ${symbol} data:`, error?.message || error);
+      setMeta({ count: 0, lastPrice: null, lastTime: null });
+      setChartData({ labels: [], datasets: [] });
     }
   };
 
