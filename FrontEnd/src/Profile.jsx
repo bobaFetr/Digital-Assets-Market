@@ -6,6 +6,57 @@ import Sidebar from "./Components/Sidebar";
 
 const DEFAULT_PROFILE_PICTURE = buildUrl("/OIP.webp");
 
+const parseSymbolCurrencies = (symbol) => {
+  if (!symbol || typeof symbol !== "string") {
+    return [];
+  }
+
+  const normalized = symbol.trim().toUpperCase();
+  for (const quote of ["USD", "EUR"]) {
+    if (normalized.endsWith(quote) && normalized.length > quote.length) {
+      return [normalized.slice(0, -quote.length), quote];
+    }
+  }
+
+  return [normalized];
+};
+
+const formatBalanceValue = (value) =>
+  Number(value || 0).toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 6,
+  });
+
+const collectUsedCurrencies = (accountExport, bankAccounts = []) => {
+  const usedCurrencies = new Set();
+
+  for (const wallet of accountExport?.wallets || []) {
+    if (wallet?.currency) {
+      usedCurrencies.add(String(wallet.currency).toUpperCase());
+    }
+  }
+
+  for (const transaction of accountExport?.transactions || []) {
+    if (transaction?.currency) {
+      usedCurrencies.add(String(transaction.currency).toUpperCase());
+    }
+  }
+
+  for (const order of accountExport?.orders || []) {
+    for (const currency of parseSymbolCurrencies(order?.symbol)) {
+      usedCurrencies.add(currency);
+    }
+  }
+
+  for (const account of bankAccounts || []) {
+    if (account?.currency) {
+      usedCurrencies.add(String(account.currency).toUpperCase());
+    }
+  }
+
+  return Array.from(usedCurrencies).sort((a, b) => a.localeCompare(b));
+};
+
 const resolveProfileImageUrl = (value) => {
   if (!value) {
     return DEFAULT_PROFILE_PICTURE;
@@ -23,10 +74,24 @@ const resolveProfileImageUrl = (value) => {
 };
 
 export default function Profile() {
+  const unavailableProfileOptions = [
+    "Security Settings",
+    "Two-Factor Authentication",
+    "Device Management",
+    "API Management",
+    "Payment Methods",
+    "Withdrawal Addresses",
+    "Notifications",
+    "Preferences",
+    "Linked Accounts",
+    "Referral Program",
+  ];
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [profile, setProfile] = useState(null);
-  const [balance, setBalance] = useState(null);
-  const [balanceError, setBalanceError] = useState("");
+  const [wallets, setWallets] = useState([]);
+  const [usedCurrencies, setUsedCurrencies] = useState([]);
+  const [recentTransactions, setRecentTransactions] = useState([]);
+  const [accountSummaryError, setAccountSummaryError] = useState("");
   const [error, setError] = useState("");
   const [uploadError, setUploadError] = useState("");
   const [isUploadingPicture, setIsUploadingPicture] = useState(false);
@@ -61,34 +126,51 @@ export default function Profile() {
   const [addMoneySuccess, setAddMoneySuccess] = useState("");
   const [isAddingMoney, setIsAddingMoney] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [isBalanceLoading, setIsBalanceLoading] = useState(true);
+  const [isAccountSummaryLoading, setIsAccountSummaryLoading] = useState(true);
   const navigate = useNavigate();
 
-  const loadBalance = async () => {
+  const loadAccountSummary = async () => {
     const token = getToken();
     if (!token) {
-      setBalance(null);
-      setBalanceError("Not authenticated.");
-      setIsBalanceLoading(false);
+      setWallets([]);
+      setUsedCurrencies([]);
+      setRecentTransactions([]);
+      setAccountSummaryError("Not authenticated.");
+      setIsAccountSummaryLoading(false);
       return;
     }
 
     try {
-      const wallets = await request(`/api/wallets`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const [accountExport, bankAccounts] = await Promise.all([
+        request(`/api/users/me/export`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+        request(`/api/bank-accounts`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }).catch(() => []),
+      ]);
 
-      const total = (Array.isArray(wallets) ? wallets : []).reduce((sum, wallet) => sum + Number(wallet.balance || 0), 0);
+      const nextWallets = Array.isArray(accountExport?.wallets) ? accountExport.wallets : [];
+      const nextTransactions = Array.isArray(accountExport?.transactions) ? [...accountExport.transactions] : [];
+      nextTransactions.sort(
+        (left, right) => new Date(right.timeStamp).getTime() - new Date(left.timeStamp).getTime()
+      );
 
-      setBalance(total);
-      setBalanceError("");
+      setWallets(nextWallets);
+      setRecentTransactions(nextTransactions.slice(0, 5));
+      setUsedCurrencies(collectUsedCurrencies(accountExport, Array.isArray(bankAccounts) ? bankAccounts : []));
+      setAccountSummaryError("");
     } catch (err) {
-      setBalance(null);
-      setBalanceError(err.message || "Unable to load balance.");
+      setWallets([]);
+      setUsedCurrencies([]);
+      setRecentTransactions([]);
+      setAccountSummaryError(err.message || "Unable to load account activity.");
     } finally {
-      setIsBalanceLoading(false);
+      setIsAccountSummaryLoading(false);
     }
   };
 
@@ -122,19 +204,11 @@ export default function Profile() {
     };
 
     loadProfile();
-    loadBalance().catch(() => {});
+    loadAccountSummary().catch(() => {});
     return () => {
       isMounted = false;
     };
   }, []);
-
-  const formattedBalance =
-    typeof balance === "number"
-      ? balance.toLocaleString(undefined, {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })
-      : null;
 
   const handleLogout = () => {
     logoutUser();
@@ -356,7 +430,7 @@ export default function Profile() {
       normalizedCardNumber = "";
       normalizedCvv = "";
       normalizedExpiry = "";
-      normalizedCurrency = savedCardForDeposits.currency;
+      normalizedCurrency = depositCurrency;
     } else {
       normalizedCardHolder = cardHolderName.trim();
       normalizedCardNumber = cardNumber.replace(/\s+/g, "");
@@ -411,8 +485,8 @@ export default function Profile() {
       setCardCvv("");
       setCardExpiry("");
       setDepositAmount("");
-      setIsBalanceLoading(true);
-      await loadBalance();
+      setIsAccountSummaryLoading(true);
+      await loadAccountSummary();
     } catch (err) {
       setAddMoneyError(err.message || "Unable to add money.");
     } finally {
@@ -444,7 +518,7 @@ export default function Profile() {
           onClick={() => setMobileSidebarOpen((v) => !v)}
           style={{ marginBottom: 12 }}
         >
-          ☰
+          Menu
         </button>
         <h2 style={{ color: "#ff7f50" }}>Profile Page</h2>
 
@@ -516,16 +590,65 @@ export default function Profile() {
               <p style={{ marginTop: "10px" }}>Username: {profile?.userName || "-"}</p>
               <p style={{ marginTop: "10px" }}>Email: {profile?.email}</p>
               <p>Role: {profile?.role}</p>
-              {isBalanceLoading && <p>Balance: Loading...</p>}
-              {!isBalanceLoading && balanceError && <p style={{ color: "#ff8d8d" }}>Balance: unavailable</p>}
-              {!isBalanceLoading && !balanceError && <p>Balance: <span style={{ color: "#ff7f50" }}>${formattedBalance}</span></p>}
+              {isAccountSummaryLoading && <p>Account activity: Loading...</p>}
+              {!isAccountSummaryLoading && accountSummaryError && <p style={{ color: "#ff8d8d" }}>Account activity: unavailable</p>}
+              {!isAccountSummaryLoading && !accountSummaryError && (
+                <>
+                  <div style={{ marginTop: "10px" }}>
+                    <strong style={{ color: "#ff7f50" }}>Currencies used</strong>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "10px" }}>
+                      {usedCurrencies.length > 0 ? (
+                        usedCurrencies.map((currency) => (
+                          <span
+                            key={currency}
+                            style={{
+                              padding: "6px 10px",
+                              borderRadius: "999px",
+                              background: "#181a20",
+                              border: "1px solid #ff7f50",
+                              color: "#ff7f50",
+                              fontSize: "13px",
+                              fontWeight: 600
+                            }}
+                          >
+                            {currency}
+                          </span>
+                        ))
+                      ) : (
+                        <span style={{ color: "#bbb" }}>No currencies used yet.</span>
+                      )}
+                    </div>
+                  </div>
+                  <div style={{ marginTop: "14px" }}>
+                    <strong style={{ color: "#ff7f50" }}>Wallet balances</strong>
+                    <div style={{ display: "grid", gap: "8px", marginTop: "10px" }}>
+                      {wallets.length > 0 ? (
+                        wallets.map((wallet) => (
+                          <div
+                            key={wallet.walletID || wallet.walletId || `${wallet.currency}-${wallet.createdAt}`}
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              gap: "12px",
+                              padding: "10px 12px",
+                              borderRadius: "8px",
+                              background: "#181a20",
+                              border: "1px solid rgba(255, 127, 80, 0.18)"
+                            }}
+                          >
+                            <span>{wallet.currency}</span>
+                            <strong style={{ color: "#ff7f50" }}>{formatBalanceValue(wallet.balance)}</strong>
+                          </div>
+                        ))
+                      ) : (
+                        <span style={{ color: "#bbb" }}>No wallets available.</span>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
               <div style={{ marginTop: 8 }}>
                 <button onClick={() => navigate('/wallets')} style={{ padding: '8px 12px', borderRadius: 8, background: '#ff7f50', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 600 }} aria-label="manage-wallets">Manage wallets</button>
-              </div>
-
-              {/* Debug: show balance load state (remove in production) */}
-              <div style={{ marginTop: 6, fontSize: 12, color: '#aaa' }}>
-                Debug: isBalanceLoading={String(isBalanceLoading)}, balanceError="{balanceError}"
               </div>
             </>
           )}
@@ -562,23 +685,47 @@ export default function Profile() {
             {userNameSuccess && <p style={{ margin: 0, color: "var(--success-main, #7cf29a)" }}>{userNameSuccess}</p>}
           </form>
           <div className="TransactionHistory">
-            <button style={{
-              background: "#23263a",
-              color: "#ff7f50",
-              border: "1px solid #ff7f50",
-              borderRadius: "8px",
-              padding: "10px 14px",
-              fontWeight: 600,
-              marginTop: "10px",
-              cursor: "pointer"
-            }}>Transaction History</button>
+            <div style={{ marginTop: "18px" }}>
+              <h4 style={{ margin: 0, color: "#ff7f50" }}>Recent Transactions</h4>
+              <div style={{ display: "grid", gap: "8px", marginTop: "10px" }}>
+                {isAccountSummaryLoading && <p style={{ margin: 0, color: "#bbb" }}>Loading transactions...</p>}
+                {!isAccountSummaryLoading && recentTransactions.length === 0 && (
+                  <p style={{ margin: 0, color: "#bbb" }}>No transactions yet.</p>
+                )}
+                {!isAccountSummaryLoading && recentTransactions.map((transaction) => (
+                  <div
+                    key={transaction.transactionId}
+                    style={{
+                      display: "grid",
+                      gap: "4px",
+                      padding: "10px 12px",
+                      borderRadius: "8px",
+                      background: "#181a20",
+                      border: "1px solid rgba(255, 127, 80, 0.18)"
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: "12px" }}>
+                      <strong style={{ color: "#ff7f50" }}>{transaction.typeOfTransaction}</strong>
+                      <span>{transaction.status}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", color: "#ddd" }}>
+                      <span>{transaction.currency}</span>
+                      <span>{formatBalanceValue(transaction.amount)}</span>
+                    </div>
+                    <div style={{ fontSize: "12px", color: "#aaa" }}>
+                      {new Date(transaction.timeStamp).toLocaleString()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
           <div className="AddMoney">
             <form onSubmit={handleAddMoney} style={{ display: "grid", gap: "10px", marginTop: "10px", maxWidth: "360px" }}>
               <h4 style={{ margin: 0, color: "#ff7f50" }}>Add Money from Card</h4>
               {savedCardForDeposits && (
                 <div style={{ color: "#ff7f50", fontSize: "13px" }}>
-                  Using saved card: {savedCardForDeposits.cardHolderName} •••• {savedCardForDeposits.cardLast4} ({savedCardForDeposits.currency})
+                  Using saved card: {savedCardForDeposits.cardHolderName} **** {savedCardForDeposits.cardLast4}
                 </div>
               )}
 
@@ -640,7 +787,7 @@ export default function Profile() {
                 </>
               )}
 
-              <div style={{ display: "grid", gridTemplateColumns: savedCardForDeposits ? "1fr" : "1fr 120px", gap: "10px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 140px", gap: "10px" }}>
                 <input
                   type="number"
                   step="0.01"
@@ -650,17 +797,18 @@ export default function Profile() {
                   onChange={(event) => setDepositAmount(event.target.value)}
                   style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ff7f50", background: "#23263a", color: "#fff" }}
                 />
-                {!savedCardForDeposits && (
-                  <select
-                    value={depositCurrency}
-                    onChange={(event) => setDepositCurrency(event.target.value)}
-                    style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ff7f50", background: "#23263a", color: "#fff" }}
-                  >
-                    <option value="USD">USD</option>
-                    <option value="EUR">EUR</option>
-                  </select>
-                )}
+                <select
+                  value={depositCurrency}
+                  onChange={(event) => setDepositCurrency(event.target.value)}
+                  style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ff7f50", background: "#23263a", color: "#fff" }}
+                >
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                </select>
               </div>
+              <p style={{ margin: 0, fontSize: "13px", color: "#bbb" }}>
+                Deposit the amount into your {depositCurrency} bank account balance.
+              </p>
               <button
                 type="submit"
                 disabled={isAddingMoney}
@@ -796,18 +944,17 @@ export default function Profile() {
         <div style={{ background: "#23263a", padding: "20px", borderRadius: "12px", marginTop: "30px", boxShadow: "0 2px 8px 0 #181a20" }}>
           <h3 style={{ color: "#ff7f50" }}>Account Options</h3>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px", marginTop: "15px" }}>
-            <button style={{ background: "#23263a", color: "#ff7f50", border: "1px solid #ff7f50", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "pointer" }}>Security Settings</button>
-            <button style={{ background: "#23263a", color: "#ff7f50", border: "1px solid #ff7f50", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "pointer" }}>Two-Factor Authentication</button>
-            <button style={{ background: "#23263a", color: "#ff7f50", border: "1px solid #ff7f50", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "pointer" }}>Identity Verification (KYC)</button>
-            <button style={{ background: "#23263a", color: "#ff7f50", border: "1px solid #ff7f50", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "pointer" }}>Device Management</button>
-            <button style={{ background: "#23263a", color: "#ff7f50", border: "1px solid #ff7f50", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "pointer" }}>API Management</button>
-            <button style={{ background: "#23263a", color: "#ff7f50", border: "1px solid #ff7f50", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "pointer" }}>Payment Methods</button>
-            <button style={{ background: "#23263a", color: "#ff7f50", border: "1px solid #ff7f50", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "pointer" }}>Withdrawal Addresses</button>
+            {unavailableProfileOptions.slice(0, 2).map((label) => (
+              <button key={label} disabled title="Coming soon" style={{ background: "#23263a", color: "#8f6d5d", border: "1px solid rgba(255, 127, 80, 0.35)", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "not-allowed", opacity: 0.72 }}>{label}</button>
+            ))}
+            <button onClick={() => navigate('/VerifyIdentityPage')} style={{ background: "#23263a", color: "#ff7f50", border: "1px solid #ff7f50", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "pointer" }}>Identity Verification (KYC)</button>
+            {unavailableProfileOptions.slice(2, 7).map((label) => (
+              <button key={label} disabled title="Coming soon" style={{ background: "#23263a", color: "#8f6d5d", border: "1px solid rgba(255, 127, 80, 0.35)", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "not-allowed", opacity: 0.72 }}>{label}</button>
+            ))}
             <button onClick={() => navigate('/wallets')} style={{ background: "#23263a", color: "#ff7f50", border: "1px solid #ff7f50", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "pointer" }}>Bank Accounts</button>
-            <button style={{ background: "#23263a", color: "#ff7f50", border: "1px solid #ff7f50", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "pointer" }}>Notifications</button>
-            <button style={{ background: "#23263a", color: "#ff7f50", border: "1px solid #ff7f50", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "pointer" }}>Preferences</button>
-            <button style={{ background: "#23263a", color: "#ff7f50", border: "1px solid #ff7f50", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "pointer" }}>Linked Accounts</button>
-            <button style={{ background: "#23263a", color: "#ff7f50", border: "1px solid #ff7f50", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "pointer" }}>Referral Program</button>
+            {unavailableProfileOptions.slice(7).map((label) => (
+              <button key={label} disabled title="Coming soon" style={{ background: "#23263a", color: "#8f6d5d", border: "1px solid rgba(255, 127, 80, 0.35)", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "not-allowed", opacity: 0.72 }}>{label}</button>
+            ))}
           </div>
 
           <form onSubmit={handleChangePassword} style={{ marginTop: "20px", display: "grid", gap: "10px", maxWidth: "420px" }}>

@@ -259,6 +259,42 @@ public class WalletsControllerTests
     }
 
     [Test]
+    public async Task AddMoneyFromCard_UsesSavedCard_AndCreditsSelectedFiatCurrency()
+    {
+        using var db = ControllerTestHelpers.CreateDbContext();
+        var userId = Guid.NewGuid();
+
+        db.CreditCardDetails.Add(new CreditCardDetailsTable
+        {
+            UserId = userId,
+            CardHolderName = "Saved Holder",
+            CardLast4 = "1234",
+            ExpiryDate = "12/99",
+            Currency = "USD",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        });
+        await db.SaveChangesAsync();
+
+        var controller = new WalletsController(db);
+        ControllerTestHelpers.SetUser(controller, userId, isAdmin: false);
+
+        var result = await controller.AddMoneyFromCard(new AddMoneyByCardRequest
+        {
+            Amount = 40m,
+            Currency = "EUR"
+        });
+
+        Assert.That(result, Is.InstanceOf<OkObjectResult>());
+
+        var wallet = db.Wallets.Single(w => w.UserId == userId && w.Currency == "EUR");
+        Assert.That(wallet.Balance, Is.EqualTo(40m));
+
+        var tx = db.Transactions.Single(t => t.UserID == userId);
+        Assert.That(tx.Currency, Is.EqualTo("EUR"));
+    }
+
+    [Test]
     public async Task GetSavedCardDetails_ReturnsSavedCard_ForCurrentUser()
     {
         using var db = ControllerTestHelpers.CreateDbContext();

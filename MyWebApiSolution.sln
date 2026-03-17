@@ -5,9 +5,7 @@ VisualStudioVersion = 18.3.11408.92
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyWebApi", "BackEnd\MyWebApi\MyWebApi.csproj", "{328BD01B-A0BC-4165-9C57-E15536B62BA0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetServer.Data", "NetServer.Data\NetServer.Data.csproj", "{E4743E2A-A026-4DE8-9E0A-6C82A72F9D4D}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetServer.DAta1", "NetServer.DAta1\NetServer.DAta1.csproj", "{8508E6AB-B222-4306-AB93-183C8B399D19}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetServer.DAta1", "BackEnd\NetServer.DAta1\NetServer.DAta1.csproj", "{8508E6AB-B222-4306-AB93-183C8B399D19}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,18 +29,6 @@ Global
 		{328BD01B-A0BC-4165-9C57-E15536B62BA0}.Release|x64.Build.0 = Release|Any CPU
 		{328BD01B-A0BC-4165-9C57-E15536B62BA0}.Release|x86.ActiveCfg = Release|Any CPU
 		{328BD01B-A0BC-4165-9C57-E15536B62BA0}.Release|x86.Build.0 = Release|Any CPU
-		{E4743E2A-A026-4DE8-9E0A-6C82A72F9D4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E4743E2A-A026-4DE8-9E0A-6C82A72F9D4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E4743E2A-A026-4DE8-9E0A-6C82A72F9D4D}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{E4743E2A-A026-4DE8-9E0A-6C82A72F9D4D}.Debug|x64.Build.0 = Debug|Any CPU
-		{E4743E2A-A026-4DE8-9E0A-6C82A72F9D4D}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{E4743E2A-A026-4DE8-9E0A-6C82A72F9D4D}.Debug|x86.Build.0 = Debug|Any CPU
-		{E4743E2A-A026-4DE8-9E0A-6C82A72F9D4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E4743E2A-A026-4DE8-9E0A-6C82A72F9D4D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E4743E2A-A026-4DE8-9E0A-6C82A72F9D4D}.Release|x64.ActiveCfg = Release|Any CPU
-		{E4743E2A-A026-4DE8-9E0A-6C82A72F9D4D}.Release|x64.Build.0 = Release|Any CPU
-		{E4743E2A-A026-4DE8-9E0A-6C82A72F9D4D}.Release|x86.ActiveCfg = Release|Any CPU
-		{E4743E2A-A026-4DE8-9E0A-6C82A72F9D4D}.Release|x86.Build.0 = Release|Any CPU
 		{8508E6AB-B222-4306-AB93-183C8B399D19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8508E6AB-B222-4306-AB93-183C8B399D19}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8508E6AB-B222-4306-AB93-183C8B399D19}.Debug|x64.ActiveCfg = Debug|Any CPU

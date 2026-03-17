@@ -167,23 +167,16 @@ internal class Program
 
         var app = builder.Build();
 
-        try
+        using (var scope = app.Services.CreateScope())
         {
-            using (var scope = app.Services.CreateScope())
-            {
-                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                var walletProvisioning = scope.ServiceProvider.GetRequiredService<WalletProvisioningService>();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var walletProvisioning = scope.ServiceProvider.GetRequiredService<WalletProvisioningService>();
 
-                // db.Database.Migrate();
+            db.Database.Migrate();
 
-                var created = walletProvisioning.EnsureDefaultWalletsForAllUsers();
-                if (created > 0)
-                    db.SaveChanges();
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Database migration or provisioning failed: {ex}");
+            var created = walletProvisioning.EnsureDefaultWalletsForAllUsers();
+            if (created > 0)
+                db.SaveChanges();
         }
 
         if (app.Environment.IsDevelopment())

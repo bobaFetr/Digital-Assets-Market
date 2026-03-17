@@ -310,7 +310,7 @@ public class WalletsController : ApiControllerBase
                 existingCard.UpdatedAt = now;
             }
         }
-        else if (existingCard != null)
+        else if (existingCard != null && string.IsNullOrWhiteSpace(normalizedCurrency))
         {
             normalizedCurrency = existingCard.Currency;
         }

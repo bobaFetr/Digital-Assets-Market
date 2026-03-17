@@ -36,9 +36,7 @@ public class WalletProvisioningService
 
     public int EnsureDefaultWalletsForUser(Guid userId)
     {
-        // Backwards-compatible: if no preferences are provided, do not create any wallets automatically here.
-        // Use the overload EnsureDefaultWalletsForUser(userId, bankCurrencies, cryptoCurrencies) to create specific wallets.
-        return 0;
+        return EnsureDefaultWalletsForUser(userId, BankCurrencies, KnownCryptoCurrencies);
     }
 
     // Create wallets for requested bank currencies (USD/EUR) and requested crypto currencies (e.g. USDT)
