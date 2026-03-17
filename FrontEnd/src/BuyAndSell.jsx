@@ -370,7 +370,7 @@ export default function BuyAndSell() {
       <Sidebar />
 
       {/* Main Content */}
-      <div className="crypto-main" style={{ background: "#181a20", color: "#fff", flex: 1, padding: 24 }}>
+      <div className="crypto-main" style={{ background: "#181a20", color: "#fff", flex: 1, padding: "clamp(12px, 3vw, 24px)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h2 className="chart-header" style={{ color: "#ff7f50" }}>Buy & Sell</h2>
           <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>

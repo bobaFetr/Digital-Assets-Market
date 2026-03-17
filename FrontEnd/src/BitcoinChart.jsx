@@ -183,6 +183,7 @@ function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
 
   const options = {
     responsive: true,
+    maintainAspectRatio: false,
     scales: {
       x: {
         type: 'category',
@@ -227,9 +228,11 @@ function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
   };
 
   return (
-    <div className="container">
+    <div style={{ width: "100%", margin: 0, padding: 0 }}>
       {/* <h1>Графика на цената</h1> */}
-      <Line data={chartData} options={options} />
+      <div style={{ width: "100%", height: "clamp(260px, 48vh, 420px)" }}>
+        <Line data={chartData} options={options} />
+      </div>
       <div style={{ marginTop: "10px", color: "#9aa3ff", fontSize: "12px" }}>
         {meta.count === 0
           ? "No data points yet."
