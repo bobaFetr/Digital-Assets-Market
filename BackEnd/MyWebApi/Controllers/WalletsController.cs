@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using NetServer.Data;
 using NetServer.Data.Models;
 using System.Text.RegularExpressions;
@@ -19,6 +20,7 @@ public class WalletsController : ApiControllerBase
         _walletProvisioning = new MyWebApi.Services.WalletProvisioningService(db);
     }
 
+    [ActivatorUtilitiesConstructor]
     public WalletsController(AppDbContext db, MyWebApi.Services.WalletProvisioningService walletProvisioning)
     {
         _db = db;

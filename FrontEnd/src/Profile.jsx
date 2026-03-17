@@ -57,6 +57,15 @@ const collectUsedCurrencies = (accountExport, bankAccounts = []) => {
   return Array.from(usedCurrencies).sort((a, b) => a.localeCompare(b));
 };
 
+const getWalletBalanceByCurrency = (wallets, currency) => {
+  const normalizedCurrency = String(currency || "").toUpperCase();
+  const wallet = (wallets || []).find(
+    (item) => String(item?.currency || "").toUpperCase() === normalizedCurrency
+  );
+
+  return Number(wallet?.balance || 0);
+};
+
 const resolveProfileImageUrl = (value) => {
   if (!value) {
     return DEFAULT_PROFILE_PICTURE;
@@ -90,7 +99,6 @@ export default function Profile() {
   const [profile, setProfile] = useState(null);
   const [wallets, setWallets] = useState([]);
   const [usedCurrencies, setUsedCurrencies] = useState([]);
-  const [recentTransactions, setRecentTransactions] = useState([]);
   const [accountSummaryError, setAccountSummaryError] = useState("");
   const [error, setError] = useState("");
   const [uploadError, setUploadError] = useState("");
@@ -134,7 +142,6 @@ export default function Profile() {
     if (!token) {
       setWallets([]);
       setUsedCurrencies([]);
-      setRecentTransactions([]);
       setAccountSummaryError("Not authenticated.");
       setIsAccountSummaryLoading(false);
       return;
@@ -155,19 +162,13 @@ export default function Profile() {
       ]);
 
       const nextWallets = Array.isArray(accountExport?.wallets) ? accountExport.wallets : [];
-      const nextTransactions = Array.isArray(accountExport?.transactions) ? [...accountExport.transactions] : [];
-      nextTransactions.sort(
-        (left, right) => new Date(right.timeStamp).getTime() - new Date(left.timeStamp).getTime()
-      );
 
       setWallets(nextWallets);
-      setRecentTransactions(nextTransactions.slice(0, 5));
       setUsedCurrencies(collectUsedCurrencies(accountExport, Array.isArray(bankAccounts) ? bankAccounts : []));
       setAccountSummaryError("");
     } catch (err) {
       setWallets([]);
       setUsedCurrencies([]);
-      setRecentTransactions([]);
       setAccountSummaryError(err.message || "Unable to load account activity.");
     } finally {
       setIsAccountSummaryLoading(false);
@@ -595,6 +596,29 @@ export default function Profile() {
               {!isAccountSummaryLoading && !accountSummaryError && (
                 <>
                   <div style={{ marginTop: "10px" }}>
+                    <strong style={{ color: "#ff7f50" }}>Fiat Account Balances</strong>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px", marginTop: "10px" }}>
+                      {["EUR", "USD"].map((currency) => (
+                        <div
+                          key={currency}
+                          style={{
+                            padding: "14px 16px",
+                            borderRadius: "10px",
+                            background: "#181a20",
+                            border: "1px solid rgba(255, 127, 80, 0.25)",
+                            display: "grid",
+                            gap: "6px"
+                          }}
+                        >
+                          <span style={{ color: "#bbb", fontSize: "13px" }}>{currency} bank account</span>
+                          <strong style={{ color: "#ff7f50", fontSize: "20px" }}>
+                            {formatBalanceValue(getWalletBalanceByCurrency(wallets, currency))} {currency}
+                          </strong>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{ marginTop: "10px" }}>
                     <strong style={{ color: "#ff7f50" }}>Currencies used</strong>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "10px" }}>
                       {usedCurrencies.length > 0 ? (
@@ -684,42 +708,6 @@ export default function Profile() {
             {userNameError && <p style={{ margin: 0, color: "var(--error-main, #ff8d8d)" }}>{userNameError}</p>}
             {userNameSuccess && <p style={{ margin: 0, color: "var(--success-main, #7cf29a)" }}>{userNameSuccess}</p>}
           </form>
-          <div className="TransactionHistory">
-            <div style={{ marginTop: "18px" }}>
-              <h4 style={{ margin: 0, color: "#ff7f50" }}>Recent Transactions</h4>
-              <div style={{ display: "grid", gap: "8px", marginTop: "10px" }}>
-                {isAccountSummaryLoading && <p style={{ margin: 0, color: "#bbb" }}>Loading transactions...</p>}
-                {!isAccountSummaryLoading && recentTransactions.length === 0 && (
-                  <p style={{ margin: 0, color: "#bbb" }}>No transactions yet.</p>
-                )}
-                {!isAccountSummaryLoading && recentTransactions.map((transaction) => (
-                  <div
-                    key={transaction.transactionId}
-                    style={{
-                      display: "grid",
-                      gap: "4px",
-                      padding: "10px 12px",
-                      borderRadius: "8px",
-                      background: "#181a20",
-                      border: "1px solid rgba(255, 127, 80, 0.18)"
-                    }}
-                  >
-                    <div style={{ display: "flex", justifyContent: "space-between", gap: "12px" }}>
-                      <strong style={{ color: "#ff7f50" }}>{transaction.typeOfTransaction}</strong>
-                      <span>{transaction.status}</span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", color: "#ddd" }}>
-                      <span>{transaction.currency}</span>
-                      <span>{formatBalanceValue(transaction.amount)}</span>
-                    </div>
-                    <div style={{ fontSize: "12px", color: "#aaa" }}>
-                      {new Date(transaction.timeStamp).toLocaleString()}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
           <div className="AddMoney">
             <form onSubmit={handleAddMoney} style={{ display: "grid", gap: "10px", marginTop: "10px", maxWidth: "360px" }}>
               <h4 style={{ margin: 0, color: "#ff7f50" }}>Add Money from Card</h4>
