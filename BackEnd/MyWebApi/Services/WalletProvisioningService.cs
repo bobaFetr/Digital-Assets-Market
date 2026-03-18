@@ -36,6 +36,12 @@ public class WalletProvisioningService
 
     public int EnsureDefaultWalletsForUser(Guid userId)
     {
+        var hasAnyWallets = _db.Wallets.Any(w => w.UserId == userId);
+        if (hasAnyWallets)
+        {
+            return 0;
+        }
+
         return EnsureDefaultWalletsForUser(userId, BankCurrencies, KnownCryptoCurrencies);
     }
 

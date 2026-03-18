@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { addMoneyFromCard, changePassword, deleteAccount, getProfile, getSavedCardDetails, getToken, logoutUser, updateProfilePicture, updateUserName, request } from "./Services/Service";
 import { buildUrl } from "./config/api";
 import Sidebar from "./Components/Sidebar";
+import { isSafeUploadImageType, resolveTrustedImageUrl } from "./Security/trustedContent";
 
 const DEFAULT_PROFILE_PICTURE = buildUrl("/OIP.webp");
 
@@ -64,22 +65,6 @@ const getWalletBalanceByCurrency = (wallets, currency) => {
   );
 
   return Number(wallet?.balance || 0);
-};
-
-const resolveProfileImageUrl = (value) => {
-  if (!value) {
-    return DEFAULT_PROFILE_PICTURE;
-  }
-
-  if (value.startsWith("data:image/") || /^https?:\/\//i.test(value)) {
-    return value;
-  }
-
-  if (value.startsWith("/")) {
-    return buildUrl(value);
-  }
-
-  return value;
 };
 
 export default function Profile() {
@@ -232,8 +217,8 @@ export default function Profile() {
       return;
     }
 
-    if (!file.type.startsWith("image/")) {
-      setUploadError("Please select an image file.");
+    if (!isSafeUploadImageType(file.type)) {
+      setUploadError("Please select a PNG, JPG, GIF, or WEBP image.");
       return;
     }
 
@@ -544,7 +529,7 @@ export default function Profile() {
           >
             {profile?.profilePictureUrl ? (
               <img
-                src={resolveProfileImageUrl(profile?.profilePictureUrl)}
+                src={resolveTrustedImageUrl(profile?.profilePictureUrl, DEFAULT_PROFILE_PICTURE, buildUrl)}
                 alt="Profile"
                 style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 onError={(event) => {

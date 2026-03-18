@@ -50,7 +50,11 @@ public class AuthController : ControllerBase
         if (string.IsNullOrWhiteSpace(request.UserName))
             return BadRequest("UserName is required.");
 
-        var normalizedUserName = request.UserName.Trim();
+        if (!RequestSecurity.TryValidatePlainText(request.UserName, "UserName", out var normalizedUserName, out var userNameError, 100))
+        {
+            return BadRequest(userNameError);
+        }
+
         var normalizedUserNameLower = normalizedUserName.ToLowerInvariant();
         if (_db.Users.Any(u => u.UserName.ToLower() == normalizedUserNameLower))
         {
@@ -90,6 +94,35 @@ public class AuthController : ControllerBase
             if (expiryUtc.Value <= DateTime.UtcNow.Date)
             {
                 return BadRequest("ID document is expired.");
+            }
+
+            if (!RequestSecurity.TryValidatePlainText(request.FullName, "FullName", out var sanitizedFullName, out var fullNameError, 200))
+            {
+                return BadRequest(fullNameError);
+            }
+
+            if (!RequestSecurity.TryValidatePlainText(request.IdNumber, "IdNumber", out var sanitizedIdNumber, out var idNumberError, 100))
+            {
+                return BadRequest(idNumberError);
+            }
+
+            if (!RequestSecurity.TryValidatePlainText(request.Country, "Country", out var sanitizedCountry, out var countryError, 100))
+            {
+                return BadRequest(countryError);
+            }
+
+            request.FullName = sanitizedFullName;
+            request.IdNumber = sanitizedIdNumber;
+            request.Country = sanitizedCountry;
+
+            if (!string.IsNullOrWhiteSpace(request.DocumentType))
+            {
+                if (!RequestSecurity.TryValidatePlainText(request.DocumentType, "DocumentType", out var sanitizedDocumentType, out var documentTypeError, 100))
+                {
+                    return BadRequest(documentTypeError);
+                }
+
+                request.DocumentType = sanitizedDocumentType;
             }
         }
 
@@ -157,7 +190,11 @@ public class AuthController : ControllerBase
         if (string.IsNullOrWhiteSpace(request.UserName))
             return BadRequest("UserName is required.");
 
-        var normalizedUserName = request.UserName.Trim();
+        if (!RequestSecurity.TryValidatePlainText(request.UserName, "UserName", out var normalizedUserName, out var userNameError, 100))
+        {
+            return BadRequest(userNameError);
+        }
+
         var normalizedUserNameLower = normalizedUserName.ToLowerInvariant();
         if (_db.Users.Any(u => u.UserName.ToLower() == normalizedUserNameLower))
         {

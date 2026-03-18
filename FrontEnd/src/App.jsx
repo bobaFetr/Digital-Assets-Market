@@ -11,6 +11,7 @@ import BCrypto from "./BCrypto.jsx";
 import VerifyIdentityPage from "./VerifyIdentityPage";
 import { AUTH_BLOCKED_EVENT, getKycStatus, getToken, request, getProfile } from "./Services/Service";
 import { buildUrl } from "./config/api";
+import { resolveTrustedImageUrl } from "./Security/trustedContent";
 import VerificationEmailPage from "./VerificationEmailPage";
 import SentSMSToNumberPage from "./SentSMSToNumberPage";
 
@@ -352,13 +353,7 @@ function Home({ theme, onToggleTheme }) {
           <div className="top-profile" title={profile?.userName || 'Profile'} onClick={() => navigate('/profile')}>
             <img
               src={
-                profile?.profilePictureUrl
-                  ? (profile.profilePictureUrl.startsWith('data:image/') || /^https?:\/\//i.test(profile.profilePictureUrl)
-                      ? profile.profilePictureUrl
-                      : profile.profilePictureUrl.startsWith('/')
-                      ? buildUrl(profile.profilePictureUrl)
-                      : profile.profilePictureUrl)
-                  : buildUrl('/OIP.webp')
+                resolveTrustedImageUrl(profile?.profilePictureUrl, buildUrl('/OIP.webp'), buildUrl)
               }
               alt="Profile"
               onError={(e) => {

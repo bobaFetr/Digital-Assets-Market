@@ -6,6 +6,7 @@ using NetServer.Data;
 using NetServer.DAta1;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.Net.Http.Headers;
 
 internal class Program
 {
@@ -189,6 +190,31 @@ internal class Program
 
         app.UseDefaultFiles();
         app.UseStaticFiles();
+
+        app.Use(async (context, next) =>
+        {
+            context.Response.Headers[HeaderNames.XContentTypeOptions] = "nosniff";
+            context.Response.Headers[HeaderNames.XFrameOptions] = "DENY";
+            context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+            context.Response.Headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
+
+            if (!context.Request.Path.StartsWithSegments("/swagger", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Response.Headers["Content-Security-Policy"] = string.Join("; ",
+                    "default-src 'self'",
+                    "base-uri 'self'",
+                    "frame-ancestors 'none'",
+                    "object-src 'none'",
+                    "script-src 'self'",
+                    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+                    "font-src 'self' https://fonts.gstatic.com data:",
+                    "img-src 'self' https: data: blob:",
+                    "connect-src 'self' https://api.coingecko.com",
+                    "form-action 'self'");
+            }
+
+            await next();
+        });
 
         app.UseCors("FrontendCors");
 

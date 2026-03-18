@@ -2,24 +2,9 @@ import React, { useEffect, useState } from "react";
 import Sidebar from "./Components/Sidebar";
 import { getToken, request } from "./Services/Service";
 import { buildUrl } from "./config/api";
+import { isSafeUploadImageType, resolveTrustedImageUrl } from "./Security/trustedContent";
 
 const DEFAULT_PROFILE_PICTURE = buildUrl("/OIP.webp");
-
-const resolveProfileImageUrl = (value) => {
-  if (!value) {
-    return DEFAULT_PROFILE_PICTURE;
-  }
-
-  if (value.startsWith("data:image/") || /^https?:\/\//i.test(value)) {
-    return value;
-  }
-
-  if (value.startsWith("/")) {
-    return buildUrl(value);
-  }
-
-  return value;
-};
 
 export default function Faq() {
   const [items, setItems] = useState([]);
@@ -64,8 +49,8 @@ export default function Faq() {
       return;
     }
 
-    if (!file.type.startsWith("image/")) {
-      setStatusMessage("Please select an image file.");
+    if (!isSafeUploadImageType(file.type)) {
+      setStatusMessage("Please select a PNG, JPG, GIF, or WEBP image.");
       return;
     }
 
@@ -237,10 +222,8 @@ export default function Faq() {
 
           {!isLoading && items.map((item) => {
             const hasAnswer = Boolean(item.answer && item.answer.trim());
-            const avatarFallback = (item.question || "Q").slice(0, 1).toUpperCase();
             const authorLabel = item.authorUserName || item.authorEmail || "Unknown author";
             const replyAuthorLabel = item.replyAuthorUserName || item.replyAuthorEmail || "Unknown replier";
-            const replyAvatarFallback = replyAuthorLabel.slice(0, 1).toUpperCase();
 
             return (
               <div
@@ -265,7 +248,7 @@ export default function Faq() {
                   >
                     {item.authorProfilePictureUrl ? (
                       <img
-                        src={resolveProfileImageUrl(item.authorProfilePictureUrl)}
+                        src={resolveTrustedImageUrl(item.authorProfilePictureUrl, DEFAULT_PROFILE_PICTURE, buildUrl)}
                         alt="Author"
                         style={{ width: "100%", height: "100%", objectFit: "cover" }}
                         onError={(event) => {
@@ -292,7 +275,7 @@ export default function Faq() {
                 {item.questionImageUrl && (
                   <div style={{ marginBottom: hasAnswer ? "10px" : "14px" }}>
                     <img
-                      src={item.questionImageUrl}
+                      src={resolveTrustedImageUrl(item.questionImageUrl, "", buildUrl)}
                       alt="Question attachment"
                       style={{ maxWidth: "320px", width: "100%", borderRadius: "10px", border: "1px solid var(--glass-border)" }}
                     />
@@ -320,7 +303,7 @@ export default function Faq() {
                       >
                         {item.replyAuthorProfilePictureUrl ? (
                           <img
-                            src={resolveProfileImageUrl(item.replyAuthorProfilePictureUrl)}
+                            src={resolveTrustedImageUrl(item.replyAuthorProfilePictureUrl, DEFAULT_PROFILE_PICTURE, buildUrl)}
                             alt="Replier"
                             style={{ width: "100%", height: "100%", objectFit: "cover" }}
                             onError={(event) => {

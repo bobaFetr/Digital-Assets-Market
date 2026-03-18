@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MyWebApi.Services;
 using NetServer.Data;
 using NetServer.Data.Models;
 using System.Text.RegularExpressions;
@@ -95,12 +96,17 @@ public class FaqController : ApiControllerBase
 			return BadRequest("Question is required.");
 		}
 
-		if (ContainsBlockedWords(request.Question, out var blockedQuestionWords))
+		if (!RequestSecurity.TryValidatePlainText(request.Question, "Question", out var question, out var questionError, 2000))
+		{
+			return BadRequest(questionError);
+		}
+
+		if (ContainsBlockedWords(question, out var blockedQuestionWords))
 		{
 			return BadRequest($"Your question contains blocked language: {string.Join(", ", blockedQuestionWords)}");
 		}
 
-		if (!string.IsNullOrWhiteSpace(request.QuestionImageUrl) && !IsSupportedImageReference(request.QuestionImageUrl, out var imageValidationError))
+		if (!RequestSecurity.TryValidateImageReference(request.QuestionImageUrl, "QuestionImageUrl", out var questionImageUrl, out var imageValidationError))
 		{
 			return BadRequest(imageValidationError);
 		}
@@ -109,8 +115,8 @@ public class FaqController : ApiControllerBase
 		var faq = new FAQ
 		{
 			FaqId = Guid.NewGuid(),
-			Question = request.Question.Trim(),
-			QuestionImageUrl = string.IsNullOrWhiteSpace(request.QuestionImageUrl) ? null : request.QuestionImageUrl.Trim(),
+			Question = question,
+			QuestionImageUrl = questionImageUrl,
 			Answer = string.Empty,
 			CreatedAt = now,
 			UpdatedAt = now,
@@ -139,7 +145,12 @@ public class FaqController : ApiControllerBase
 			return BadRequest("Answer is required.");
 		}
 
-		if (ContainsBlockedWords(request.Answer, out var blockedAnswerWords))
+		if (!RequestSecurity.TryValidatePlainText(request.Answer, "Answer", out var answer, out var answerError, 4000))
+		{
+			return BadRequest(answerError);
+		}
+
+		if (ContainsBlockedWords(answer, out var blockedAnswerWords))
 		{
 			return BadRequest($"Your reply contains blocked language: {string.Join(", ", blockedAnswerWords)}");
 		}
@@ -155,7 +166,7 @@ public class FaqController : ApiControllerBase
 			return BadRequest("You cannot reply to your own question.");
 		}
 
-		faq.Answer = request.Answer.Trim();
+		faq.Answer = answer;
 		faq.RepliedByUserId = currentUserId;
 		faq.UpdatedAt = DateTime.UtcNow;
 
@@ -177,12 +188,26 @@ public class FaqController : ApiControllerBase
 			return BadRequest("Question is required.");
 		}
 
-		if (ContainsBlockedWords(request.Question, out var blockedQuestionWords))
+		if (!RequestSecurity.TryValidatePlainText(request.Question, "Question", out var question, out var questionError, 2000))
+		{
+			return BadRequest(questionError);
+		}
+
+		string answer = string.Empty;
+		if (!string.IsNullOrWhiteSpace(request.Answer))
+		{
+			if (!RequestSecurity.TryValidatePlainText(request.Answer, "Answer", out answer, out var answerError, 4000))
+			{
+				return BadRequest(answerError);
+			}
+		}
+
+		if (ContainsBlockedWords(question, out var blockedQuestionWords))
 		{
 			return BadRequest($"Question contains blocked language: {string.Join(", ", blockedQuestionWords)}");
 		}
 
-		if (!string.IsNullOrWhiteSpace(request.Answer) && ContainsBlockedWords(request.Answer, out var blockedAnswerWords))
+		if (!string.IsNullOrWhiteSpace(answer) && ContainsBlockedWords(answer, out var blockedAnswerWords))
 		{
 			return BadRequest($"Answer contains blocked language: {string.Join(", ", blockedAnswerWords)}");
 		}
@@ -191,13 +216,13 @@ public class FaqController : ApiControllerBase
 		var faq = new FAQ
 		{
 			FaqId = Guid.NewGuid(),
-			Question = request.Question.Trim(),
-			Answer = request.Answer?.Trim() ?? string.Empty,
+			Question = question,
+			Answer = answer,
 			CreatedAt = now,
 			UpdatedAt = now,
 			PublishedAt = now,
 			AuthorId = currentUserId,
-			RepliedByUserId = string.IsNullOrWhiteSpace(request.Answer) ? null : currentUserId,
+			RepliedByUserId = string.IsNullOrWhiteSpace(answer) ? null : currentUserId,
 			CategoryId = request.CategoryId ?? Guid.Empty
 		};
 
@@ -224,23 +249,33 @@ public class FaqController : ApiControllerBase
 
 		if (!string.IsNullOrWhiteSpace(request.Question))
 		{
-			if (ContainsBlockedWords(request.Question, out var blockedQuestionWords))
+			if (!RequestSecurity.TryValidatePlainText(request.Question, "Question", out var question, out var questionError, 2000))
+			{
+				return BadRequest(questionError);
+			}
+
+			if (ContainsBlockedWords(question, out var blockedQuestionWords))
 			{
 				return BadRequest($"Question contains blocked language: {string.Join(", ", blockedQuestionWords)}");
 			}
 
-			faq.Question = request.Question.Trim();
+			faq.Question = question;
 		}
 
 		if (request.Answer != null)
 		{
-			if (ContainsBlockedWords(request.Answer, out var blockedAnswerWords))
+			if (!RequestSecurity.TryValidatePlainText(request.Answer, "Answer", out var answer, out var answerError, 4000))
+			{
+				return BadRequest(answerError);
+			}
+
+			if (ContainsBlockedWords(answer, out var blockedAnswerWords))
 			{
 				return BadRequest($"Answer contains blocked language: {string.Join(", ", blockedAnswerWords)}");
 			}
 
-			faq.Answer = request.Answer.Trim();
-			faq.RepliedByUserId = string.IsNullOrWhiteSpace(request.Answer) ? null : currentUserId;
+			faq.Answer = answer;
+			faq.RepliedByUserId = string.IsNullOrWhiteSpace(answer) ? null : currentUserId;
 		}
 
 		if (request.CategoryId.HasValue)
@@ -304,29 +339,4 @@ public class FaqController : ApiControllerBase
 		return matches.Count > 0;
 	}
 
-	private static bool IsSupportedImageReference(string value, out string error)
-	{
-		error = string.Empty;
-		var trimmed = value.Trim();
-
-		if (trimmed.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase))
-		{
-			if (!trimmed.Contains(";base64,", StringComparison.OrdinalIgnoreCase))
-			{
-				error = "QuestionImageUrl data:image value must be base64-encoded.";
-				return false;
-			}
-
-			return true;
-		}
-
-		if (!Uri.TryCreate(trimmed, UriKind.Absolute, out var parsedUri)
-			|| (parsedUri.Scheme != Uri.UriSchemeHttp && parsedUri.Scheme != Uri.UriSchemeHttps))
-		{
-			error = "QuestionImageUrl must be an absolute http/https URL or data:image base64 value.";
-			return false;
-		}
-
-		return true;
-	}
 }

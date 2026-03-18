@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MyWebApi.Services;
 using NetServer.Data;
 using NetServer.Data.Models;
 
@@ -159,23 +160,9 @@ public class UsersController : ApiControllerBase
             return BadRequest("ProfilePictureUrl is required.");
         }
 
-        var profilePictureUrl = request.ProfilePictureUrl.Trim();
-        var isDataImage = profilePictureUrl.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase);
-
-        if (isDataImage)
+        if (!RequestSecurity.TryValidateImageReference(request.ProfilePictureUrl, "ProfilePictureUrl", out var profilePictureUrl, out var profilePictureUrlError))
         {
-            if (!profilePictureUrl.Contains(";base64,", StringComparison.OrdinalIgnoreCase))
-            {
-                return BadRequest("ProfilePictureUrl data:image value must be base64-encoded.");
-            }
-        }
-        else
-        {
-            if (!Uri.TryCreate(profilePictureUrl, UriKind.Absolute, out var parsedUri)
-                || (parsedUri.Scheme != Uri.UriSchemeHttp && parsedUri.Scheme != Uri.UriSchemeHttps))
-            {
-                return BadRequest("ProfilePictureUrl must be an absolute http/https URL or a data:image base64 value.");
-            }
+            return BadRequest(profilePictureUrlError);
         }
 
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
@@ -203,7 +190,11 @@ public class UsersController : ApiControllerBase
             return BadRequest("UserName is required.");
         }
 
-        var normalizedUserName = request.UserName.Trim();
+        if (!RequestSecurity.TryValidatePlainText(request.UserName, "UserName", out var normalizedUserName, out var userNameError, 100))
+        {
+            return BadRequest(userNameError);
+        }
+
         if (normalizedUserName.Length < 3)
         {
             return BadRequest("UserName must be at least 3 characters.");

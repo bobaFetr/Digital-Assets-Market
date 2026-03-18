@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MyWebApi.Services;
 using NetServer.Data;
 using NetServer.Data.Models;
 
@@ -106,18 +107,48 @@ public class KycDocumentsController : ApiControllerBase
             return Forbid();
         }
 
+        if (!RequestSecurity.TryValidatePlainText(request.Type, "Type", out var type, out var typeError, 100))
+        {
+            return BadRequest(typeError);
+        }
+
+        if (!RequestSecurity.TryValidatePlainText(request.FilePath, "FilePath", out var filePath, out var filePathError, 500))
+        {
+            return BadRequest(filePathError);
+        }
+
+        if (!RequestSecurity.TryValidatePlainText(request.DocumentNumber, "DocumentNumber", out var documentNumber, out var documentNumberError, 100))
+        {
+            return BadRequest(documentNumberError);
+        }
+
+        if (!RequestSecurity.TryValidatePlainText(request.FullName, "FullName", out var fullName, out var fullNameError, 200))
+        {
+            return BadRequest(fullNameError);
+        }
+
+        if (!RequestSecurity.TryValidatePlainText(request.CountryOfResidence, "CountryOfResidence", out var countryOfResidence, out var countryError, 100))
+        {
+            return BadRequest(countryError);
+        }
+
+        if (!RequestSecurity.TryValidatePlainText(request.Status, "Status", out var status, out var statusError, 50))
+        {
+            return BadRequest(statusError);
+        }
+
         var doc = new KycDocument
         {
             DocId = Guid.NewGuid(),
             UserId = targetUserId,
-            Type = request.Type,
-            FilePath = request.FilePath,
-            DocumentNumber = request.DocumentNumber,
-            FullName = request.FullName,
+            Type = type,
+            FilePath = filePath,
+            DocumentNumber = documentNumber,
+            FullName = fullName,
             DateOfBirth = dobUtc,
-            CountryOfResidence = request.CountryOfResidence,
+            CountryOfResidence = countryOfResidence,
             ExpiryDate = expiryUtc,
-            Status = string.IsNullOrWhiteSpace(request.Status) ? "Verified" : request.Status,
+            Status = string.IsNullOrWhiteSpace(status) ? "Verified" : status,
             UploadedAt = DateTime.UtcNow
         };
 
@@ -148,22 +179,42 @@ public class KycDocumentsController : ApiControllerBase
 
         if (request.Type != null)
         {
-            doc.Type = request.Type;
+            if (!RequestSecurity.TryValidatePlainText(request.Type, "Type", out var type, out var typeError, 100))
+            {
+                return BadRequest(typeError);
+            }
+
+            doc.Type = type;
         }
 
         if (request.FilePath != null)
         {
-            doc.FilePath = request.FilePath;
+            if (!RequestSecurity.TryValidatePlainText(request.FilePath, "FilePath", out var filePath, out var filePathError, 500))
+            {
+                return BadRequest(filePathError);
+            }
+
+            doc.FilePath = filePath;
         }
 
         if (request.DocumentNumber != null)
         {
-            doc.DocumentNumber = request.DocumentNumber;
+            if (!RequestSecurity.TryValidatePlainText(request.DocumentNumber, "DocumentNumber", out var documentNumber, out var documentNumberError, 100))
+            {
+                return BadRequest(documentNumberError);
+            }
+
+            doc.DocumentNumber = documentNumber;
         }
 
         if (request.FullName != null)
         {
-            doc.FullName = request.FullName;
+            if (!RequestSecurity.TryValidatePlainText(request.FullName, "FullName", out var fullName, out var fullNameError, 200))
+            {
+                return BadRequest(fullNameError);
+            }
+
+            doc.FullName = fullName;
         }
 
         if (request.DateOfBirth.HasValue)
@@ -178,7 +229,12 @@ public class KycDocumentsController : ApiControllerBase
 
         if (request.CountryOfResidence != null)
         {
-            doc.CountryOfResidence = request.CountryOfResidence;
+            if (!RequestSecurity.TryValidatePlainText(request.CountryOfResidence, "CountryOfResidence", out var countryOfResidence, out var countryError, 100))
+            {
+                return BadRequest(countryError);
+            }
+
+            doc.CountryOfResidence = countryOfResidence;
         }
 
         if (request.ExpiryDate.HasValue)
@@ -188,7 +244,12 @@ public class KycDocumentsController : ApiControllerBase
 
         if (request.Status != null)
         {
-            doc.Status = request.Status;
+            if (!RequestSecurity.TryValidatePlainText(request.Status, "Status", out var status, out var statusError, 50))
+            {
+                return BadRequest(statusError);
+            }
+
+            doc.Status = status;
         }
 
         await _db.SaveChangesAsync();

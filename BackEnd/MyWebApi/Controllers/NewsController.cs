@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MyWebApi.Services;
 using NetServer.Data;
 using NetServer.Data.Models;
 
@@ -79,12 +80,22 @@ public class NewsController : ApiControllerBase
             return BadRequest("Title and content are required.");
         }
 
+        if (!RequestSecurity.TryValidatePlainText(request.Title, "Title", out var title, out var titleError, 200))
+        {
+            return BadRequest(titleError);
+        }
+
+        if (!RequestSecurity.TryValidatePlainText(request.Content, "Content", out var content, out var contentError, 10000))
+        {
+            return BadRequest(contentError);
+        }
+
         var now = DateTime.UtcNow;
         var news = new NewsTable
         {
             NewsId = Guid.NewGuid(),
-            Title = request.Title.Trim(),
-            Content = request.Content.Trim(),
+            Title = title,
+            Content = content,
             Author = currentUserId,
             PublishedAt = request.PublishedAt ?? now,
             CreatedAt = now,
