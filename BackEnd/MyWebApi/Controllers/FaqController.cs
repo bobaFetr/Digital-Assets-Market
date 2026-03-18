@@ -14,13 +14,63 @@ public class FaqController : ApiControllerBase
 {
 	private readonly AppDbContext _db;
 	private static readonly string[] BlockedWords = new[]
-	{
-		"fuck",
-		"kill",
-		"mainata",
-		"shit"
-	};
+{
+    // ENGLISH
+    "fuck","fck","fuk","fucc","f*ck",
+    "fucking","fucker","motherfucker","mf",
 
+    "shit","sh1t","sh*t","shyt",
+    "bullshit","bs",
+
+    "bitch","b1tch","b*tch","btch",
+    "bitches",
+
+    "ass","a$$","azz",
+    "asshole","a$$hole",
+
+    "dick","d1ck","dik","d*ck",
+    "dickhead",
+
+    "pussy","p*ssy","pusy",
+    "cock","c*ck","cok",
+
+    "bastard","b*stard","bast4rd",
+    "slut","sl*t",
+    "whore","w*ore","h0re",
+
+    "damn","d*mn",
+    "crap",
+
+    "retard","ret4rd",
+
+    "kill","kys","die","suicide",
+
+    // BULGARIAN (Latin + Cyrillic)
+    "kur","кyp","кур","к*р",
+    "kurva","кypвa","курва",
+    "eba","еба","ебa",
+    "ebal","ебал",
+    "ebati","ебати","eba ti",
+
+    "майка ти","maikati",
+    "майка ти да еба","maika ti da eba",
+
+    "putka","путка","п*тка",
+    "putko","путко",
+
+    "gaz","гъз","г*з",
+    "laino","лайно","л*йно",
+
+    "tapak","тъпак",
+    "idiot","идиот",
+    "prostak","простак",
+
+    "mrusnik","мръсник",
+    "bokluk","боклук",
+
+    "pedal","педал",
+    "pedofil","педофил"
+};
 	public FaqController(AppDbContext db)
 	{
 		_db = db;
