@@ -5,7 +5,7 @@ import { getProfile, loginUser } from "./Services/Service";
 import Sidebar from "./Components/Sidebar";
 
 export default function Login() {
-  const [form, setForm] = useState({ email: "", password: "", remember: false });
+  const [form, setForm] = useState({ email: "", password: "", remember: true });
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
