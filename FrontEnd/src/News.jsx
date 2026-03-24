@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import Sidebar from "./Components/Sidebar";
 import { getToken, request } from "./Services/Service";
+import "./News.css";
 
 export default function News() {
     const [articles, setArticles] = useState([]);
@@ -56,25 +57,33 @@ export default function News() {
         );
     }, [articles, query]);
 
-    const trendingArticles = filteredArticles;
-    const recentUpdates = filteredArticles.slice(0, 2);
+    const featuredArticle = filteredArticles[0] || null;
+    const trendingArticles = filteredArticles.slice(featuredArticle ? 1 : 0);
+    const recentUpdates = filteredArticles.slice(0, 5);
+    const totalArticles = articles.length;
+    const visibleArticles = filteredArticles.length;
+    const latestTimestamp = filteredArticles[0]?.publishedAt;
 
     return (
         <div className="crypto-layout">
-            {/* Sidebar - Retained from your original logic */}
             <Sidebar />
 
-            {/* Main Content Area */}
-            <main className="crypto-main">
-                {/* News Header using your specific CSS colors */}
-                <header style={{ position: 'relative', width: '100%', marginBottom: '40px' }}>
-                    <h1 style={{ color: '#EBA667', textAlign: 'left', fontSize: '2.5rem' }}>Crypto News</h1>
-                    <div className="search-container">
-                        <span className="search-icon">🔍</span>
+            <main className="crypto-main news-page-main">
+                <header className="news-hero">
+                    <div className="news-hero-content">
+                        <p className="news-hero-kicker">Live Desk</p>
+                        <h1 className="news-hero-title">Crypto Newsroom</h1>
+                        <p className="news-hero-subtitle">
+                            Track market-moving headlines, protocol upgrades, and
+                            regulatory shifts in one clean feed.
+                        </p>
+                    </div>
+                    <div className="news-search-container">
+                        <span className="news-search-icon" aria-hidden="true" />
                         <input
                             type="text"
                             placeholder="Search latest updates..."
-                            className="top-search-input"
+                            className="news-search-input"
                             value={query}
                             onChange={(event) => {
                                 const nextValue = event.target.value;
@@ -89,98 +98,155 @@ export default function News() {
                             }}
                         />
                     </div>
+
+                    <div className="news-metrics" role="status" aria-label="News dashboard metrics">
+                        <div className="news-metric-tile">
+                            <span className="news-metric-label">Headlines</span>
+                            <span className="news-metric-value">{totalArticles}</span>
+                        </div>
+                        <div className="news-metric-tile">
+                            <span className="news-metric-label">Showing</span>
+                            <span className="news-metric-value">{visibleArticles}</span>
+                        </div>
+                        <div className="news-metric-tile">
+                            <span className="news-metric-label">Last Print</span>
+                            <span className="news-metric-value">
+                                {latestTimestamp ? formatRelativeTime(latestTimestamp) : "N/A"}
+                            </span>
+                        </div>
+                    </div>
                 </header>
 
-                <section>
-                    <h2 className="header-greeting">Trending Stories</h2>
-
-                    {error && (
-                        <div className="login-alert" style={{ marginBottom: '16px' }}>
-                            {error}
-                        </div>
-                    )}
-
-                    {isLoading && (
-                        <div style={{ color: '#9aa3ff', fontSize: '13px', marginBottom: '16px' }}>
-                            Loading news...
-                        </div>
-                    )}
-
-                    {!isLoading && !error && trendingArticles.length === 0 && (
-                        <div style={{ color: '#9aa3ff', fontSize: '13px', marginBottom: '16px' }}>
-                            No news found.
-                        </div>
-                    )}
-
-                    {/* Using your cards-grid class for the news layout */}
-                    <div className="cards-grid">
-                        {trendingArticles.map((article) => {
-                            const card = (
-                                <div className="coin-card" style={{ minHeight: '200px', cursor: 'pointer' }}>
-                                    <div className="coin-header">
-                                        <span className="reward-label" style={{ color: '#7f8cff' }}>Update</span>
-                                        <h4>{article.title}</h4>
-                                    </div>
-                                    <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', margin: '15px 0' }}>
-                                        {truncateText(article.content, 140)}
-                                    </p>
-                                    <div className="coin-rate" style={{ fontSize: '12px', color: '#4dff88' }}>
-                                        {formatRelativeTime(article.publishedAt)}
-                                    </div>
-                                </div>
-                            );
-
-                            if (!article.newsId) {
-                                return (
-                                    <div key={article.title}>
-                                        {card}
-                                    </div>
-                                );
-                            }
-
-                            return (
-                                <Link
-                                    key={article.newsId}
-                                    to={`/news/${article.newsId}`}
-                                    style={{ textDecoration: 'none', color: 'inherit' }}
-                                >
-                                    {card}
-                                </Link>
-                            );
-                        })}
+                {error && (
+                    <div className="login-alert news-alert news-alert-error">
+                        {error}
                     </div>
-                </section>
+                )}
 
-                {/* Example of a List-style News section using your <li> styles */}
-                <section style={{ marginTop: '40px' }}>
-                    <h3>Recent Updates</h3>
-                    <ul style={{ padding: 0 }}>
-                        {recentUpdates.map((article) => (
-                            <li key={article.newsId || article.title} style={{ borderRadius: '8px', marginBottom: '10px' }}>
-                                {article.newsId ? (
-                                    <Link to={`/news/${article.newsId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                        <strong>{article.title}:</strong> {truncateText(article.content, 120)}
+                {isLoading && (
+                    <div className="news-alert news-alert-info">
+                        Loading news...
+                    </div>
+                )}
+
+                {!isLoading && !error && filteredArticles.length === 0 && (
+                    <div className="news-alert news-alert-info">
+                        No news found.
+                    </div>
+                )}
+
+                {!isLoading && !error && featuredArticle && (
+                    <section className="news-featured-section">
+                        <p className="news-section-tag">Featured</p>
+                        {featuredArticle.newsId ? (
+                            <Link
+                                to={`/news/${featuredArticle.newsId}`}
+                                className="news-featured-card"
+                            >
+                                <h2 className="news-featured-title">{featuredArticle.title}</h2>
+                                <p className="news-featured-text">
+                                    {truncateText(featuredArticle.content, 260)}
+                                </p>
+                                <div className="news-featured-footer">
+                                    <span className="news-chip">Top Story</span>
+                                    <span>{formatRelativeTime(featuredArticle.publishedAt)}</span>
+                                </div>
+                            </Link>
+                        ) : (
+                            <article className="news-featured-card">
+                                <h2 className="news-featured-title">{featuredArticle.title}</h2>
+                                <p className="news-featured-text">
+                                    {truncateText(featuredArticle.content, 260)}
+                                </p>
+                                <div className="news-featured-footer">
+                                    <span className="news-chip">Top Story</span>
+                                    <span>{formatRelativeTime(featuredArticle.publishedAt)}</span>
+                                </div>
+                            </article>
+                        )}
+                    </section>
+                )}
+
+                {!isLoading && !error && trendingArticles.length > 0 && (
+                    <section className="news-trending-section">
+                        <div className="news-section-headline-row">
+                            <h2 className="news-section-title">Trending Stories</h2>
+                        </div>
+                        <div className="news-grid">
+                            {trendingArticles.map((article) => {
+                                const card = (
+                                    <article className="news-card">
+                                        <div className="news-card-head">
+                                            <span className="news-chip">Update</span>
+                                            <span className="news-time">
+                                                {formatRelativeTime(article.publishedAt)}
+                                            </span>
+                                        </div>
+                                        <h3 className="news-card-title">{article.title}</h3>
+                                        <p className="news-card-text">
+                                            {truncateText(article.content, 145)}
+                                        </p>
+                                    </article>
+                                );
+
+                                if (!article.newsId) {
+                                    return (
+                                        <div key={article.title || article.publishedAt}>
+                                            {card}
+                                        </div>
+                                    );
+                                }
+
+                                return (
+                                    <Link
+                                        key={article.newsId}
+                                        to={`/news/${article.newsId}`}
+                                        className="news-card-link"
+                                    >
+                                        {card}
                                     </Link>
-                                ) : (
-                                    <>
-                                        <strong>{article.title}:</strong> {truncateText(article.content, 120)}
-                                    </>
-                                )}
-                            </li>
-                        ))}
-                    </ul>
-                </section>
+                                );
+                            })}
+                        </div>
+                    </section>
+                )}
+
+                {!isLoading && !error && recentUpdates.length > 0 && (
+                    <section className="news-recent-panel">
+                        <h3 className="news-section-title">Recent Updates</h3>
+                        <ul className="news-recent-list">
+                            {recentUpdates.map((article) => (
+                                <li key={article.newsId || article.title} className="news-recent-item">
+                                    {article.newsId ? (
+                                        <Link to={`/news/${article.newsId}`} className="news-recent-link">
+                                            <span className="news-recent-item-title">{article.title}</span>
+                                            <span className="news-recent-item-text">
+                                                {truncateText(article.content, 120)}
+                                            </span>
+                                        </Link>
+                                    ) : (
+                                        <div className="news-recent-link">
+                                            <span className="news-recent-item-title">{article.title}</span>
+                                            <span className="news-recent-item-text">
+                                                {truncateText(article.content, 120)}
+                                            </span>
+                                        </div>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+                )}
             </main>
 
-            {/* Right Sidebar - Re-purposed for Market Quick-View */}
-            <aside className="crypto-right-sidebar">
-                <div className="balance-card">
-                    <p className="balance-title">Market Sentiment</p>
-                    <p className="balance-amount" style={{ color: '#4dff88' }}>Bullish</p>
+            <aside className="crypto-right-sidebar news-right-rail">
+                <div className="news-rail-card">
+                    <p className="news-rail-label">Market Sentiment</p>
+                    <p className="news-rail-value">Bullish</p>
                 </div>
 
-                <div className="exchange-section">
-                    <h4 style={{ marginBottom: '15px' }}>Quick Market</h4>
+                <div className="news-rail-card">
+                    <h4 className="news-rail-heading">Quick Market</h4>
                     <div className="market-list">
                         <div className="market-item">
                             <span className="market-code">BTC</span>
@@ -191,6 +257,14 @@ export default function News() {
                             <span className="rate-down">-1.2%</span>
                         </div>
                     </div>
+                </div>
+
+                <div className="news-rail-card news-rail-note">
+                    <p className="news-rail-label">Digest</p>
+                    <p className="news-rail-text">
+                        Watch for macro headlines this week. Volatility often spikes
+                        around policy announcements.
+                    </p>
                 </div>
             </aside>
         </div>

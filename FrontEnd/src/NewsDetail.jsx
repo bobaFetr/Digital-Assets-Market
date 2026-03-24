@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Sidebar from "./Components/Sidebar";
 import { getToken, request } from "./Services/Service";
+import "./News.css";
 
 export default function NewsDetail() {
     const { id } = useParams();
@@ -49,37 +50,28 @@ export default function NewsDetail() {
     return (
         <div className="crypto-layout">
             <Sidebar />
-            <main className="crypto-main">
-                <header style={{ position: "relative", width: "100%", marginBottom: "32px" }}>
-                    <h1 style={{ color: "#EBA667", textAlign: "left", fontSize: "2.2rem" }}>
-                        News Detail
-                    </h1>
-                    <div style={{ marginTop: "8px" }}>
-                        <Link to="/news" style={{ color: "#7f8cff", textDecoration: "none" }}>
+            <main className="crypto-main news-page-main">
+                <header className="news-hero news-detail-hero">
+                    <div className="news-hero-content">
+                        <p className="news-hero-kicker">Article</p>
+                        <h1 className="news-hero-title">News Detail</h1>
+                        <Link to="/news" className="news-back-link">
                             Back to news
                         </Link>
                     </div>
                 </header>
 
-                {error && <div className="login-alert">{error}</div>}
-                {isLoading && (
-                    <div style={{ color: "#9aa3ff", fontSize: "13px" }}>
-                        Loading news...
-                    </div>
-                )}
+                {error && <div className="login-alert news-alert news-alert-error">{error}</div>}
+                {isLoading && <div className="news-alert news-alert-info">Loading news...</div>}
 
                 {!isLoading && !error && article && (
-                    <article className="chart-container" style={{ padding: "20px" }}>
-                        <div className="coin-header" style={{ marginBottom: "12px" }}>
-                            <span className="reward-label" style={{ color: "#7f8cff" }}>Update</span>
-                            <h2 style={{ marginTop: "6px" }}>{article.title}</h2>
+                    <article className="news-detail-card">
+                        <div className="news-card-head">
+                            <span className="news-chip">Update</span>
+                            <span className="news-time">{formatDate(article.publishedAt)}</span>
                         </div>
-                        <div style={{ color: "rgba(255,255,255,0.7)", fontSize: "14px", marginBottom: "16px" }}>
-                            {formatDate(article.publishedAt)}
-                        </div>
-                        <p style={{ fontSize: "15px", lineHeight: "1.7", color: "rgba(255,255,255,0.75)" }}>
-                            {article.content}
-                        </p>
+                        <h2 className="news-detail-title">{article.title}</h2>
+                        <p className="news-detail-content">{article.content}</p>
                     </article>
                 )}
             </main>
