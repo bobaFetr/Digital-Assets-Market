@@ -13,6 +13,7 @@ internal class Program
     private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        var maintenanceModeEnabled = IsMaintenanceModeEnabled(builder.Configuration);
 
         string? jwtKey = builder.Configuration["Jwt:Key"];
         if (string.IsNullOrWhiteSpace(jwtKey))
@@ -167,6 +168,7 @@ internal class Program
         builder.Services.AddScoped<WalletProvisioningService>();
 
         var app = builder.Build();
+        var maintenancePagePath = Path.Combine(app.Environment.WebRootPath ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot"), "maintenance.html");
 
         using (var scope = app.Services.CreateScope())
         {
@@ -185,6 +187,49 @@ internal class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+
+        app.Use(async (context, next) =>
+        {
+            if (!maintenanceModeEnabled)
+            {
+                await next();
+                return;
+            }
+
+            if (context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase) ||
+                context.Request.Path.StartsWithSegments("/swagger", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+                context.Response.ContentType = "application/json";
+                context.Response.Headers["Cache-Control"] = "no-store, no-cache";
+                context.Response.Headers["Retry-After"] = "3600";
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    message = "The service is temporarily unavailable because maintenance mode is enabled."
+                });
+                return;
+            }
+
+            if (!HttpMethods.IsGet(context.Request.Method) && !HttpMethods.IsHead(context.Request.Method))
+            {
+                context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+                return;
+            }
+
+            if (!File.Exists(maintenancePagePath))
+            {
+                context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+                context.Response.ContentType = "text/plain; charset=utf-8";
+                await context.Response.WriteAsync("Maintenance mode is enabled.");
+                return;
+            }
+
+            context.Response.StatusCode = StatusCodes.Status200OK;
+            context.Response.ContentType = "text/html; charset=utf-8";
+            context.Response.Headers["Cache-Control"] = "no-store, no-cache";
+            context.Response.Headers["X-Robots-Tag"] = "noindex, nofollow";
+            await context.Response.SendFileAsync(maintenancePagePath);
+        });
 
         // app.UseHttpsRedirection();
 
@@ -225,5 +270,28 @@ internal class Program
         app.MapFallbackToFile("index.html");
 
         app.Run();
+    }
+
+    private static bool IsMaintenanceModeEnabled(IConfiguration configuration)
+    {
+        var rawValue =
+            configuration["Maintenance:Enabled"] ??
+            Environment.GetEnvironmentVariable("MAINTENANCE_MODE") ??
+            Environment.GetEnvironmentVariable("MAINTENANCE_ENABLED") ??
+            Environment.GetEnvironmentVariable("ENABLE_MAINTENANCE_PAGE");
+
+        if (string.IsNullOrWhiteSpace(rawValue))
+        {
+            return false;
+        }
+
+        if (bool.TryParse(rawValue, out var enabled))
+        {
+            return enabled;
+        }
+
+        return rawValue.Equals("1", StringComparison.OrdinalIgnoreCase) ||
+               rawValue.Equals("on", StringComparison.OrdinalIgnoreCase) ||
+               rawValue.Equals("yes", StringComparison.OrdinalIgnoreCase);
     }
 }
