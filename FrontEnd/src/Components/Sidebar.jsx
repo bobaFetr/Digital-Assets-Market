@@ -97,17 +97,32 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
   };
 
   const closeMobileSidebar = () => {
-    try {
-      if (typeof document !== 'undefined') document.body.classList.remove('sidebar-open');
-    } catch (_) {}
+    if (typeof document !== 'undefined') {
+      document.body.classList.remove('sidebar-open');
+    }
     if (setMobileOpen) setMobileOpen(false);
   };
 
   return (
     <aside className={`crypto-sidebar ${mobileOpen ? 'mobile-open' : ''}`}>
-      <Link to="/" aria-label="Go to home page" style={{ display: "inline-block", marginBottom: "30px" }}>
-        <img src={logo} alt="Logo" style={{ width: "100%", maxWidth: "150px" }} />
-      </Link>
+      <div className="sidebar-brand-row">
+        <Link
+          to="/"
+          className="sidebar-brand"
+          aria-label="Go to home page"
+          onClick={() => closeMobileSidebar()}
+        >
+          <img className="sidebar-brand-image" src={logo} alt="Logo" />
+        </Link>
+        <button
+          type="button"
+          className="mobile-hamburger sidebar-close-button"
+          aria-label="Close navigation"
+          onClick={() => closeMobileSidebar()}
+        >
+          Close
+        </button>
+      </div>
       <nav className="nav-links">
         {isAdmin && (
           <Link to="/Admin" className="nav-item nav-item-link"
@@ -256,4 +271,3 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
     </aside>
   );
 }
-

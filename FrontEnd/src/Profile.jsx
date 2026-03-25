@@ -80,7 +80,6 @@ export default function Profile() {
     "Linked Accounts",
     "Referral Program",
   ];
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [profile, setProfile] = useState(null);
   const [wallets, setWallets] = useState([]);
   const [usedCurrencies, setUsedCurrencies] = useState([]);
@@ -121,6 +120,23 @@ export default function Profile() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAccountSummaryLoading, setIsAccountSummaryLoading] = useState(true);
   const navigate = useNavigate();
+  const pageBackground = "var(--bg-color)";
+  const panelBackground = "var(--card-bg)";
+  const insetBackground = "var(--surface-inset)";
+  const primaryText = "var(--text-primary)";
+  const secondaryText = "var(--text-secondary)";
+  const accentColor = "var(--brand-accent)";
+  const errorColor = "var(--error-main)";
+  const successColor = "var(--success-main)";
+  const panelShadow = "0 2px 8px rgba(15, 23, 42, 0.08)";
+  const cardBorder = "1px solid var(--glass-border)";
+  const fieldBaseStyle = {
+    padding: "10px",
+    borderRadius: "8px",
+    border: cardBorder,
+    background: panelBackground,
+    color: primaryText,
+  };
 
   const loadAccountSummary = async () => {
     const token = getToken();
@@ -484,47 +500,38 @@ export default function Profile() {
     <div
       style={{
         display: "flex",
-        height: "100vh",
-        background: "#181a20",
-        color: "#fff",
+        minHeight: "100vh",
+        background: pageBackground,
+        color: primaryText,
         fontFamily: "Arial"
       }}
     >
       {/* Sidebar */}
-      <Sidebar mobileOpen={mobileSidebarOpen} setMobileOpen={setMobileSidebarOpen} />
-      {mobileSidebarOpen && <div className="mobile-sidebar-backdrop" onClick={() => setMobileSidebarOpen(false)} />}
+      <Sidebar />
 
 
 
       {/* Main Content */}
-      <div style={{ flex: 1, padding: "20px", overflowY: "auto" }}>
-        <button
-          className="mobile-hamburger"
-          aria-label="Toggle navigation"
-          onClick={() => setMobileSidebarOpen((v) => !v)}
-          style={{ marginBottom: 12 }}
-        >
-          Menu
-        </button>
-        <h2 style={{ color: "#ff7f50" }}>Profile Page</h2>
+      <div style={{ flex: 1, padding: "20px" }}>
+        <h2 style={{ color: accentColor }}>Profile Page</h2>
 
         {/* User Info Section */}
-        <div style={{ background: "#23263a", padding: "20px", borderRadius: "12px", marginTop: "20px", boxShadow: "0 2px 8px 0 #181a20" }}>
+        <div style={{ background: panelBackground, padding: "20px", borderRadius: "12px", marginTop: "20px", boxShadow: panelShadow, border: cardBorder }}>
           <div
             className="Profile_Picture"
             style={{
               width: "100px",
               height: "100px",
               borderRadius: "50%",
-              background: "#181a20",
+              background: insetBackground,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: "32px",
               fontWeight: "bold",
-              color: "#ff7f50",
+              color: accentColor,
               overflow: "hidden",
-              border: "2px solid #ff7f50"
+              border: `2px solid ${accentColor}`
             }}
           >
             {profile?.profilePictureUrl ? (
@@ -550,7 +557,7 @@ export default function Profile() {
                 display: "inline-block",
                 padding: "10px 14px",
                 borderRadius: "8px",
-                background: isUploadingPicture ? "#444" : "#ff7f50",
+                background: isUploadingPicture ? "var(--table-head-bg)" : accentColor,
                 color: "#fff",
                 cursor: isUploadingPicture ? "not-allowed" : "pointer",
                 fontWeight: 600,
@@ -566,22 +573,22 @@ export default function Profile() {
                 style={{ display: "none" }}
               />
             </label>
-            {uploadError && <p style={{ marginTop: "8px", color: "var(--error-main, #ff8d8d)" }}>{uploadError}</p>}
+            {uploadError && <p style={{ marginTop: "8px", color: errorColor }}>{uploadError}</p>}
           </div>
-          <h3 style={{ color: "#ff7f50" }}>User Information</h3>
+          <h3 style={{ color: accentColor }}>User Information</h3>
           {isLoading && <p style={{ marginTop: "10px" }}>Loading profile...</p>}
-          {error && <p style={{ marginTop: "10px", color: "var(--error-main, #ff8d8d)" }}>{error}</p>}
+          {error && <p style={{ marginTop: "10px", color: errorColor }}>{error}</p>}
           {!isLoading && !error && (
             <>
               <p style={{ marginTop: "10px" }}>Username: {profile?.userName || "-"}</p>
               <p style={{ marginTop: "10px" }}>Email: {profile?.email}</p>
               <p>Role: {profile?.role}</p>
               {isAccountSummaryLoading && <p>Account activity: Loading...</p>}
-              {!isAccountSummaryLoading && accountSummaryError && <p style={{ color: "#ff8d8d" }}>Account activity: unavailable</p>}
+              {!isAccountSummaryLoading && accountSummaryError && <p style={{ color: errorColor }}>Account activity: unavailable</p>}
               {!isAccountSummaryLoading && !accountSummaryError && (
                 <>
                   <div style={{ marginTop: "10px" }}>
-                    <strong style={{ color: "#ff7f50" }}>Fiat Account Balances</strong>
+                    <strong style={{ color: accentColor }}>Fiat Account Balances</strong>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px", marginTop: "10px" }}>
                       {["EUR", "USD"].map((currency) => (
                         <div
@@ -589,14 +596,14 @@ export default function Profile() {
                           style={{
                             padding: "14px 16px",
                             borderRadius: "10px",
-                            background: "#181a20",
-                            border: "1px solid rgba(255, 127, 80, 0.25)",
+                            background: insetBackground,
+                            border: cardBorder,
                             display: "grid",
                             gap: "6px"
                           }}
                         >
-                          <span style={{ color: "#bbb", fontSize: "13px" }}>{currency} bank account</span>
-                          <strong style={{ color: "#ff7f50", fontSize: "20px" }}>
+                          <span style={{ color: secondaryText, fontSize: "13px" }}>{currency} bank account</span>
+                          <strong style={{ color: accentColor, fontSize: "20px" }}>
                             {formatBalanceValue(getWalletBalanceByCurrency(wallets, currency))} {currency}
                           </strong>
                         </div>
@@ -604,7 +611,7 @@ export default function Profile() {
                     </div>
                   </div>
                   <div style={{ marginTop: "10px" }}>
-                    <strong style={{ color: "#ff7f50" }}>Currencies used</strong>
+                    <strong style={{ color: accentColor }}>Currencies used</strong>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "10px" }}>
                       {usedCurrencies.length > 0 ? (
                         usedCurrencies.map((currency) => (
@@ -613,9 +620,9 @@ export default function Profile() {
                             style={{
                               padding: "6px 10px",
                               borderRadius: "999px",
-                              background: "#181a20",
-                              border: "1px solid #ff7f50",
-                              color: "#ff7f50",
+                              background: insetBackground,
+                              border: `1px solid ${accentColor}`,
+                              color: accentColor,
                               fontSize: "13px",
                               fontWeight: 600
                             }}
@@ -624,12 +631,12 @@ export default function Profile() {
                           </span>
                         ))
                       ) : (
-                        <span style={{ color: "#bbb" }}>No currencies used yet.</span>
+                        <span style={{ color: secondaryText }}>No currencies used yet.</span>
                       )}
                     </div>
                   </div>
                   <div style={{ marginTop: "14px" }}>
-                    <strong style={{ color: "#ff7f50" }}>Wallet balances</strong>
+                    <strong style={{ color: accentColor }}>Wallet balances</strong>
                     <div style={{ display: "grid", gap: "8px", marginTop: "10px" }}>
                       {wallets.length > 0 ? (
                         wallets.map((wallet) => (
@@ -641,23 +648,23 @@ export default function Profile() {
                               gap: "12px",
                               padding: "10px 12px",
                               borderRadius: "8px",
-                              background: "#181a20",
-                              border: "1px solid rgba(255, 127, 80, 0.18)"
+                              background: insetBackground,
+                              border: cardBorder
                             }}
                           >
                             <span>{wallet.currency}</span>
-                            <strong style={{ color: "#ff7f50" }}>{formatBalanceValue(wallet.balance)}</strong>
+                            <strong style={{ color: accentColor }}>{formatBalanceValue(wallet.balance)}</strong>
                           </div>
                         ))
                       ) : (
-                        <span style={{ color: "#bbb" }}>No wallets available.</span>
+                        <span style={{ color: secondaryText }}>No wallets available.</span>
                       )}
                     </div>
                   </div>
                 </>
               )}
               <div style={{ marginTop: 8 }}>
-                <button onClick={() => navigate('/wallets')} style={{ padding: '8px 12px', borderRadius: 8, background: '#ff7f50', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 600 }} aria-label="manage-wallets">Manage wallets</button>
+                <button onClick={() => navigate('/wallets')} style={{ padding: '8px 12px', borderRadius: 8, background: accentColor, color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 600 }} aria-label="manage-wallets">Manage wallets</button>
               </div>
             </>
           )}
@@ -667,13 +674,7 @@ export default function Profile() {
               placeholder="Change username"
               value={userNameInput}
               onChange={(event) => setUserNameInput(event.target.value)}
-              style={{
-                padding: "10px",
-                borderRadius: "8px",
-                border: "1px solid #ff7f50",
-                background: "#23263a",
-                color: "#fff"
-              }}
+              style={fieldBaseStyle}
             />
             <button
               type="submit"
@@ -682,7 +683,7 @@ export default function Profile() {
                 padding: "10px 14px",
                 borderRadius: "8px",
                 border: "none",
-                background: isUpdatingUserName ? "#444" : "#ff7f50",
+                background: isUpdatingUserName ? "var(--table-head-bg)" : accentColor,
                 color: "#fff",
                 cursor: isUpdatingUserName ? "not-allowed" : "pointer",
                 fontWeight: 600
@@ -690,36 +691,36 @@ export default function Profile() {
             >
               {isUpdatingUserName ? "Updating..." : "Update Username"}
             </button>
-            {userNameError && <p style={{ margin: 0, color: "var(--error-main, #ff8d8d)" }}>{userNameError}</p>}
-            {userNameSuccess && <p style={{ margin: 0, color: "var(--success-main, #7cf29a)" }}>{userNameSuccess}</p>}
+            {userNameError && <p style={{ margin: 0, color: errorColor }}>{userNameError}</p>}
+            {userNameSuccess && <p style={{ margin: 0, color: successColor }}>{userNameSuccess}</p>}
           </form>
           <div className="AddMoney">
             <form onSubmit={handleAddMoney} style={{ display: "grid", gap: "10px", marginTop: "10px", maxWidth: "360px" }}>
-              <h4 style={{ margin: 0, color: "#ff7f50" }}>Add Money from Card</h4>
+              <h4 style={{ margin: 0, color: accentColor }}>Add Money from Card</h4>
               {savedCardForDeposits && (
-                <div style={{ color: "#ff7f50", fontSize: "13px" }}>
+                <div style={{ color: accentColor, fontSize: "13px" }}>
                   Using saved card: {savedCardForDeposits.cardHolderName} **** {savedCardForDeposits.cardLast4}
                 </div>
               )}
 
               {savedCardForDeposits && (
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px", background: "#23263a", borderRadius: "8px", overflow: "hidden", color: "#fff" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px", background: panelBackground, borderRadius: "8px", overflow: "hidden", color: primaryText, border: cardBorder }}>
                   <thead>
-                    <tr style={{ background: "#181a20" }}>
-                      <th style={{ textAlign: "left", padding: "8px", borderBottom: "1px solid #ff7f50" }}>Credit Card ID</th>
-                      <th style={{ textAlign: "left", padding: "8px", borderBottom: "1px solid #ff7f50" }}>Holder</th>
-                      <th style={{ textAlign: "left", padding: "8px", borderBottom: "1px solid #ff7f50" }}>Last 4</th>
-                      <th style={{ textAlign: "left", padding: "8px", borderBottom: "1px solid #ff7f50" }}>Expiry</th>
-                      <th style={{ textAlign: "left", padding: "8px", borderBottom: "1px solid #ff7f50" }}>Currency</th>
+                    <tr style={{ background: "var(--table-head-bg)" }}>
+                      <th style={{ textAlign: "left", padding: "8px", borderBottom: `1px solid ${accentColor}` }}>Credit Card ID</th>
+                      <th style={{ textAlign: "left", padding: "8px", borderBottom: `1px solid ${accentColor}` }}>Holder</th>
+                      <th style={{ textAlign: "left", padding: "8px", borderBottom: `1px solid ${accentColor}` }}>Last 4</th>
+                      <th style={{ textAlign: "left", padding: "8px", borderBottom: `1px solid ${accentColor}` }}>Expiry</th>
+                      <th style={{ textAlign: "left", padding: "8px", borderBottom: `1px solid ${accentColor}` }}>Currency</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <td style={{ padding: "8px", borderBottom: "1px solid #ff7f50" }}>{savedCardForDeposits.creditCardId || savedCardForDeposits.userId}</td>
-                      <td style={{ padding: "8px", borderBottom: "1px solid #ff7f50" }}>{savedCardForDeposits.cardHolderName}</td>
-                      <td style={{ padding: "8px", borderBottom: "1px solid #ff7f50" }}>{savedCardForDeposits.cardLast4}</td>
-                      <td style={{ padding: "8px", borderBottom: "1px solid #ff7f50" }}>{savedCardForDeposits.expiryDate}</td>
-                      <td style={{ padding: "8px", borderBottom: "1px solid #ff7f50" }}>{savedCardForDeposits.currency}</td>
+                      <td style={{ padding: "8px", borderBottom: `1px solid ${accentColor}` }}>{savedCardForDeposits.creditCardId || savedCardForDeposits.userId}</td>
+                      <td style={{ padding: "8px", borderBottom: `1px solid ${accentColor}` }}>{savedCardForDeposits.cardHolderName}</td>
+                      <td style={{ padding: "8px", borderBottom: `1px solid ${accentColor}` }}>{savedCardForDeposits.cardLast4}</td>
+                      <td style={{ padding: "8px", borderBottom: `1px solid ${accentColor}` }}>{savedCardForDeposits.expiryDate}</td>
+                      <td style={{ padding: "8px", borderBottom: `1px solid ${accentColor}` }}>{savedCardForDeposits.currency}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -732,14 +733,14 @@ export default function Profile() {
                     placeholder="Card holder name"
                     value={cardHolderName}
                     onChange={(event) => setCardHolderName(event.target.value)}
-                    style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ff7f50", background: "#23263a", color: "#fff" }}
+                    style={fieldBaseStyle}
                   />
                   <input
                     type="text"
                     placeholder="Card number"
                     value={cardNumber}
                     onChange={(event) => setCardNumber(event.target.value)}
-                    style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ff7f50", background: "#23263a", color: "#fff" }}
+                    style={fieldBaseStyle}
                   />
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                     <input
@@ -747,14 +748,14 @@ export default function Profile() {
                       placeholder="CVV"
                       value={cardCvv}
                       onChange={(event) => setCardCvv(event.target.value)}
-                      style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ff7f50", background: "#23263a", color: "#fff" }}
+                      style={fieldBaseStyle}
                     />
                     <input
                       type="text"
                       placeholder="MM/YY"
                       value={cardExpiry}
                       onChange={(event) => setCardExpiry(event.target.value)}
-                      style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ff7f50", background: "#23263a", color: "#fff" }}
+                      style={fieldBaseStyle}
                     />
                   </div>
                 </>
@@ -768,18 +769,18 @@ export default function Profile() {
                   placeholder="Amount"
                   value={depositAmount}
                   onChange={(event) => setDepositAmount(event.target.value)}
-                  style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ff7f50", background: "#23263a", color: "#fff" }}
+                  style={fieldBaseStyle}
                 />
                 <select
                   value={depositCurrency}
                   onChange={(event) => setDepositCurrency(event.target.value)}
-                  style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ff7f50", background: "#23263a", color: "#fff" }}
+                  style={fieldBaseStyle}
                 >
                   <option value="USD">USD</option>
                   <option value="EUR">EUR</option>
                 </select>
               </div>
-              <p style={{ margin: 0, fontSize: "13px", color: "#bbb" }}>
+              <p style={{ margin: 0, fontSize: "13px", color: secondaryText }}>
                 Deposit the amount into your {depositCurrency} bank account balance.
               </p>
               <button
@@ -789,7 +790,7 @@ export default function Profile() {
                   padding: "10px 14px",
                   borderRadius: "8px",
                   border: "none",
-                  background: isAddingMoney ? "#444" : "#ff7f50",
+                  background: isAddingMoney ? "var(--table-head-bg)" : accentColor,
                   color: "#fff",
                   cursor: isAddingMoney ? "not-allowed" : "pointer",
                   fontWeight: 600
@@ -809,9 +810,9 @@ export default function Profile() {
                   style={{
                     padding: "10px 14px",
                     borderRadius: "8px",
-                    border: "1px solid #ff7f50",
-                    background: "#23263a",
-                    color: "#ff7f50",
+                    border: `1px solid ${accentColor}`,
+                    background: panelBackground,
+                    color: accentColor,
                     cursor: "pointer",
                     fontWeight: 600
                   }}
@@ -819,15 +820,15 @@ export default function Profile() {
                   Use another card
                 </button>
               )}
-              {addMoneyError && <p style={{ margin: 0, color: "var(--error-main, #ff8d8d)" }}>{addMoneyError}</p>}
-              {addMoneySuccess && <p style={{ margin: 0, color: "var(--success-main, #7cf29a)" }}>{addMoneySuccess}</p>}
+              {addMoneyError && <p style={{ margin: 0, color: errorColor }}>{addMoneyError}</p>}
+              {addMoneySuccess && <p style={{ margin: 0, color: successColor }}>{addMoneySuccess}</p>}
             </form>
           </div>
           <div>
             <button onClick={handleDownloadAccountInfo} disabled={isDownloadingInfo} style={{
-              background: "#23263a",
-              color: "#ff7f50",
-              border: "1px solid #ff7f50",
+              background: panelBackground,
+              color: accentColor,
+              border: `1px solid ${accentColor}`,
               borderRadius: "8px",
               padding: "10px 14px",
               fontWeight: 600,
@@ -836,7 +837,7 @@ export default function Profile() {
             }}>
               {isDownloadingInfo ? "Preparing download..." : "Download all your account info"}
             </button>
-            {downloadInfoError && <p style={{ marginTop: "8px", color: "var(--error-main, #ff8d8d)" }}>{downloadInfoError}</p>}
+            {downloadInfoError && <p style={{ marginTop: "8px", color: errorColor }}>{downloadInfoError}</p>}
           </div>
           <div className="DeleteAcccountButton">
             <form onSubmit={handleDeleteAccount} style={{ display: "grid", gap: "10px", marginTop: "10px", maxWidth: "320px" }}>
@@ -845,7 +846,7 @@ export default function Profile() {
                 placeholder="Current password"
                 value={deletePassword}
                 onChange={(event) => setDeletePassword(event.target.value)}
-                style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ff7f50", background: "#23263a", color: "#fff" }}
+                style={fieldBaseStyle}
               />
               {showDeleteBankDetails && (
                 <>
@@ -854,28 +855,28 @@ export default function Profile() {
                     placeholder="Bank account holder name"
                     value={bankAccountHolderName}
                     onChange={(event) => setBankAccountHolderName(event.target.value)}
-                    style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ff7f50", background: "#23263a", color: "#fff" }}
+                    style={fieldBaseStyle}
                   />
                   <input
                     type="text"
                     placeholder="Bank name"
                     value={bankName}
                     onChange={(event) => setBankName(event.target.value)}
-                    style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ff7f50", background: "#23263a", color: "#fff" }}
+                    style={fieldBaseStyle}
                   />
                   <input
                     type="text"
                     placeholder="IBAN"
                     value={bankIban}
                     onChange={(event) => setBankIban(event.target.value)}
-                    style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ff7f50", background: "#23263a", color: "#fff" }}
+                    style={fieldBaseStyle}
                   />
                   <input
                     type="text"
                     placeholder="SWIFT code"
                     value={bankSwiftCode}
                     onChange={(event) => setBankSwiftCode(event.target.value)}
-                    style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ff7f50", background: "#23263a", color: "#fff" }}
+                    style={fieldBaseStyle}
                   />
                 </>
               )}
@@ -883,7 +884,7 @@ export default function Profile() {
                 type="submit"
                 disabled={isDeletingAccount}
                 style={{
-                  background: isDeletingAccount ? "#444" : "#ff4d4d",
+                  background: isDeletingAccount ? "var(--table-head-bg)" : "var(--accent-red)",
                   border: "none",
                   color: "#fff",
                   cursor: isDeletingAccount ? "not-allowed" : "pointer",
@@ -892,7 +893,7 @@ export default function Profile() {
               >
                 {isDeletingAccount ? "Deleting..." : showDeleteBankDetails ? "Confirm and Delete" : "Continue"}
               </button>
-              {deleteError && <p style={{ margin: 0, color: "var(--error-main, #ff8d8d)" }}>{deleteError}</p>}
+              {deleteError && <p style={{ margin: 0, color: errorColor }}>{deleteError}</p>}
             </form>
           </div>
           <button
@@ -900,11 +901,11 @@ export default function Profile() {
               marginTop: "15px",
               padding: "12px",
               borderRadius: "8px",
-              background: "#23263a",
-              border: "1px solid #ff7f50",
+              background: panelBackground,
+              border: `1px solid ${accentColor}`,
               cursor: "pointer",
               marginLeft: "10px",
-              color: "#ff7f50",
+              color: accentColor,
               fontWeight: 600
             }}
             onClick={handleLogout}
@@ -914,44 +915,44 @@ export default function Profile() {
         </div>
 
         {/* Account Options */}
-        <div style={{ background: "#23263a", padding: "20px", borderRadius: "12px", marginTop: "30px", boxShadow: "0 2px 8px 0 #181a20" }}>
-          <h3 style={{ color: "#ff7f50" }}>Account Options</h3>
+        <div style={{ background: panelBackground, padding: "20px", borderRadius: "12px", marginTop: "30px", boxShadow: panelShadow, border: cardBorder }}>
+          <h3 style={{ color: accentColor }}>Account Options</h3>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px", marginTop: "15px" }}>
             {unavailableProfileOptions.slice(0, 2).map((label) => (
-              <button key={label} disabled title="Coming soon" style={{ background: "#23263a", color: "#8f6d5d", border: "1px solid rgba(255, 127, 80, 0.35)", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "not-allowed", opacity: 0.72 }}>{label}</button>
+              <button key={label} disabled title="Coming soon" style={{ background: panelBackground, color: secondaryText, border: cardBorder, borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "not-allowed", opacity: 0.72 }}>{label}</button>
             ))}
-            <button onClick={() => navigate('/VerifyIdentityPage')} style={{ background: "#23263a", color: "#ff7f50", border: "1px solid #ff7f50", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "pointer" }}>Identity Verification (KYC)</button>
+            <button onClick={() => navigate('/VerifyIdentityPage')} style={{ background: panelBackground, color: accentColor, border: `1px solid ${accentColor}`, borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "pointer" }}>Identity Verification (KYC)</button>
             {unavailableProfileOptions.slice(2, 7).map((label) => (
-              <button key={label} disabled title="Coming soon" style={{ background: "#23263a", color: "#8f6d5d", border: "1px solid rgba(255, 127, 80, 0.35)", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "not-allowed", opacity: 0.72 }}>{label}</button>
+              <button key={label} disabled title="Coming soon" style={{ background: panelBackground, color: secondaryText, border: cardBorder, borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "not-allowed", opacity: 0.72 }}>{label}</button>
             ))}
-            <button onClick={() => navigate('/wallets')} style={{ background: "#23263a", color: "#ff7f50", border: "1px solid #ff7f50", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "pointer" }}>Bank Accounts</button>
+            <button onClick={() => navigate('/wallets')} style={{ background: panelBackground, color: accentColor, border: `1px solid ${accentColor}`, borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "pointer" }}>Bank Accounts</button>
             {unavailableProfileOptions.slice(7).map((label) => (
-              <button key={label} disabled title="Coming soon" style={{ background: "#23263a", color: "#8f6d5d", border: "1px solid rgba(255, 127, 80, 0.35)", borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "not-allowed", opacity: 0.72 }}>{label}</button>
+              <button key={label} disabled title="Coming soon" style={{ background: panelBackground, color: secondaryText, border: cardBorder, borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "not-allowed", opacity: 0.72 }}>{label}</button>
             ))}
           </div>
 
           <form onSubmit={handleChangePassword} style={{ marginTop: "20px", display: "grid", gap: "10px", maxWidth: "420px" }}>
-            <h4 style={{ margin: 0, color: "#ff7f50" }}>Change Password</h4>
+            <h4 style={{ margin: 0, color: accentColor }}>Change Password</h4>
             <input
               type="password"
               placeholder="Current password"
               value={currentPassword}
               onChange={(event) => setCurrentPassword(event.target.value)}
-              style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ff7f50", background: "#23263a", color: "#fff" }}
+              style={fieldBaseStyle}
             />
             <input
               type="password"
               placeholder="New password"
               value={newPassword}
               onChange={(event) => setNewPassword(event.target.value)}
-              style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ff7f50", background: "#23263a", color: "#fff" }}
+              style={fieldBaseStyle}
             />
             <input
               type="password"
               placeholder="Confirm new password"
               value={confirmPassword}
               onChange={(event) => setConfirmPassword(event.target.value)}
-              style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ff7f50", background: "#23263a", color: "#fff" }}
+              style={fieldBaseStyle}
             />
             <button
               type="submit"
@@ -960,7 +961,7 @@ export default function Profile() {
                 padding: "10px 14px",
                 borderRadius: "8px",
                 border: "none",
-                background: isChangingPassword ? "#444" : "#ff7f50",
+                background: isChangingPassword ? "var(--table-head-bg)" : accentColor,
                 color: "#fff",
                 cursor: isChangingPassword ? "not-allowed" : "pointer",
                 fontWeight: 600
@@ -968,8 +969,8 @@ export default function Profile() {
             >
               {isChangingPassword ? "Changing..." : "Update Password"}
             </button>
-            {passwordError && <p style={{ margin: 0, color: "#ff8d8d" }}>{passwordError}</p>}
-            {passwordSuccess && <p style={{ margin: 0, color: "#7cf29a" }}>{passwordSuccess}</p>}
+            {passwordError && <p style={{ margin: 0, color: errorColor }}>{passwordError}</p>}
+            {passwordSuccess && <p style={{ margin: 0, color: successColor }}>{passwordSuccess}</p>}
           </form>
         </div>
 

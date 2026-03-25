@@ -3,12 +3,12 @@ import Sidebar from "./Components/Sidebar";
 
 export default function Profile() {
   return (
-    <div style={{ display: "flex", height: "100vh", background: "#0d0f1a", color: "#fff", fontFamily: "Arial" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "#0d0f1a", color: "#fff", fontFamily: "Arial" }}>
       {/* Sidebar */}
       <Sidebar />
 
       {/* Main Content */}
-      <div style={{ flex: 1, padding: "20px", overflowY: "auto" }}>
+      <div style={{ flex: 1, padding: "20px" }}>
         <h2>Profile Page</h2>
 
         {/* User Info */}

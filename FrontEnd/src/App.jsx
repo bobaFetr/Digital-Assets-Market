@@ -58,6 +58,32 @@ const formatUsd = (value) => {
   }).format(value);
 };
 
+const getMobileHeaderTitle = (pathname) => {
+  if (pathname === "/") return "Dashboard";
+  if (pathname.startsWith("/Admin")) return "Admin";
+  if (pathname.startsWith("/profile")) return "Profile";
+  if (pathname.startsWith("/wallets")) return "Wallets";
+  if (pathname.startsWith("/withdraw")) return "Withdraw";
+  if (pathname.startsWith("/buy-sell")) return "Buy & Sell";
+  if (pathname.startsWith("/VerifyIdentityPage")) return "Verify Identity";
+  if (pathname.startsWith("/VerificationEmailPage")) return "Verify Email";
+  if (pathname.startsWith("/SentSMSToNumberPage")) return "SMS Verification";
+  if (pathname.startsWith("/sign-in")) return "Sign In";
+  if (pathname.startsWith("/sign-up")) return "Sign Up";
+  if (pathname.startsWith("/forgot-password")) return "Forgot Password";
+  if (pathname.startsWith("/reset-password")) return "Reset Password";
+  if (pathname.startsWith("/BitcoinChart")) return "BTC Markets";
+  if (pathname.startsWith("/BNBChart")) return "BNB Markets";
+  if (pathname.startsWith("/BCrypto")) return "Markets";
+  if (pathname.startsWith("/news")) return "News";
+  if (pathname.startsWith("/education")) return "Education";
+  if (pathname.startsWith("/faq")) return "FAQ";
+  if (pathname.startsWith("/support")) return "Support";
+  if (pathname.startsWith("/feedback")) return "Feedback";
+  if (pathname.startsWith("/rug-pull")) return "Rug Pull";
+  return "Menu";
+};
+
 function UserBalanceCard() {
   const [balance, setBalance] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -84,9 +110,9 @@ function UserBalanceCard() {
         setLoading(false);
       });
   }, []);
-  if (loading) return <div className="balance-amount" style={{ color: '#fff' }}>Loading...</div>;
-  if (error) return <div className="balance-amount" style={{ color: '#ff8d8d' }}>{error}</div>;
-  return <div className="balance-amount" style={{ color: '#fff' }}>${balance?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>;
+  if (loading) return <div className="balance-amount" style={{ color: 'var(--text-primary)' }}>Loading...</div>;
+  if (error) return <div className="balance-amount" style={{ color: 'var(--error-main)' }}>{error}</div>;
+  return <div className="balance-amount" style={{ color: 'var(--text-primary)' }}>${balance?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>;
 }
 
 function Home({ theme, onToggleTheme }) {
@@ -112,6 +138,18 @@ function Home({ theme, onToggleTheme }) {
   const [selectedCurrency, setSelectedCurrency] = useState(null);
   const [serverInfo, setServerInfo] = useState(null);
   const navigate = useNavigate();
+  const panelBg = "var(--surface-elevated)";
+  const insetBg = "var(--surface-inset)";
+  const textColor = "var(--text-primary)";
+  const mutedTextColor = "var(--text-secondary)";
+  const accentColor = "var(--brand-accent)";
+  const accentStrongColor = "var(--brand-accent-strong)";
+  const accentSoftColor = "var(--brand-accent-soft)";
+  const successColor = "var(--success-main)";
+  const errorColor = "var(--error-main)";
+  const tableHeadBg = "var(--table-head-bg)";
+  const tableRowBg = "var(--table-row-bg)";
+  const tableBorderColor = "var(--table-border)";
 
   useEffect(() => {
     let isMounted = true;
@@ -253,6 +291,7 @@ function Home({ theme, onToggleTheme }) {
       )}
       <div className="crypto-main">
         <div className="top-bar">
+          <div className="top-bar-main">
           <button
             className="mobile-hamburger"
             aria-label="Toggle navigation"
@@ -285,12 +324,16 @@ function Home({ theme, onToggleTheme }) {
               className="top-search-input"
             />
           </div>
-          <button className="theme-toggle-btn" onClick={onToggleTheme} title="Toggle Theme">
+          </div>
+          <div className="top-bar-actions">
+          <button className="theme-toggle-btn theme-toggle-btn--text" onClick={onToggleTheme} title="Toggle Theme">
             {theme === 'dark' ? 'Light Theme' : 'Dark Theme'}
           </button>
-          <div style={{ position: 'relative', display: 'inline-block' }}>
+          <div className="top-notification-wrap">
             <button
-              className="theme-toggle-btn"
+              className="theme-toggle-btn header-icon-button"
+              aria-label="Notifications"
+              aria-expanded={showNotifications}
               title="Notifications"
               onClick={() => setShowNotifications((v) => !v)}
               style={{ position: 'relative' }}
@@ -301,7 +344,7 @@ function Home({ theme, onToggleTheme }) {
                   position: 'absolute',
                   top: 2,
                   right: 2,
-                  background: '#ff7f50',
+                  background: accentColor,
                   color: '#fff',
                   borderRadius: '50%',
                   fontSize: 12,
@@ -311,39 +354,38 @@ function Home({ theme, onToggleTheme }) {
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontWeight: 700,
-                  border: '2px solid #232323',
+                  border: `2px solid ${panelBg}`,
                   zIndex: 2
                 }}>{unreadNews.length}</span>
               )}
             </button>
             {showNotifications && (
-              <div style={{
-                position: 'absolute',
-                right: 0,
-                top: 36,
-                background: '#232323',
-                color: '#fff',
-                borderRadius: 8,
-                boxShadow: '0 2px 8px #181a20',
-                minWidth: 320,
-                zIndex: 1000,
-                padding: 12
-              }}>
-                <div style={{ fontWeight: 700, marginBottom: 8, color: '#ff7f50' }}>Unread News</div>
-                {newsError && <div style={{ color: '#ff4d4d', marginBottom: 8 }}>{newsError}</div>}
-                {unreadNews.length === 0 && <div style={{ color: '#aaa' }}>No new unread news.</div>}
+              <div className="notification-panel">
+                <div className="notification-panel__header">
+                  <div style={{ fontWeight: 700, color: accentColor }}>Unread News</div>
+                  <button
+                    type="button"
+                    className="notification-panel__close"
+                    aria-label="Close notifications"
+                    onClick={() => setShowNotifications(false)}
+                  >
+                    Close
+                  </button>
+                </div>
+                {newsError && <div style={{ color: errorColor, marginBottom: 8 }}>{newsError}</div>}
+                {unreadNews.length === 0 && <div style={{ color: mutedTextColor }}>No new unread news.</div>}
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                   {unreadNews.map((n) => (
-                    <li key={n.newsId} style={{ marginBottom: 8, borderBottom: '1px solid #333', paddingBottom: 6 }}>
+                    <li key={n.newsId} style={{ marginBottom: 8, borderBottom: `1px solid ${tableBorderColor}`, paddingBottom: 6 }}>
                       <a
                         href={`/news/${n.newsId}`}
-                        style={{ color: '#fff', textDecoration: 'none', fontWeight: 600 }}
+                        style={{ color: textColor, textDecoration: 'none', fontWeight: 600 }}
                         onClick={() => handleMarkNewsRead(n.newsId)}
                       >
-                        <span style={{ color: '#ff7f50', marginRight: 6 }}>●</span>
+                        <span style={{ color: accentColor, marginRight: 6 }}>●</span>
                         {n.title}
                       </a>
-                      <div style={{ fontSize: 12, color: '#aaa' }}>{n.publishedAt ? new Date(n.publishedAt).toLocaleString() : ''}</div>
+                      <div style={{ fontSize: 12, color: mutedTextColor }}>{n.publishedAt ? new Date(n.publishedAt).toLocaleString() : ''}</div>
                     </li>
                   ))}
                 </ul>
@@ -362,10 +404,11 @@ function Home({ theme, onToggleTheme }) {
               style={{ width: 48, height: 48, objectFit: 'cover', display: 'block' }}
             />
           </div>
+          </div>
         </div>
         {/* Most Visited Crypto */}
         <div style={{ marginBottom: 20 }}>
-          <h3 style={{ color: '#fff', marginBottom: 12 }}>Most visited crypto</h3>
+          <h3 style={{ color: textColor, marginBottom: 12 }}>Most visited crypto</h3>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             {AVAILABLE_CURRENCIES.slice(0, 3).map((c) => {
               const p = livePrices.find((lp) => lp.code === c.code);
@@ -383,14 +426,14 @@ function Home({ theme, onToggleTheme }) {
                       } else {
                         setServerInfo(null);
                       }
-                    }} style={{ background: '#181818', color: '#fff', padding: 12, borderRadius: 8, minWidth: 140, cursor: 'pointer' }}>
+                    }} style={{ background: insetBg, color: textColor, padding: 12, borderRadius: 8, minWidth: 140, cursor: 'pointer', border: '1px solid var(--glass-border)' }}>
                   <div style={{ fontWeight: 700 }}>{c.code}</div>
-                  <div style={{ fontSize: 12, color: '#aaa' }}>{c.name}</div>
+                  <div style={{ fontSize: 12, color: mutedTextColor }}>{c.name}</div>
                   <div style={{ marginTop: 8, fontSize: 16 }}>{price !== null ? formatUsd(price) : '--'}</div>
                     {c.code === 'BTC' && serverInfo && (
-                      <div style={{ marginTop: 8, fontSize: 12, color: '#cdd6ff' }}>
+                      <div style={{ marginTop: 8, fontSize: 12, color: mutedTextColor }}>
                         {serverInfo.error ? (
-                          <div style={{ color: '#ff8d8d' }}>Error: {serverInfo.error}</div>
+                          <div style={{ color: errorColor }}>Error: {serverInfo.error}</div>
                         ) : (
                           <div>
                             <div>Last: {serverInfo.lastPrice}</div>
@@ -408,34 +451,34 @@ function Home({ theme, onToggleTheme }) {
         </div>
         {/* Dashboard Overview Cards */}
         <div className="cards-grid" style={{ marginBottom: 30 }}>
-          <div className="coin-card" style={{ background: 'linear-gradient(135deg, #ff7f50 0%, #ff4500 100%)', color: '#fff', boxShadow: '0 4px 16px #ff7f50a0' }}>
+          <div className="coin-card" style={{ background: `linear-gradient(135deg, ${accentColor} 0%, ${accentStrongColor} 100%)`, color: '#fff', boxShadow: '0 4px 16px rgba(255, 127, 80, 0.35)' }}>
             <div className="coin-header"><h4 style={{ color: '#fff' }}>My balance</h4></div>
             <UserBalanceCard />
-            <div className="reward-label" style={{ color: '#ffd6b0' }}>+15%</div>
-            <button className="btn-primary" style={{ marginTop: 12, background: '#ff7f50', color: '#fff', border: 'none' }}>See details</button>
+            <div className="reward-label" style={{ color: accentSoftColor }}>+15%</div>
+            <button className="btn-primary" style={{ marginTop: 12, background: accentColor, color: '#fff', border: 'none' }}>See details</button>
           </div>
-          <div className="coin-card" style={{ background: '#232323', color: '#fff', boxShadow: '0 2px 8px #232323a0' }}>
-            <div className="coin-header"><h4 style={{ color: '#fff' }}>Savings account</h4></div>
-            <div className="balance-amount" style={{ color: '#fff' }}>$24,800.45</div>
-            <button className="btn-primary" style={{ marginTop: 12, background: '#232323', color: '#ff7f50', border: '1px solid #ff7f50' }}>View summary</button>
+          <div className="coin-card" style={{ background: panelBg, color: textColor, boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)', border: '1px solid var(--glass-border)' }}>
+            <div className="coin-header"><h4 style={{ color: textColor }}>Savings account</h4></div>
+            <div className="balance-amount" style={{ color: textColor }}>$24,800.45</div>
+            <button className="btn-primary" style={{ marginTop: 12, background: panelBg, color: accentColor, border: `1px solid ${accentColor}` }}>View summary</button>
           </div>
-          <div className="coin-card" style={{ background: '#2d2d2d', color: '#fff', boxShadow: '0 2px 8px #2d2d2da0' }}>
-            <div className="coin-header"><h4 style={{ color: '#fff' }}>Investment portfolio</h4></div>
-            <div className="balance-amount" style={{ color: '#fff' }}>$70,120.78</div>
-            <button className="btn-primary" style={{ marginTop: 12, background: '#2d2d2d', color: '#ff7f50', border: '1px solid #ff7f50' }}>Analyze performance</button>
+          <div className="coin-card" style={{ background: panelBg, color: textColor, boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)', border: '1px solid var(--glass-border)' }}>
+            <div className="coin-header"><h4 style={{ color: textColor }}>Investment portfolio</h4></div>
+            <div className="balance-amount" style={{ color: textColor }}>$70,120.78</div>
+            <button className="btn-primary" style={{ marginTop: 12, background: panelBg, color: accentColor, border: `1px solid ${accentColor}` }}>Analyze performance</button>
           </div>
         </div>
         {/* Wallet Section */}
         <div className="cards-grid" style={{ marginBottom: 30 }}>
-          <div className="coin-card" style={{ gridColumn: 'span 2', background: '#232323', color: '#fff', boxShadow: '0 2px 8px #232323a0' }}>
-            <div className="coin-header"><h4 style={{ color: '#fff' }}>My Wallet</h4></div>
+          <div className="coin-card" style={{ gridColumn: 'span 2', background: panelBg, color: textColor, boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)', border: '1px solid var(--glass-border)' }}>
+            <div className="coin-header"><h4 style={{ color: textColor }}>My Wallet</h4></div>
             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: 12 }}>
-              <div className="currency-box" style={{ background: '#181818', color: '#ff7f50' }}>USD <span style={{ color: '#fff' }}>$24,678.00</span></div>
-              <div className="currency-box" style={{ background: '#181818', color: '#ff7f50' }}>EUR <span style={{ color: '#fff' }}>€28,345.00</span></div>
-              <div className="currency-box" style={{ background: '#181818', color: '#ff7f50' }}>AUD <span style={{ color: '#fff' }}>$20,517.52</span></div>
-              <div className="currency-box" style={{ background: '#181818', color: '#ff7f50' }}>GBP <span style={{ color: '#fff' }}>£25,000.00</span></div>
+              <div className="currency-box" style={{ background: insetBg, color: accentColor, border: '1px solid var(--glass-border)' }}>USD <span style={{ color: textColor }}>$24,678.00</span></div>
+              <div className="currency-box" style={{ background: insetBg, color: accentColor, border: '1px solid var(--glass-border)' }}>EUR <span style={{ color: textColor }}>€28,345.00</span></div>
+              <div className="currency-box" style={{ background: insetBg, color: accentColor, border: '1px solid var(--glass-border)' }}>AUD <span style={{ color: textColor }}>$20,517.52</span></div>
+              <div className="currency-box" style={{ background: insetBg, color: accentColor, border: '1px solid var(--glass-border)' }}>GBP <span style={{ color: textColor }}>£25,000.00</span></div>
             </div>
-            <button className="btn-primary" style={{ marginTop: 12, background: '#ff7f50', color: '#fff', border: 'none' }}>+ Add new</button>
+            <button className="btn-primary" style={{ marginTop: 12, background: accentColor, color: '#fff', border: 'none' }}>+ Add new</button>
           </div>    
         </div>
         {/* Cash Flow Chart */}
@@ -443,44 +486,44 @@ function Home({ theme, onToggleTheme }) {
           <BitcoinChart symbol="BTCUSD" />
         </div>
         {/* Recent Activities Table */}
-        <div className="chart-container" style={{ background: '#232323', color: '#fff', boxShadow: '0 2px 8px #232323a0' }}>
-          <div className="chart-header" style={{ color: '#fff' }}>Recent Activities</div>
+        <div className="chart-container" style={{ background: panelBg, color: textColor, boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)', border: '1px solid var(--glass-border)' }}>
+          <div className="chart-header" style={{ color: textColor }}>Recent Activities</div>
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff', background: '#232323' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', color: textColor, background: tableRowBg }}>
               <thead>
-                <tr style={{ background: '#181818' }}>
-                  <th style={{ padding: '10px 16px', color: '#ff7f50' }}>Activity</th>
-                  <th style={{ padding: '10px 16px', color: '#ff7f50' }}>Order</th>
-                  <th style={{ padding: '10px 16px', color: '#ff7f50' }}>Date</th>
-                  <th style={{ padding: '10px 16px', color: '#ff7f50' }}>Time</th>
-                  <th style={{ padding: '10px 16px', color: '#ff7f50' }}>Amount</th>
-                  <th style={{ padding: '10px 16px', color: '#ff7f50' }}>Status</th>
+                <tr style={{ background: tableHeadBg }}>
+                  <th style={{ padding: '10px 16px', color: accentColor }}>Activity</th>
+                  <th style={{ padding: '10px 16px', color: accentColor }}>Order</th>
+                  <th style={{ padding: '10px 16px', color: accentColor }}>Date</th>
+                  <th style={{ padding: '10px 16px', color: accentColor }}>Time</th>
+                  <th style={{ padding: '10px 16px', color: accentColor }}>Amount</th>
+                  <th style={{ padding: '10px 16px', color: accentColor }}>Status</th>
                 </tr>
               </thead>
               <tbody>
-                <tr style={{ background: '#232323' }}>
+                <tr style={{ background: tableRowBg, borderTop: `1px solid ${tableBorderColor}` }}>
                   <td style={{ padding: '10px 16px' }}>Software License</td>
                   <td style={{ padding: '10px 16px' }}>No.000676</td>
                   <td style={{ padding: '10px 16px' }}>17 Apr, 2026</td>
                   <td style={{ padding: '10px 16px' }}>02:45 PM</td>
                   <td style={{ padding: '10px 16px' }}>$25,500</td>
-                  <td style={{ padding: '10px 16px', color: '#4dff88' }}>Completed</td>
+                  <td style={{ padding: '10px 16px', color: successColor }}>Completed</td>
                 </tr>
-                <tr style={{ background: '#232323' }}>
+                <tr style={{ background: tableRowBg, borderTop: `1px solid ${tableBorderColor}` }}>
                   <td style={{ padding: '10px 16px' }}>Deposit</td>
                   <td style={{ padding: '10px 16px' }}>No.000677</td>
                   <td style={{ padding: '10px 16px' }}>18 Apr, 2026</td>
                   <td style={{ padding: '10px 16px' }}>10:15 AM</td>
                   <td style={{ padding: '10px 16px' }}>$10,000</td>
-                  <td style={{ padding: '10px 16px', color: '#ff7f50' }}>Pending</td>
+                  <td style={{ padding: '10px 16px', color: accentColor }}>Pending</td>
                 </tr>
-                <tr style={{ background: '#232323' }}>
+                <tr style={{ background: tableRowBg, borderTop: `1px solid ${tableBorderColor}` }}>
                   <td style={{ padding: '10px 16px' }}>Withdrawal</td>
                   <td style={{ padding: '10px 16px' }}>No.000678</td>
                   <td style={{ padding: '10px 16px' }}>19 Apr, 2026</td>
                   <td style={{ padding: '10px 16px' }}>04:30 PM</td>
                   <td style={{ padding: '10px 16px' }}>$5,000</td>
-                  <td style={{ padding: '10px 16px', color: '#ff4d4d' }}>Failed</td>
+                  <td style={{ padding: '10px 16px', color: errorColor }}>Failed</td>
                 </tr>
               </tbody>
             </table>
@@ -537,13 +580,16 @@ export default function App() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    if (typeof document === 'undefined') return;
-    if (mobileOpen) {
-      document.body.classList.add('sidebar-open');
-    } else {
-      document.body.classList.remove('sidebar-open');
-    }
+    if (typeof document === "undefined") return undefined;
+    document.body.classList.toggle("sidebar-open", mobileOpen);
+    return () => {
+      document.body.classList.remove("sidebar-open");
+    };
   }, [mobileOpen]);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -570,10 +616,25 @@ export default function App() {
     };
   }, [location.pathname, navigate]);
 
+  const showGlobalMobileHeader = location.pathname !== "/" && !location.pathname.startsWith("/Admin");
+  const mobileHeaderTitle = getMobileHeaderTitle(location.pathname);
+
   return (
     <KycGate>
       <div className={`app-shell ${theme === "light" ? "light-mode" : ""}`}>
         <div className="app-shell-content">
+          {showGlobalMobileHeader && (
+            <div className="global-mobile-header">
+              <button
+                className="mobile-hamburger global-mobile-header__menu"
+                aria-label="Toggle navigation"
+                onClick={() => setMobileOpen((v) => !v)}
+              >
+                ☰
+              </button>
+              <div className="global-mobile-header__title">{mobileHeaderTitle}</div>
+            </div>
+          )}
           <button
             className="mobile-hamburger"
             aria-label="Toggle navigation"
