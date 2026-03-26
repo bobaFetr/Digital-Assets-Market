@@ -1,0 +1,5 @@
+window.__APP_CONFIG__ = {
+  MAINTENANCE_MODE: "false",
+  MAINTENANCE_ENABLED: "",
+  ENABLE_MAINTENANCE_PAGE: ""
+};
