@@ -87,6 +87,10 @@ ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip,
 // 1. Added a default empty array for 'assets' to prevent .map() crashes
 function BCrypto({ assets = [] }) {
   const [log, setLog] = useState([]);
+  const isLightTheme =
+    typeof document !== "undefined" && document.body.classList.contains("light-mode");
+  const chartAxisColor = isLightTheme ? "#475569" : "#94a3b8";
+  const chartGridColor = isLightTheme ? "rgba(148, 163, 184, 0.24)" : "rgba(148, 163, 184, 0.18)";
 
   const handleBuy = () => {
     const latest = assets[assets.length - 1];
@@ -121,11 +125,11 @@ function BCrypto({ assets = [] }) {
   const chartOptions = {
     responsive: true,
     plugins: {
-      legend: { display: true, labels: { color: "#fff" } }
+      legend: { display: true, labels: { color: chartAxisColor } }
     },
     scales: {
-      x: { ticks: { color: "#888" }, grid: { color: "rgba(255,255,255,0.1)" } },
-      y: { ticks: { color: "#888" }, grid: { color: "rgba(255,255,255,0.1)" } }
+      x: { ticks: { color: chartAxisColor }, grid: { color: chartGridColor } },
+      y: { ticks: { color: chartAxisColor }, grid: { color: chartGridColor } }
     }
   };
 
@@ -133,19 +137,20 @@ function BCrypto({ assets = [] }) {
     <div style={{ 
       padding: "50px", 
       textAlign: "center", 
-      color: "#7f8cff", 
-      background: "#0d0f1a", 
+      color: "var(--text-secondary)", 
+      background: "var(--surface-inset)", 
       borderRadius: "12px",
+      border: "1px solid var(--glass-border)",
       margin: "20px" 
     }}>
       <h2>Waiting for Market Data...</h2>
       <p>The chart will appear once crypto prices are received.</p>
     </div>
   ) : (
-    <div style={{ width: "95%", maxWidth: "900px", margin: "20px auto", color: "white" }}>
+    <div style={{ width: "95%", maxWidth: "900px", margin: "20px auto", color: "var(--text-primary)" }}>
       <h2 style={{ marginBottom: "20px" }}>Live Trading: {assets[0]?.symbol || "BCrypto"}</h2>
       
-      <div style={{ background: "#1a1d2e", padding: "20px", borderRadius: "15px" }}>
+      <div style={{ background: "var(--card-bg)", padding: "20px", borderRadius: "15px", border: "1px solid var(--glass-border)", boxShadow: "0 10px 24px rgba(15, 23, 42, 0.08)" }}>
         <Line data={data} options={chartOptions} />
       </div>
 
@@ -166,11 +171,11 @@ function BCrypto({ assets = [] }) {
       </div>
 
       {/* Transaction Log */}
-      <div style={{ marginTop: "30px", background: "#0d0f1a", padding: "15px", borderRadius: "8px", maxHeight: "200px", overflowY: "auto" }}>
-        <h4 style={{ borderBottom: "1px solid #333", paddingBottom: "10px" }}>Recent Activity</h4>
-        {log.length === 0 && <p style={{ color: "#555" }}>No transactions yet.</p>}
+      <div style={{ marginTop: "30px", background: "var(--surface-inset)", padding: "15px", borderRadius: "8px", maxHeight: "200px", overflowY: "auto", border: "1px solid var(--glass-border)" }}>
+        <h4 style={{ borderBottom: "1px solid var(--glass-border)", paddingBottom: "10px" }}>Recent Activity</h4>
+        {log.length === 0 && <p style={{ color: "var(--text-secondary)" }}>No transactions yet.</p>}
         {log.map((entry, idx) => (
-          <div key={idx} style={{ padding: "8px 0", fontSize: "0.9rem", borderBottom: "1px solid #222" }}>
+          <div key={idx} style={{ padding: "8px 0", fontSize: "0.9rem", borderBottom: "1px solid var(--glass-border)" }}>
             {entry}
           </div>
         ))}

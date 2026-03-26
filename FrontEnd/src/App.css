@@ -65,8 +65,9 @@ header button:hover {
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
-  background-color: #EBD7B5;
-  color: #f0f0f0;
+  background: var(--bg-color);
+  color: var(--text-primary);
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 html,

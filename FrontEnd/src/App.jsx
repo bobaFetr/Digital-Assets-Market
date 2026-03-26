@@ -573,6 +573,26 @@ export default function App() {
     }
   }, [theme]);
 
+  useEffect(() => {
+    if (typeof document === "undefined") {
+      return undefined;
+    }
+
+    const rootElement = document.documentElement;
+    const bodyElement = document.body;
+    const isLightTheme = theme === "light";
+
+    rootElement.classList.toggle("light-mode", isLightTheme);
+    bodyElement.classList.toggle("light-mode", isLightTheme);
+    rootElement.style.colorScheme = isLightTheme ? "light" : "dark";
+
+    return () => {
+      rootElement.classList.remove("light-mode");
+      bodyElement.classList.remove("light-mode");
+      rootElement.style.colorScheme = "";
+    };
+  }, [theme]);
+
   const toggleTheme = () => {
     setTheme((prevTheme) => (prevTheme === "dark" ? "light" : "dark"));
   };

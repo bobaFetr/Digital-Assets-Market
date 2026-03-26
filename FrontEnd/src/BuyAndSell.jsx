@@ -68,6 +68,14 @@ export default function BuyAndSell() {
     { name: "Binance Coin", code: "BNB" },
     { name: "Algorand", code: "ALGO" },
   ];
+  const pageBg = "var(--bg-color)";
+  const panelBg = "var(--card-bg)";
+  const insetBg = "var(--surface-inset)";
+  const textColor = "var(--text-primary)";
+  const mutedText = "var(--text-secondary)";
+  const accentColor = "var(--brand-accent)";
+  const borderColor = "var(--glass-border)";
+  const errorColor = "var(--error-main)";
 
   useEffect(() => {
     const action = (searchParams.get("action") || "").toLowerCase();
@@ -365,51 +373,51 @@ export default function BuyAndSell() {
   };
 
   return (
-    <div className="crypto-layout" style={{ background: "#181a20", color: "#fff", minHeight: "100vh" }}>
+    <div className="crypto-layout" style={{ background: pageBg, color: textColor, minHeight: "100vh" }}>
       {/* Sidebar (same style as main page) */}
       <Sidebar />
 
       {/* Main Content */}
-      <div className="crypto-main" style={{ background: "#181a20", color: "#fff", flex: 1, padding: "clamp(12px, 3vw, 24px)" }}>
+      <div className="crypto-main" style={{ background: pageBg, color: textColor, flex: 1, padding: "clamp(12px, 3vw, 24px)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h2 className="chart-header" style={{ color: "#ff7f50" }}>Buy & Sell</h2>
+          <h2 className="chart-header" style={{ color: accentColor }}>Buy & Sell</h2>
           <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-            <div style={{ color: "#ff7f50", display: "flex", gap: 8, alignItems: "center" }}>
+            <div style={{ color: accentColor, display: "flex", gap: 8, alignItems: "center" }}>
               <span>Available:</span>
               <strong>{available == null ? "--" : `${available.toFixed(6)} ${balanceCurrency}`}</strong>
               {isLoadingAvailable ? (
-                <span style={{ fontSize: 12, color: "#fff", opacity: 0.8 }}>Refreshing...</span>
+                <span style={{ fontSize: 12, color: mutedText, opacity: 0.9 }}>Refreshing...</span>
               ) : (
                 <>
-                  <button onClick={loadWallets} style={{ background: "transparent", color: "#ff7f50", border: "1px solid #ff7f50", borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: 12 }}>Refresh</button>
-                  <button onClick={() => setShowWalletsDebug((s) => !s)} style={{ background: "transparent", color: "#fff", border: "1px dashed rgba(255,127,80,0.5)", borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: 12 }}>Show wallets</button>
+                  <button onClick={loadWallets} style={{ background: "transparent", color: accentColor, border: `1px solid ${accentColor}`, borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: 12 }}>Refresh</button>
+                  <button onClick={() => setShowWalletsDebug((s) => !s)} style={{ background: "transparent", color: textColor, border: `1px dashed ${borderColor}`, borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: 12 }}>Show wallets</button>
                 </>
               )}
             </div>
-            <button className="btn-primary" style={{ background: "#ff7f50", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600 }}>Deposit</button>
+            <button className="btn-primary" style={{ background: accentColor, color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600 }}>Deposit</button>
           </div>
         </div>
 
         {showWalletsDebug && (
-          <div style={{ marginTop: 12, background: "#1f2330", padding: 12, borderRadius: 8, color: "#fff" }}>
-            <div style={{ marginBottom: 8, color: "#ff7f50" }}>Debug: raw wallets (from /api/wallets)</div>
+          <div style={{ marginTop: 12, background: panelBg, padding: 12, borderRadius: 8, color: textColor, border: `1px solid ${borderColor}` }}>
+            <div style={{ marginBottom: 8, color: accentColor }}>Debug: raw wallets (from /api/wallets)</div>
             <pre style={{ maxHeight: 220, overflow: "auto", fontSize: 12 }}>{JSON.stringify(rawWallets, null, 2)}</pre>
             <div style={{ marginTop: 8, fontSize: 12 }}>
-              Token: <span style={{ color: getToken() ? "#8fe38f" : "#ff6b6b" }}>{getToken() ? "present" : "missing"}</span>
+              Token: <span style={{ color: getToken() ? "var(--success-main)" : errorColor }}>{getToken() ? "present" : "missing"}</span>
             </div>
           </div>
         )}
 
         <div className="cards-grid" style={{ marginTop: "18px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 18 }}>
           {marketCards.map((coin) => (
-            <div key={coin.code} className="coin-card" style={{ background: "#23263a", borderRadius: 12, padding: 18, boxShadow: "0 2px 8px 0 #181a20", color: "#fff" }}>
+            <div key={coin.code} className="coin-card" style={{ background: panelBg, borderRadius: 12, padding: 18, boxShadow: "0 10px 24px rgba(15, 23, 42, 0.08)", color: textColor, border: `1px solid ${borderColor}` }}>
               <div className="coin-header">
-                <h4 style={{ color: "#ff7f50", margin: 0 }}>{coin.name} ({coin.code})</h4>
+                <h4 style={{ color: accentColor, margin: 0 }}>{coin.name} ({coin.code})</h4>
               </div>
-              <p className="reward-label" style={{ color: "#fff", margin: "8px 0 0 0" }}>Reward Rate</p>
+              <p className="reward-label" style={{ color: mutedText, margin: "8px 0 0 0" }}>Reward Rate</p>
               <h3
                 className={`coin-rate ${coin.rateValue == null || coin.rateValue >= 0 ? "rate-up" : "rate-down"}`}
-                style={{ color: coin.rateValue == null || coin.rateValue >= 0 ? "rgb(255, 127, 80) 0%" : "#ff4d4d", margin: 0 }}
+                style={{ color: coin.rateValue == null || coin.rateValue >= 0 ? accentColor : errorColor, margin: 0 }}
               >
                 {coin.rateText}
               </h3>
@@ -417,20 +425,20 @@ export default function BuyAndSell() {
           ))}
         </div>
 
-        <div className="chart-container" style={{ marginTop: "18px", background: "#23263a", borderRadius: 12, padding: 18, boxShadow: "0 2px 8px 0 #181a20" }}>
-          <h3 className="chart-header" style={{ color: "#ff7f50" }}>Market Chart</h3>
+        <div className="chart-container" style={{ marginTop: "18px", background: panelBg, borderRadius: 12, padding: 18, boxShadow: "0 10px 24px rgba(15, 23, 42, 0.08)", border: `1px solid ${borderColor}` }}>
+          <h3 className="chart-header" style={{ color: accentColor }}>Market Chart</h3>
           <BitcoinChart key={chartSymbol} symbol={chartSymbol} refreshKey={chartRefreshTick} />
         </div>
 
-        <div className="orderbook-section" style={{ marginTop: "18px", background: "#23263a", borderRadius: 12, padding: 18, boxShadow: "0 2px 8px 0 #181a20" }}>
-          <h3 style={{ color: "#ff7f50" }}>Order Book ({pairSymbol})</h3>
+        <div className="orderbook-section" style={{ marginTop: "18px", background: panelBg, borderRadius: 12, padding: 18, boxShadow: "0 10px 24px rgba(15, 23, 42, 0.08)", border: `1px solid ${borderColor}` }}>
+          <h3 style={{ color: accentColor }}>Order Book ({pairSymbol})</h3>
           {orderBookError && (
-            <div style={{ color: "#ff4d4d", fontSize: "13px", marginBottom: "8px" }}>
+            <div style={{ color: errorColor, fontSize: "13px", marginBottom: "8px" }}>
               {orderBookError}
             </div>
           )}
           {!orderBookError && orderBook.length === 0 && (
-            <div style={{ color: "#fff", fontSize: "13px" }}>No order book entries yet.</div>
+            <div style={{ color: mutedText, fontSize: "13px" }}>No order book entries yet.</div>
           )}
           <ul>
             {orderBook.map((entry) => (
@@ -444,17 +452,17 @@ export default function BuyAndSell() {
         </div>
 
         {/* Buy/Sell Exchange Box */}
-        <div className="chart-container" style={{ marginTop: "18px", background: "#23263a", borderRadius: 12, padding: 18, boxShadow: "0 2px 8px 0 #181a20" }}>
+        <div className="chart-container" style={{ marginTop: "18px", background: panelBg, borderRadius: 12, padding: 18, boxShadow: "0 10px 24px rgba(15, 23, 42, 0.08)", border: `1px solid ${borderColor}` }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <h3 className="chart-header" style={{ color: "#ff7f50" }}>Exchange</h3>
+            <h3 className="chart-header" style={{ color: accentColor }}>Exchange</h3>
             <div className="binance-tabs">
               <button
                 className={`binance-tab buy ${orderType === "Buy" ? "active" : ""}`}
                 onClick={() => setOrderType("Buy")}
                 style={{
-                  background: orderType === "Buy" ? "#ff7f50" : "#23263a",
-                  color: orderType === "Buy" ? "#fff" : "#ff7f50",
-                  border: "1px solid #ff7f50",
+                  background: orderType === "Buy" ? accentColor : panelBg,
+                  color: orderType === "Buy" ? "#fff" : accentColor,
+                  border: `1px solid ${accentColor}`,
                   borderRadius: 8,
                   padding: "8px 18px",
                   fontWeight: 600,
@@ -468,9 +476,9 @@ export default function BuyAndSell() {
                 className={`binance-tab sell ${orderType === "Sell" ? "active" : ""}`}
                 onClick={() => setOrderType("Sell")}
                 style={{
-                  background: orderType === "Sell" ? "#ff7f50" : "#23263a",
-                  color: orderType === "Sell" ? "#fff" : "#ff7f50",
-                  border: "1px solid #ff7f50",
+                  background: orderType === "Sell" ? accentColor : panelBg,
+                  color: orderType === "Sell" ? "#fff" : accentColor,
+                  border: `1px solid ${accentColor}`,
                   borderRadius: 8,
                   padding: "8px 18px",
                   fontWeight: 600,
@@ -483,16 +491,16 @@ export default function BuyAndSell() {
           </div>
           <div
             className="binance-panel"
-            style={{ background: "#181a20", padding: "18px", borderRadius: "10px" }}
+            style={{ background: insetBg, padding: "18px", borderRadius: "10px", border: `1px solid ${borderColor}` }}
           >
             <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
               <button
                 className={`binance-tab ${orderKind === "Market" ? "active" : ""}`}
                 onClick={() => setOrderKind("Market")}
                 style={{
-                  background: orderKind === "Market" ? "#ff7f50" : "#181a20",
-                  color: orderKind === "Market" ? "#fff" : "#ff7f50",
-                  border: "1px solid #ff7f50",
+                  background: orderKind === "Market" ? accentColor : insetBg,
+                  color: orderKind === "Market" ? "#fff" : accentColor,
+                  border: `1px solid ${accentColor}`,
                   borderRadius: 8,
                   padding: "8px 18px",
                   fontWeight: 600,
@@ -506,9 +514,9 @@ export default function BuyAndSell() {
                 className={`binance-tab ${orderKind === "Limit" ? "active" : ""}`}
                 onClick={() => setOrderKind("Limit")}
                 style={{
-                  background: orderKind === "Limit" ? "#ff7f50" : "#181a20",
-                  color: orderKind === "Limit" ? "#fff" : "#ff7f50",
-                  border: "1px solid #ff7f50",
+                  background: orderKind === "Limit" ? accentColor : insetBg,
+                  color: orderKind === "Limit" ? "#fff" : accentColor,
+                  border: `1px solid ${accentColor}`,
                   borderRadius: 8,
                   padding: "8px 18px",
                   fontWeight: 600,
@@ -522,7 +530,7 @@ export default function BuyAndSell() {
               <label style={{ minWidth: "80px" }}>
                 {orderType === "Buy" ? "Buy Coin" : "Sell Coin"}
               </label>
-              <select value={fromCurrency} onChange={(e) => setFromCurrency(e.target.value)} style={{ background: "#23263a", color: "#fff", border: "1px solid #ff7f50", borderRadius: 8, padding: "6px 10px" }}>
+              <select value={fromCurrency} onChange={(e) => setFromCurrency(e.target.value)} style={{ background: panelBg, color: textColor, border: `1px solid ${accentColor}`, borderRadius: 8, padding: "6px 10px" }}>
                 <option>BTC</option>
                 <option>ETH</option>
                 <option>BNB</option>
@@ -539,7 +547,7 @@ export default function BuyAndSell() {
                   }
                 }}
                 placeholder={orderType === "Buy" ? "Amount to buy (coin)" : "Amount to sell (coin)"}
-                style={{ flex: 1, background: "#23263a", color: "#fff", border: "1px solid #ff7f50", borderRadius: 8, padding: "6px 10px" }}
+                style={{ flex: 1, background: panelBg, color: textColor, border: `1px solid ${accentColor}`, borderRadius: 8, padding: "6px 10px" }}
               />
             </div>
 
@@ -562,7 +570,7 @@ export default function BuyAndSell() {
                     }
                   }}
                   placeholder={`Price in ${toCurrency}`}
-                  style={{ flex: 1, background: "#23263a", color: "#fff", border: "1px solid #ff7f50", borderRadius: 8, padding: "6px 10px" }}
+                  style={{ flex: 1, background: panelBg, color: textColor, border: `1px solid ${accentColor}`, borderRadius: 8, padding: "6px 10px" }}
                 />
               </div>
             )}
@@ -571,7 +579,7 @@ export default function BuyAndSell() {
               <label style={{ minWidth: "80px" }}>
                 {orderType === "Buy" ? "Total Cost" : "Total Value"}
               </label>
-              <select value={toCurrency} onChange={(e) => setToCurrency(e.target.value)} style={{ width: "120px", background: "#23263a", color: "#fff", border: "1px solid #ff7f50", borderRadius: 8, padding: "6px 10px" }}>
+              <select value={toCurrency} onChange={(e) => setToCurrency(e.target.value)} style={{ width: "120px", background: panelBg, color: textColor, border: `1px solid ${accentColor}`, borderRadius: 8, padding: "6px 10px" }}>
                 <option>USD</option>
                 <option>EUR</option>
               </select>
@@ -591,19 +599,19 @@ export default function BuyAndSell() {
                       ? `How much to spend (${toCurrency})`
                       : `Estimated proceeds (${toCurrency})`
                   }
-                  style={{ width: "100%", background: "#23263a", color: "#fff", border: "1px solid #ff7f50", borderRadius: 8, padding: "6px 10px" }}
+                  style={{ width: "100%", background: panelBg, color: textColor, border: `1px solid ${accentColor}`, borderRadius: 8, padding: "6px 10px" }}
                 />
               </div>
             </div>
 
             {statusMessage && (
-              <div style={{ marginTop: "12px", color: "#ff7f50" }}>
+              <div style={{ marginTop: "12px", color: accentColor }}>
                 {statusMessage}
               </div>
             )}
 
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "16px" }}>
-              <button className="btn-primary" onClick={handleConfirmExchange} disabled={isSubmitting} style={{ background: "#ff7f50", color: "#fff", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 600, cursor: isSubmitting ? "not-allowed" : "pointer" }}>
+              <button className="btn-primary" onClick={handleConfirmExchange} disabled={isSubmitting} style={{ background: accentColor, color: "#fff", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 600, cursor: isSubmitting ? "not-allowed" : "pointer" }}>
                 {isSubmitting ? "Submitting..." : "Confirm Exchange"}
               </button>
             </div>

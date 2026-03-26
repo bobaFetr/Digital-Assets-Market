@@ -182,6 +182,86 @@
     text-decoration: none;
   }
 
+  .light-mode .login-shell {
+    background: linear-gradient(180deg, #eef4fb 0%, #f8fafc 100%);
+    color: #0f172a;
+  }
+
+  .light-mode .login-hero {
+    background: radial-gradient(circle at top left, #dbeafe, #eff6ff 55%, #f8fafc 100%);
+    color: #0f172a;
+  }
+
+  .light-mode .hero-content p {
+    color: #334155;
+  }
+
+  .light-mode .hero-content ul {
+    color: #2563eb;
+  }
+
+  .light-mode .login-panel {
+    background: transparent;
+  }
+
+  .light-mode .login-card {
+    background: rgba(255, 255, 255, 0.94);
+    color: #0f172a;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+  }
+
+  .light-mode .subtext,
+  .light-mode .remember,
+  .light-mode .signup-text {
+    color: #475569;
+  }
+
+  .light-mode .login-alert {
+    background: rgba(254, 226, 226, 0.9);
+    color: #b91c1c;
+    border-color: rgba(239, 68, 68, 0.25);
+  }
+
+  .light-mode .login-form label {
+    color: #334155;
+  }
+
+  .light-mode .login-form input[type="email"],
+  .light-mode .login-form input[type="password"] {
+    border-color: #cbd5e1;
+    background: #ffffff;
+    color: #0f172a;
+  }
+
+  .light-mode .login-form input[type="email"]::placeholder,
+  .light-mode .login-form input[type="password"]::placeholder {
+    color: #94a3b8;
+  }
+
+  .light-mode .login-divider {
+    color: #64748b;
+  }
+
+  .light-mode .login-divider span {
+    background: rgba(255, 255, 255, 0.94);
+  }
+
+  .light-mode .login-divider::before {
+    background: #dbe2ea;
+  }
+
+  .light-mode .social-buttons button {
+    border-color: #dbe2ea;
+    background: #f8fafc;
+    color: #334155;
+  }
+
+  .light-mode .signup-text a,
+  .light-mode .link-button {
+    color: #2563eb;
+  }
+
   @media (max-width: 860px) {
     .login-shell {
       flex-direction: column;

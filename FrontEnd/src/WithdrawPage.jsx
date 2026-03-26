@@ -3,6 +3,21 @@ import Sidebar from "./Components/Sidebar";
 
 export default function WithDraw() {
     const [selectedCoin, setSelectedCoin] = useState("BTC");
+    const fieldStyle = {
+        width: "100%",
+        padding: "16px",
+        borderRadius: "12px",
+        background: "var(--card-bg)",
+        color: "var(--input-text)",
+        border: "1px solid var(--glass-border)",
+        fontSize: "16px",
+        outline: "none",
+    };
+    const labelStyle = {
+        marginBottom: "10px",
+        color: "var(--text-secondary)",
+        fontSize: "14px",
+    };
 
     return (
         <div className="crypto-layout">
@@ -17,17 +32,7 @@ export default function WithDraw() {
                     <h3 className="chart-header">Select Cryptocurrency</h3>
                     <div style={{ marginBottom: "20px" }}>
                         <select
-                            style={{
-                                width: "100%",
-                                padding: "16px",
-                                borderRadius: "12px",
-                                background: "#1a1d2e",
-                                color: "white",
-                                border: "1px solid rgba(127, 140, 255, 0.1)",
-                                fontSize: "16px",
-                                outline: "none",
-                                cursor: "pointer"
-                            }}
+                            style={{ ...fieldStyle, cursor: "pointer" }}
                             value={selectedCoin}
                             onChange={(e) => setSelectedCoin(e.target.value)}
                         >
@@ -39,36 +44,18 @@ export default function WithDraw() {
                         </select>
                     </div>
 
-                    <p style={{ marginBottom: "10px", color: "#7f8cff", fontSize: "14px" }}>Destination Address</p>
+                    <p style={labelStyle}>Destination Address</p>
                     <input
                         type="text"
                         placeholder="Enter wallet address"
-                        style={{
-                            width: "100%",
-                            padding: "16px",
-                            borderRadius: "12px",
-                            background: "#0d0f1a",
-                            color: "white",
-                            border: "1px solid rgba(127, 140, 255, 0.1)",
-                            marginBottom: "20px",
-                            fontSize: "16px"
-                        }}
+                        style={{ ...fieldStyle, marginBottom: "20px" }}
                     />
 
-                    <p style={{ marginBottom: "10px", color: "#7f8cff", fontSize: "14px" }}>Amount</p>
+                    <p style={labelStyle}>Amount</p>
                     <input
                         type="number"
                         placeholder="0.00"
-                        style={{
-                            width: "100%",
-                            padding: "16px",
-                            borderRadius: "12px",
-                            background: "#0d0f1a",
-                            color: "white",
-                            border: "1px solid rgba(127, 140, 255, 0.1)",
-                            marginBottom: "30px",
-                            fontSize: "16px"
-                        }}
+                        style={{ ...fieldStyle, marginBottom: "30px" }}
                     />
 
                     <button className="btn-primary" style={{ fontSize: "16px", padding: "16px" }}>
