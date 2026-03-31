@@ -8,6 +8,7 @@
     "dev:api": "dotnet run --project ../BackEnd/MyWebApi",
     "dev:full": "concurrently -k -n api,web -c blue,green \"npm run dev:api\" \"npm run dev\"",
     "serve:server": "node src/Server/server.js",
+    "serve:crypto-server": "node src/Js/CryptoServer.js",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

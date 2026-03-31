@@ -25,6 +25,23 @@ namespace NetServer.Data.Seeding.Constants
             //public  CreatedAt = 
         }
 
+
+
+        //ADMIN Credentials
+        public static class AdminConstants
+        {
+            //public const string User1Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
+            public static readonly Guid User1Id =
+    Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
+
+            public const string Username1 = "neWadmin";
+            public const string Email = "newadmin@example.com";
+            public const string Password = "NewAdmin123789!";
+            public static readonly DateTime CreatedAt1 = new DateTime(2025, 11, 28, 0, 0, 0, DateTimeKind.Utc);
+            public const User.StatusBit Status1 = User.StatusBit.Active;
+            public const bool IsBanned1 = false;
+            //public  CreatedAt = 
+        }
         
         //2
         public static class WalletConstants

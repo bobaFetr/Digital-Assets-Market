@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NetServer.Data;
 using NetServer.Data.Models;
 
@@ -55,5 +56,10 @@ internal static class ControllerTestHelpers
             Status = User.StatusBit.Active,
             IsBanned = false
         };
+    }
+
+    public static ILogger<T> CreateLogger<T>()
+    {
+        return LoggerFactory.Create(builder => { }).CreateLogger<T>();
     }
 }

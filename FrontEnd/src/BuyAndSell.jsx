@@ -38,7 +38,7 @@ export default function BuyAndSell() {
   const [limitPrice, setLimitPrice] = useState("");
   const [isLimitPriceTouched, setIsLimitPriceTouched] = useState(false);
   const [chartRefreshTick, setChartRefreshTick] = useState(0);
-  const [orderBook, setOrderBook] = useState([]);
+  const [orderBook, setOrderBook] = useState({ bids: [], asks: [] });
   const [orderBookError, setOrderBookError] = useState("");
   const [marketCards, setMarketCards] = useState([]);
 
@@ -115,9 +115,11 @@ export default function BuyAndSell() {
       console.debug("/api/wallets response:", data);
       const list = Array.isArray(data) ? data : [];
       setRawWallets(list);
-
-      const total = list.reduce((sum, wallet) => sum + Number(wallet.balance || 0), 0);
-      setAvailable(total);
+      const normalizedBalanceCurrency = String(balanceCurrency || "").toUpperCase();
+      const selectedWallet = list.find(
+        (wallet) => String(wallet.currency || "").toUpperCase() === normalizedBalanceCurrency
+      );
+      setAvailable(selectedWallet ? Number(selectedWallet.balance || 0) : 0);
     } catch (error) {
       console.error("Error loading wallets:", error);
       setAvailable(null);
@@ -154,38 +156,22 @@ export default function BuyAndSell() {
 
   useEffect(() => {
     const loadQuote = async () => {
-      const token = getToken();
-      if (!token) {
-        return;
-      }
-
       try {
-        const data = await request(`/api/trades?symbol=${mappedSymbol}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!Array.isArray(data) || !data.length) {
+        const data = await request(`/api/market/ticker?symbol=${mappedSymbol}`);
+        if (!data?.lastPrice) {
           return;
         }
 
-        const sorted = [...data].sort(
-          (a, b) => new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime()
-        );
-        const latest = sorted[sorted.length - 1];
-        if (latest?.price) {
-          setQuoteRate(Number(latest.price));
-          if (orderKind === "Limit" && !isLimitPriceTouched && !limitPrice) {
-            setLimitPrice(String(latest.price));
-          }
-          const nextRate =
-            orderKind === "Limit" && Number(limitPrice) > 0 ? Number(limitPrice) : Number(latest.price);
-          if (lastEdited === "crypto") {
-            setAmountQuote(Number(amountCrypto) * Number(nextRate));
-          } else if (Number(nextRate) > 0) {
-            setAmountCrypto(Number(amountQuote) / Number(nextRate));
-          }
+        setQuoteRate(Number(data.lastPrice));
+        if (orderKind === "Limit" && !isLimitPriceTouched && !limitPrice) {
+          setLimitPrice(String(data.lastPrice));
+        }
+        const nextRate =
+          orderKind === "Limit" && Number(limitPrice) > 0 ? Number(limitPrice) : Number(data.lastPrice);
+        if (lastEdited === "crypto") {
+          setAmountQuote(Number(amountCrypto) * Number(nextRate));
+        } else if (Number(nextRate) > 0) {
+          setAmountCrypto(Number(amountQuote) / Number(nextRate));
         }
       } catch (error) {
         console.error("Error loading quote:", error);
@@ -221,26 +207,23 @@ export default function BuyAndSell() {
 
   useEffect(() => {
     const loadOrderBook = async () => {
-      const token = getToken();
-      if (!token) {
-        setOrderBook([]);
+      if (!mappedSymbol) {
+        setOrderBook({ bids: [], asks: [] });
         setOrderBookError("");
         return;
       }
 
       try {
         setOrderBookError("");
-        const data = await request(`/api/orderbook?symbol=${mappedSymbol}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const data = await request(`/api/market/depth?symbol=${mappedSymbol}&limit=12`);
+        setOrderBook({
+          bids: Array.isArray(data?.bids) ? data.bids : [],
+          asks: Array.isArray(data?.asks) ? data.asks : [],
         });
-
-        const sorted = Array.isArray(data) ? [...data].sort((a, b) => Number(b.price) - Number(a.price)) : [];
-        setOrderBook(sorted.slice(0, 12));
       } catch (error) {
         console.error("Error loading order book:", error);
         setOrderBookError(error?.message || "Failed to load order book.");
+        setOrderBook({ bids: [], asks: [] });
       }
     };
 
@@ -249,12 +232,6 @@ export default function BuyAndSell() {
 
   useEffect(() => {
     const loadMarketCards = async () => {
-      const token = getToken();
-      if (!token) {
-        setMarketCards(cardCoins.map((coin) => ({ ...coin, rateText: "--", rateValue: null })));
-        return;
-      }
-
       try {
         const results = await Promise.all(
           cardCoins.map(async (coin) => {
@@ -263,27 +240,11 @@ export default function BuyAndSell() {
               return { ...coin, rateText: "--", rateValue: null };
             }
 
-            const data = await request(`/api/trades?symbol=${symbol}`, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-
-            if (!Array.isArray(data) || data.length < 2) {
+            const data = await request(`/api/market/ticker?symbol=${symbol}`);
+            if (data?.priceChangePercent == null) {
               return { ...coin, rateText: "--", rateValue: null };
             }
-
-            const sorted = [...data].sort(
-              (a, b) => new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime()
-            );
-            const latest = Number(sorted[sorted.length - 1]?.price);
-            const previous = Number(sorted[sorted.length - 2]?.price);
-
-            if (!previous || !latest) {
-              return { ...coin, rateText: "--", rateValue: null };
-            }
-
-            const changePct = ((latest - previous) / previous) * 100;
+            const changePct = Number(data.priceChangePercent);
             const sign = changePct >= 0 ? "+" : "";
             return {
               ...coin,
@@ -318,8 +279,9 @@ export default function BuyAndSell() {
     }
 
     if (orderKind === "Market") {
-      const relevantEntries = (orderBook || []).filter((entry) => Number(entry.price) > 0);
-      const liquidityAmount = relevantEntries.reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
+      const depthSide = orderType === "Buy" ? orderBook.asks : orderBook.bids;
+      const relevantEntries = (depthSide || []).filter((entry) => Number(entry.price) > 0);
+      const liquidityAmount = relevantEntries.reduce((sum, entry) => sum + Number(entry.quantity || 0), 0);
 
       if (!relevantEntries.length) {
         setStatusMessage("No market liquidity right now. Switch to Limit to place an order.");
@@ -437,18 +399,35 @@ export default function BuyAndSell() {
               {orderBookError}
             </div>
           )}
-          {!orderBookError && orderBook.length === 0 && (
-            <div style={{ color: mutedText, fontSize: "13px" }}>No order book entries yet.</div>
+          {!orderBookError && orderBook.asks.length === 0 && orderBook.bids.length === 0 && (
+            <div style={{ color: mutedText, fontSize: "13px" }}>No market depth available yet.</div>
           )}
-          <ul>
-            {orderBook.map((entry) => (
-              <li key={entry.orderBookId} style={{ display: "flex", justifyContent: "space-between" }}>
-                <span>{Number(entry.price).toFixed(4)}</span>
-                <span>{Number(entry.amount).toFixed(4)}</span>
-                <span>{new Date(entry.timestamp).toLocaleTimeString()}</span>
-              </li>
-            ))}
-          </ul>
+          {orderBook.asks.length > 0 && (
+            <>
+              <div style={{ color: errorColor, fontWeight: 600, marginTop: 10, marginBottom: 6 }}>Asks</div>
+              <ul>
+                {orderBook.asks.map((entry, index) => (
+                  <li key={`ask-${index}`} style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span>{Number(entry.price).toFixed(4)}</span>
+                    <span>{Number(entry.quantity).toFixed(4)}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+          {orderBook.bids.length > 0 && (
+            <>
+              <div style={{ color: accentColor, fontWeight: 600, marginTop: 10, marginBottom: 6 }}>Bids</div>
+              <ul>
+                {orderBook.bids.map((entry, index) => (
+                  <li key={`bid-${index}`} style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span>{Number(entry.price).toFixed(4)}</span>
+                    <span>{Number(entry.quantity).toFixed(4)}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </div>
 
         {/* Buy/Sell Exchange Box */}

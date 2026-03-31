@@ -164,8 +164,22 @@ internal class Program
         builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
 
+        var marketDataBaseUrl = builder.Configuration["MarketData:BinanceBaseUrl"];
+        if (string.IsNullOrWhiteSpace(marketDataBaseUrl))
+        {
+            marketDataBaseUrl = "https://api.binance.com";
+        }
+
+        builder.Services.AddHttpClient<IMarketDataService, BinanceMarketDataService>(client =>
+        {
+            client.BaseAddress = new Uri(marketDataBaseUrl);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("DAM-PaperTrading/1.0");
+        });
+
         builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
         builder.Services.AddScoped<WalletProvisioningService>();
+        builder.Services.AddScoped<PaperTradingService>();
+        builder.Services.AddHostedService<PaperTradingSettlementService>();
 
         var app = builder.Build();
         var maintenancePagePath = Path.Combine(app.Environment.WebRootPath ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot"), "maintenance.html");

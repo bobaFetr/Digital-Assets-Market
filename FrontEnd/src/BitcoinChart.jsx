@@ -14,7 +14,7 @@ import {
   Filler,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { getToken, request } from './Services/Service';
+import { request } from './Services/Service';
 
 // ✅ Register required components
 ChartJS.register(
@@ -27,14 +27,6 @@ ChartJS.register(
   Legend,
   Filler
 );
-
-// API base is provided by Services/Service via centralized config
-const COIN_GECKO_ID_BY_BASE = {
-  BTC: "bitcoin",
-  ETH: "ethereum",
-  BNB: "binancecoin",
-  ALGO: "algorand",
-};
 
 const parseSymbol = (symbol) => {
   if (typeof symbol !== "string" || symbol.length < 6) {
@@ -94,75 +86,15 @@ function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
     });
   };
 
-  const fetchExternalSeries = async () => {
-    const coinId = COIN_GECKO_ID_BY_BASE[base];
-    const vsCurrency = quote?.toLowerCase() === "eur" ? "eur" : "usd";
-
-    if (!coinId) {
-      return false;
-    }
-
-    try {
-      const data = await request(
-        `/api/external/coingecko/${coinId}/market_chart?vs_currency=${encodeURIComponent(vsCurrency)}&days=1&interval=hourly`
-      );
-
-      const points = (data?.prices ?? []).map(([time, price]) => ({ time, price }));
-      if (!points.length) {
-        return false;
-      }
-
-      applySeries(points, "market");
-      return true;
-    } catch (err) {
-      console.warn(`CoinGecko proxy failed for ${coinId}:`, err?.message || err);
-      return false;
-    }
-  };
-
   const fetchData = async () => {
     try {
-      const loadedExternal = await fetchExternalSeries();
-      if (loadedExternal) {
-        return;
-      }
-
-      const token = getToken();
-      if (!token) {
-        setMeta({ count: 0, lastPrice: null, lastTime: null });
-        setChartData({ labels: [], datasets: [] });
-        return;
-      }
-
-      const trades = await request(`/api/trades?symbol=${encodeURIComponent(symbol)}`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const sortedTrades = [...(trades || [])].sort(
-        (a, b) => new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime()
-      );
-      const tradePoints = sortedTrades
-        .map((item) => ({ time: item.timeStamp, price: item.price }))
+      const candles = await request(`/api/market/klines?symbol=${encodeURIComponent(symbol)}&interval=1m&limit=120`);
+      const candlePoints = (candles ?? [])
+        .map((item) => ({ time: item.closeTimeUtc, price: item.close }))
         .filter((item) => item.time != null && item.price != null);
 
-      if (tradePoints.length > 0) {
-        applySeries(tradePoints, "platform-trades");
-        return;
-      }
-
-      const orderBook = await request(`/api/orderbook?symbol=${encodeURIComponent(symbol)}`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const orderBookPoints = (orderBook ?? [])
-        .map((item) => ({ time: item.timestamp, price: item.price }))
-        .filter((item) => item.time != null && item.price != null)
-        .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
-
-      if (orderBookPoints.length > 0) {
-        applySeries(orderBookPoints, "platform-orderbook");
+      if (candlePoints.length > 0) {
+        applySeries(candlePoints, "real-market");
         return;
       }
 

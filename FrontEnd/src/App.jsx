@@ -8,6 +8,7 @@ import Wallet from "./Wallet";
 import WithDraw from "./WithdrawPage.jsx";
 import BuyAndSell from "./BuyAndSell";
 import BCrypto from "./BCrypto.jsx";
+import CryptoServerAssetPage from "./CryptoServerAssetPage";
 import VerifyIdentityPage from "./VerifyIdentityPage";
 import { AUTH_BLOCKED_EVENT, getKycStatus, getToken, request, getProfile } from "./Services/Service";
 import { buildUrl } from "./config/api";
@@ -75,6 +76,8 @@ const getMobileHeaderTitle = (pathname) => {
   if (pathname.startsWith("/BitcoinChart")) return "BTC Markets";
   if (pathname.startsWith("/BNBChart")) return "BNB Markets";
   if (pathname.startsWith("/BCrypto")) return "Markets";
+  if (pathname.startsWith("/real-currencies/btcusdt")) return "BTCUSDT";
+  if (pathname.startsWith("/real-currencies/bchusdt")) return "BCHUSDT";
   if (pathname.startsWith("/news")) return "News";
   if (pathname.startsWith("/education")) return "Education";
   if (pathname.startsWith("/faq")) return "FAQ";
@@ -681,6 +684,30 @@ export default function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/BitcoinChart" element={<BitcoinChartPage />} />
           <Route path="/BNBChart" element={<BNBChartPage />} />
+          <Route
+            path="/real-currencies/btcusdt"
+            element={
+              <CryptoServerAssetPage
+                title="BTCUSDT"
+                symbol="BTCUSDT"
+                pricePath="/api/bitcoin"
+                historyPath="/api/bitcoin/history"
+                ordersPath="/api/bitcoin/orders"
+              />
+            }
+          />
+          <Route
+            path="/real-currencies/bchusdt"
+            element={
+              <CryptoServerAssetPage
+                title="BCHUSDT"
+                symbol="BCHUSDT"
+                pricePath="/api/bitcoincash"
+                historyPath="/api/bitcoincash/history"
+                ordersPath="/api/bitcoincash/orders"
+              />
+            }
+          />
 
           <Route path="/Admin/*" element={<Admin mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />} />
           <Route path="/BCrypto" element={<BCrypto assets={[]} />} />

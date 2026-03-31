@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MyWebApi.Services;
 using NetServer.Data;
 using NetServer.Data.Models;
 
@@ -10,10 +11,12 @@ using NetServer.Data.Models;
 public class OrdersController : ApiControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly PaperTradingService _paperTradingService;
 
-    public OrdersController(AppDbContext db)
+    public OrdersController(AppDbContext db, PaperTradingService paperTradingService)
     {
         _db = db;
+        _paperTradingService = paperTradingService;
     }
 
     [HttpGet]
@@ -82,235 +85,19 @@ public class OrdersController : ApiControllerBase
             return Unauthorized();
         }
 
-        var allowedSymbols = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "BTCUSD",
-            "ETHUSD",
-            "BNBUSD",
-            "ALGOUSD",
-            "BTCEUR",
-            "ETHEUR",
-            "BNBEUR",
-            "ALGOEUR"
-        };
-
-        if (!allowedSymbols.Contains(request.Symbol))
-        {
-            return BadRequest("Unknown symbol.");
-        }
-
-        if (request.Amount <= 0)
-        {
-            return BadRequest("Amount must be greater than zero.");
-        }
-
-        var isLimit = string.Equals(request.OrderKind, "Limit", StringComparison.OrdinalIgnoreCase);
-        var isMarket = string.Equals(request.OrderKind, "Market", StringComparison.OrdinalIgnoreCase) || !isLimit;
-
-        if (isLimit && request.Price <= 0)
-        {
-            return BadRequest("Limit orders require a price.");
-        }
-
         var targetUserId = request.UserId ?? currentUserId;
         if (!IsAdmin() && targetUserId != currentUserId)
         {
             return Forbid();
         }
 
-        var (baseCurrency, quoteCurrency) = ParseSymbol(request.Symbol);
-        if (string.IsNullOrWhiteSpace(baseCurrency) || string.IsNullOrWhiteSpace(quoteCurrency))
+        var result = await _paperTradingService.PlaceOrderAsync(targetUserId, request);
+        if (!result.Succeeded || result.Order == null)
         {
-            return BadRequest("Unsupported symbol format.");
+            return BadRequest(result.ErrorMessage);
         }
 
-        var now = DateTime.UtcNow;
-        var oppositeType = request.TypeOfOrder == OrderType.Buy ? OrderType.Sell : OrderType.Buy;
-
-        var orderBookQuery = _db.OrderBookTable
-            .Join(
-                _db.Orders,
-                ob => ob.OrderId,
-                o => o.OrderId,
-                (ob, o) => new { OrderBook = ob, Order = o })
-            .Where(x => x.Order.Symbol == request.Symbol
-                && x.Order.TypeOfOrder == oppositeType
-                && x.Order.OrderStatus == OrderStatus.Open
-                && x.Order.Amount > 0
-                && x.OrderBook.Amount > 0);
-
-        if (isLimit)
-        {
-            orderBookQuery = request.TypeOfOrder == OrderType.Buy
-                ? orderBookQuery.Where(x => x.OrderBook.Price <= request.Price)
-                : orderBookQuery.Where(x => x.OrderBook.Price >= request.Price);
-        }
-
-        orderBookQuery = request.TypeOfOrder == OrderType.Buy
-            ? orderBookQuery.OrderBy(x => x.OrderBook.Price).ThenBy(x => x.OrderBook.Timestamp)
-            : orderBookQuery.OrderByDescending(x => x.OrderBook.Price).ThenBy(x => x.OrderBook.Timestamp);
-
-        var matches = await orderBookQuery.ToListAsync();
-
-        if (isMarket && matches.Count == 0)
-        {
-            return BadRequest("No liquidity available for market order.");
-        }
-
-        if (isMarket)
-        {
-            var totalAvailable = matches.Sum(x => x.OrderBook.Amount);
-            if (totalAvailable < request.Amount)
-            {
-                return BadRequest("Not enough liquidity available for market order.");
-            }
-        }
-
-        decimal reservedBuyAmount = 0m;
-        decimal reservedSellAmount = 0m;
-
-        if (request.TypeOfOrder == OrderType.Buy)
-        {
-            reservedBuyAmount = isLimit
-                ? request.Price * request.Amount
-                : CalculateMarketCost(matches.Select(x => (Amount: x.OrderBook.Amount, Price: x.OrderBook.Price)), request.Amount);
-
-            var quoteWallet = await GetOrCreateWalletAsync(targetUserId, quoteCurrency);
-            if (quoteWallet.Balance < reservedBuyAmount)
-            {
-                return BadRequest($"Insufficient {quoteCurrency} balance.");
-            }
-
-            quoteWallet.Balance -= reservedBuyAmount;
-        }
-        else
-        {
-            reservedSellAmount = request.Amount;
-            var baseWallet = await GetOrCreateWalletAsync(targetUserId, baseCurrency);
-            if (baseWallet.Balance < reservedSellAmount)
-            {
-                return BadRequest($"Insufficient {baseCurrency} balance.");
-            }
-
-            baseWallet.Balance -= reservedSellAmount;
-        }
-
-        var initialPrice = isLimit ? request.Price : matches[0].OrderBook.Price;
-        var requestedAmount = request.Amount;
-        var order = new OrdersTable
-        {
-            OrderId = Guid.NewGuid(),
-            UserId = targetUserId,
-            FeeTableId = request.FeeTableId,
-            TypeOfOrder = request.TypeOfOrder,
-            Symbol = request.Symbol,
-            Price = initialPrice,
-            Amount = request.Amount,
-            OrderStatus = OrderStatus.Open,
-            CreatedAt = now
-        };
-
-        _db.Orders.Add(order);
-
-        if (matches.Count == 0)
-        {
-            var orderBookEntry = new OrderBook
-            {
-                OrderBookId = Guid.NewGuid(),
-                OrderId = order.OrderId,
-                Symbol = order.Symbol,
-                Price = order.Price,
-                Amount = order.Amount,
-                Timestamp = order.CreatedAt
-            };
-            _db.OrderBookTable.Add(orderBookEntry);
-            await _db.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetOrder), new { id = order.OrderId }, ToDto(order));
-        }
-
-        decimal remainingAmount = requestedAmount;
-        foreach (var match in matches)
-        {
-            if (remainingAmount <= 0)
-            {
-                break;
-            }
-
-            var availableAmount = match.OrderBook.Amount;
-            var tradeAmount = Math.Min(remainingAmount, availableAmount);
-            if (tradeAmount <= 0)
-            {
-                continue;
-            }
-
-            var trade = new TradesTable
-            {
-                TradeId = Guid.NewGuid(),
-                BuyOrderId = request.TypeOfOrder == OrderType.Buy ? order.OrderId : match.Order.OrderId,
-                SellOrderId = request.TypeOfOrder == OrderType.Sell ? order.OrderId : match.Order.OrderId,
-                Price = match.OrderBook.Price,
-                Amount = (double)tradeAmount,
-                TimeStamp = now
-            };
-            _db.TradesTable.Add(trade);
-
-            remainingAmount -= tradeAmount;
-            match.OrderBook.Amount -= tradeAmount;
-            match.Order.Amount -= tradeAmount;
-
-            var tradeValue = tradeAmount * match.OrderBook.Price;
-            var buyerId = request.TypeOfOrder == OrderType.Buy ? targetUserId : match.Order.UserId;
-            var sellerId = request.TypeOfOrder == OrderType.Sell ? targetUserId : match.Order.UserId;
-
-            var buyerBaseWallet = await GetOrCreateWalletAsync(buyerId, baseCurrency);
-            buyerBaseWallet.Balance += tradeAmount;
-
-            var sellerQuoteWallet = await GetOrCreateWalletAsync(sellerId, quoteCurrency);
-            sellerQuoteWallet.Balance += tradeValue;
-
-            if (request.TypeOfOrder == OrderType.Buy && isLimit && request.Price > match.OrderBook.Price)
-            {
-                var refund = (request.Price - match.OrderBook.Price) * tradeAmount;
-                var buyerQuoteWallet = await GetOrCreateWalletAsync(targetUserId, quoteCurrency);
-                buyerQuoteWallet.Balance += refund;
-            }
-
-            if (match.OrderBook.Amount <= 0)
-            {
-                match.Order.OrderStatus = OrderStatus.Filled;
-                _db.OrderBookTable.Remove(match.OrderBook);
-            }
-            else
-            {
-                match.Order.OrderStatus = OrderStatus.Open;
-            }
-        }
-
-        if (remainingAmount <= 0)
-        {
-            order.OrderStatus = OrderStatus.Filled;
-            order.Amount = requestedAmount;
-        }
-        else if (isLimit)
-        {
-            order.OrderStatus = OrderStatus.Open;
-            order.Amount = remainingAmount;
-
-            var orderBookEntry = new OrderBook
-            {
-                OrderBookId = Guid.NewGuid(),
-                OrderId = order.OrderId,
-                Symbol = order.Symbol,
-                Price = order.Price,
-                Amount = remainingAmount,
-                Timestamp = now
-            };
-            _db.OrderBookTable.Add(orderBookEntry);
-        }
-
-        await _db.SaveChangesAsync();
-
-        return CreatedAtAction(nameof(GetOrder), new { id = order.OrderId }, ToDto(order));
+        return CreatedAtAction(nameof(GetOrder), new { id = result.Order.OrderId }, ToDto(result.Order));
     }
 
     [HttpPut("{id:guid}")]
@@ -339,7 +126,7 @@ public class OrdersController : ApiControllerBase
 
         if (request.OrderStatus == OrderStatus.Cancelled && order.OrderStatus == OrderStatus.Open)
         {
-            await RefundReservedBalanceAsync(order);
+            await _paperTradingService.RefundReservedBalanceAsync(order);
 
             var orderBookEntry = await _db.OrderBookTable.FirstOrDefaultAsync(ob => ob.OrderId == order.OrderId);
             if (orderBookEntry != null)
@@ -393,7 +180,7 @@ public class OrdersController : ApiControllerBase
 
         if (order.OrderStatus == OrderStatus.Open)
         {
-            await RefundReservedBalanceAsync(order);
+            await _paperTradingService.RefundReservedBalanceAsync(order);
 
             var orderBookEntry = await _db.OrderBookTable.FirstOrDefaultAsync(ob => ob.OrderId == order.OrderId);
             if (orderBookEntry != null)
@@ -405,90 +192,6 @@ public class OrdersController : ApiControllerBase
         _db.Orders.Remove(order);
         await _db.SaveChangesAsync();
         return NoContent();
-    }
-
-    private static (string BaseCurrency, string QuoteCurrency) ParseSymbol(string symbol)
-    {
-        var normalized = (symbol ?? string.Empty).Trim().ToUpperInvariant();
-        foreach (var quote in new[] { "USD", "EUR" })
-        {
-            if (normalized.EndsWith(quote, StringComparison.Ordinal) && normalized.Length > quote.Length)
-            {
-                return (normalized[..^quote.Length], quote);
-            }
-        }
-
-        return (string.Empty, string.Empty);
-    }
-
-    private static decimal CalculateMarketCost(IEnumerable<(decimal Amount, decimal Price)> matches, decimal requestedAmount)
-    {
-        decimal remainingAmount = requestedAmount;
-        decimal totalCost = 0m;
-
-        foreach (var match in matches)
-        {
-            if (remainingAmount <= 0)
-            {
-                break;
-            }
-
-            decimal availableAmount = match.Amount;
-            decimal tradeAmount = Math.Min(remainingAmount, availableAmount);
-            if (tradeAmount <= 0)
-            {
-                continue;
-            }
-
-            totalCost += tradeAmount * match.Price;
-            remainingAmount -= tradeAmount;
-        }
-
-        return totalCost;
-    }
-
-    private async Task<WalletTable> GetOrCreateWalletAsync(Guid userId, string currency)
-    {
-        var normalizedCurrency = currency.Trim().ToUpperInvariant();
-        var wallet = await _db.Wallets.FirstOrDefaultAsync(w => w.UserId == userId && w.Currency == normalizedCurrency);
-        if (wallet != null)
-        {
-            return wallet;
-        }
-
-        wallet = new WalletTable
-        {
-            WalletID = Guid.NewGuid(),
-            UserId = userId,
-            Currency = normalizedCurrency,
-            Balance = 0m,
-            Addres = string.Empty,
-            Status = "Active",
-            CreatedAt = DateTime.UtcNow
-        };
-
-        _db.Wallets.Add(wallet);
-        return wallet;
-    }
-
-    private async Task RefundReservedBalanceAsync(OrdersTable order)
-    {
-        var (baseCurrency, quoteCurrency) = ParseSymbol(order.Symbol);
-        if (string.IsNullOrWhiteSpace(baseCurrency) || string.IsNullOrWhiteSpace(quoteCurrency))
-        {
-            return;
-        }
-
-        if (order.TypeOfOrder == OrderType.Buy)
-        {
-            var quoteWallet = await GetOrCreateWalletAsync(order.UserId, quoteCurrency);
-            quoteWallet.Balance += order.Price * order.Amount;
-        }
-        else if (order.TypeOfOrder == OrderType.Sell)
-        {
-            var baseWallet = await GetOrCreateWalletAsync(order.UserId, baseCurrency);
-            baseWallet.Balance += order.Amount;
-        }
     }
 
     private static OrderDto ToDto(OrdersTable order)
