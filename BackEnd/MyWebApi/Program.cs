@@ -189,7 +189,7 @@ internal class Program
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var walletProvisioning = scope.ServiceProvider.GetRequiredService<WalletProvisioningService>();
 
-            
+            EnsureOptionalDemoTables(db);
 
             var created = walletProvisioning.EnsureDefaultWalletsForAllUsers();
             if (created > 0)
@@ -308,4 +308,29 @@ internal class Program
                rawValue.Equals("on", StringComparison.OrdinalIgnoreCase) ||
                rawValue.Equals("yes", StringComparison.OrdinalIgnoreCase);
     }
+
+    private static void EnsureOptionalDemoTables(AppDbContext db)
+    {
+        db.Database.ExecuteSqlRaw("""
+            CREATE TABLE IF NOT EXISTS "BankAccounts" (
+                "BankAccountId" uuid NOT NULL,
+                "UserId" uuid NOT NULL,
+                "AccountHolderName" text NOT NULL,
+                "BankName" text NOT NULL,
+                "Iban" text NOT NULL,
+                "SwiftCode" text NOT NULL,
+                "Currency" text NOT NULL,
+                "CreatedAt" timestamp with time zone NOT NULL,
+                CONSTRAINT "PK_BankAccounts" PRIMARY KEY ("BankAccountId"),
+                CONSTRAINT "FK_BankAccounts_Users_UserId"
+                    FOREIGN KEY ("UserId") REFERENCES "Users" ("Id") ON DELETE CASCADE
+            );
+            """);
+
+        db.Database.ExecuteSqlRaw("""
+            CREATE INDEX IF NOT EXISTS "IX_BankAccounts_UserId"
+            ON "BankAccounts" ("UserId");
+            """);
+    }
+    ///comentar 04.04.2026 21:39 
 }

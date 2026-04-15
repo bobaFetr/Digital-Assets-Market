@@ -1027,25 +1027,13 @@ function Sidebar() {
       </div>
       <div className="admin-section">
         <p className="section-title">Core</p>
-        <NavLink className="nav-link" to="/Admin" end>Dashboard</NavLink>
-        <NavLink className="nav-link" to="/Admin/assets">Assets</NavLink>
-        <NavLink className="nav-link" to="/Admin/transactions">Transactions</NavLink>
+        <NavLink className="nav-link" to="/Admin" end>Users</NavLink>
         <NavLink className="nav-link" to="/Admin/users">Users</NavLink>
       </div>
       <div className="admin-section">
-        <p className="section-title">Comms</p>
+        <p className="section-title">Content</p>
         <NavLink className="nav-link" to="/Admin/news">Newsroom</NavLink>
         <NavLink className="nav-link" to="/Admin/faqs">FAQs</NavLink>
-        <NavLink className="nav-link" to="/Admin/announcements">Announcements</NavLink>
-      </div>
-      <div className="admin-section">
-        <p className="section-title">Governance</p>
-        <NavLink className="nav-link" to="/Admin/security">Security</NavLink>
-        <NavLink className="nav-link" to="/Admin/settings">Settings</NavLink>
-      </div>
-      <div className="sidebar-actions">
-        <button className="btn btn-primary">New broadcast</button>
-        <button className="btn btn-ghost">View status page</button>
       </div>
     </aside>
   );
@@ -1078,7 +1066,7 @@ export default function Admin({ mobileOpen, setMobileOpen }) {
       <Sidebar />
       <main className="admin-content">
         <Routes>
-          <Route index element={<Dashboard />} />
+          <Route index element={<Users />} />
           <Route path="assets" element={<Assets />} />
           <Route path="transactions" element={<Transactions />} />
           <Route path="users" element={<Users />} />

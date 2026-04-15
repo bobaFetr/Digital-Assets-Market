@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import { Navigate, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import BitcoinChart from "./BitcoinChart";
 import BNBChart from "./BNB";
 import Profile from "./Profile";
@@ -10,7 +10,7 @@ import BuyAndSell from "./BuyAndSell";
 import BCrypto from "./BCrypto.jsx";
 import CryptoServerAssetPage from "./CryptoServerAssetPage";
 import VerifyIdentityPage from "./VerifyIdentityPage";
-import { AUTH_BLOCKED_EVENT, getKycStatus, getToken, request, getProfile } from "./Services/Service";
+import { AUTH_BLOCKED_EVENT, AUTH_STATE_CHANGED_EVENT, getKycStatus, getToken, request, getProfile } from "./Services/Service";
 import { buildUrl } from "./config/api";
 import { resolveTrustedImageUrl } from "./Security/trustedContent";
 import VerificationEmailPage from "./VerificationEmailPage";
@@ -59,6 +59,18 @@ const formatUsd = (value) => {
   }).format(value);
 };
 
+const formatAmount = (value) => {
+  const parsedValue = Number(value || 0);
+  if (!Number.isFinite(parsedValue)) {
+    return "0.00";
+  }
+
+  return parsedValue.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 6,
+  });
+};
+
 const getMobileHeaderTitle = (pathname) => {
   if (pathname === "/") return "Dashboard";
   if (pathname.startsWith("/Admin")) return "Admin";
@@ -87,14 +99,41 @@ const getMobileHeaderTitle = (pathname) => {
   return "Menu";
 };
 
+const getClaimsFromToken = (token) => {
+  if (!token) {
+    return null;
+  }
+
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) {
+      return null;
+    }
+
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+    return JSON.parse(atob(normalized));
+  } catch {
+    return null;
+  }
+};
+
+const getRoleFromToken = (token) => {
+  const claims = getClaimsFromToken(token);
+  return (
+    claims?.role ||
+    claims?.["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ||
+    ""
+  );
+};
+
 function UserBalanceCard() {
   const [balance, setBalance] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
   useEffect(() => {
     const token = getToken && getToken();
     if (!token) {
-      setError("Not authenticated.");
+      setMessage("Sign in to view your balance.");
       setLoading(false);
       return;
     }
@@ -109,12 +148,12 @@ function UserBalanceCard() {
         setLoading(false);
       })
       .catch((err) => {
-        setError(err.message || "Unable to load balance.");
+        setMessage(err.message || "Unable to load balance.");
         setLoading(false);
       });
   }, []);
   if (loading) return <div className="balance-amount" style={{ color: 'var(--text-primary)' }}>Loading...</div>;
-  if (error) return <div className="balance-amount" style={{ color: 'var(--error-main)' }}>{error}</div>;
+  if (message) return <div className="balance-amount" style={{ color: 'var(--text-secondary)', fontSize: 16 }}>{message}</div>;
   return <div className="balance-amount" style={{ color: 'var(--text-primary)' }}>${balance?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>;
 }
 
@@ -138,9 +177,11 @@ function Home({ theme, onToggleTheme }) {
   const [priceError, setPriceError] = useState("");
   const [lastUpdated, setLastUpdated] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [walletPreview, setWalletPreview] = useState([]);
   const [selectedCurrency, setSelectedCurrency] = useState(null);
   const [serverInfo, setServerInfo] = useState(null);
   const navigate = useNavigate();
+  const isAuthenticated = Boolean(getToken());
   const panelBg = "var(--surface-elevated)";
   const insetBg = "var(--surface-inset)";
   const textColor = "var(--text-primary)";
@@ -260,7 +301,10 @@ function Home({ theme, onToggleTheme }) {
   useEffect(() => {
     let mounted = true;
     const token = getToken && getToken();
-    if (!token) return;
+    if (!token) {
+      setProfile(null);
+      return;
+    }
 
     getProfile()
       .then((p) => {
@@ -269,6 +313,33 @@ function Home({ theme, onToggleTheme }) {
       })
       .catch(() => {
         /* ignore */
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    const token = getToken && getToken();
+    if (!token) {
+      setWalletPreview([]);
+      return;
+    }
+
+    request(`/api/wallets`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((wallets) => {
+        if (!mounted) return;
+        setWalletPreview(Array.isArray(wallets) ? wallets.slice(0, 4) : []);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setWalletPreview([]);
       });
 
     return () => {
@@ -395,7 +466,11 @@ function Home({ theme, onToggleTheme }) {
               </div>
             )}
           </div>
-          <div className="top-profile" title={profile?.userName || 'Profile'} onClick={() => navigate('/profile')}>
+          <div
+            className="top-profile"
+            title={profile?.userName || 'Profile'}
+            onClick={() => navigate(isAuthenticated ? '/profile' : '/sign-in')}
+          >
             <img
               src={
                 resolveTrustedImageUrl(profile?.profilePictureUrl, buildUrl('/OIP.webp'), buildUrl)
@@ -455,81 +530,148 @@ function Home({ theme, onToggleTheme }) {
         {/* Dashboard Overview Cards */}
         <div className="cards-grid" style={{ marginBottom: 30 }}>
           <div className="coin-card" style={{ background: `linear-gradient(135deg, ${accentColor} 0%, ${accentStrongColor} 100%)`, color: '#fff', boxShadow: '0 4px 16px rgba(255, 127, 80, 0.35)' }}>
-            <div className="coin-header"><h4 style={{ color: '#fff' }}>My balance</h4></div>
-            <UserBalanceCard />
-            <div className="reward-label" style={{ color: accentSoftColor }}>+15%</div>
-            <button className="btn-primary" style={{ marginTop: 12, background: accentColor, color: '#fff', border: 'none' }}>See details</button>
+            <div className="coin-header"><h4 style={{ color: '#fff' }}>{isAuthenticated ? "My balance" : "Digital Asset Marketplace"}</h4></div>
+            {isAuthenticated ? (
+              <>
+                <UserBalanceCard />
+                <div className="reward-label" style={{ color: accentSoftColor }}>Internal demo wallet</div>
+                <button
+                  className="btn-primary"
+                  style={{ marginTop: 12, background: accentColor, color: '#fff', border: 'none' }}
+                  onClick={() => navigate("/wallets")}
+                >
+                  Open wallets
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="balance-amount" style={{ color: "#fff", fontSize: 24, lineHeight: 1.35 }}>
+                  Learn, fund, and trade digital assets in a simplified demo platform.
+                </div>
+                <div className="reward-label" style={{ color: accentSoftColor }}>School diploma prototype</div>
+                <button
+                  className="btn-primary"
+                  style={{ marginTop: 12, background: accentColor, color: '#fff', border: 'none' }}
+                  onClick={() => navigate("/sign-up")}
+                >
+                  Create demo account
+                </button>
+              </>
+            )}
           </div>
           <div className="coin-card" style={{ background: panelBg, color: textColor, boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)', border: '1px solid var(--glass-border)' }}>
-            <div className="coin-header"><h4 style={{ color: textColor }}>Savings account</h4></div>
-            <div className="balance-amount" style={{ color: textColor }}>$24,800.45</div>
-            <button className="btn-primary" style={{ marginTop: 12, background: panelBg, color: accentColor, border: `1px solid ${accentColor}` }}>View summary</button>
+            <div className="coin-header"><h4 style={{ color: textColor }}>{isAuthenticated ? "Trading demo" : "Public information"}</h4></div>
+            <div className="balance-amount" style={{ color: textColor, fontSize: 22 }}>
+              {isAuthenticated ? "Buy and sell with simulated platform balances." : "Browse news, FAQ, tutorials, and live market visuals without signing in."}
+            </div>
+            <button
+              className="btn-primary"
+              style={{ marginTop: 12, background: panelBg, color: accentColor, border: `1px solid ${accentColor}` }}
+              onClick={() => navigate(isAuthenticated ? "/buy-sell" : "/news")}
+            >
+              {isAuthenticated ? "Open buy / sell" : "Explore content"}
+            </button>
           </div>
           <div className="coin-card" style={{ background: panelBg, color: textColor, boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)', border: '1px solid var(--glass-border)' }}>
-            <div className="coin-header"><h4 style={{ color: textColor }}>Investment portfolio</h4></div>
-            <div className="balance-amount" style={{ color: textColor }}>$70,120.78</div>
-            <button className="btn-primary" style={{ marginTop: 12, background: panelBg, color: accentColor, border: `1px solid ${accentColor}` }}>Analyze performance</button>
+            <div className="coin-header"><h4 style={{ color: textColor }}>{isAuthenticated ? "Identity check" : "Account access"}</h4></div>
+            <div className="balance-amount" style={{ color: textColor, fontSize: 22 }}>
+              {isAuthenticated ? "Upload a document image to simulate identity verification." : "Sign in to access your personal profile, wallets, and transactions."}
+            </div>
+            <button
+              className="btn-primary"
+              style={{ marginTop: 12, background: panelBg, color: accentColor, border: `1px solid ${accentColor}` }}
+              onClick={() => navigate(isAuthenticated ? "/VerifyIdentityPage" : "/sign-in")}
+            >
+              {isAuthenticated ? "Open verification" : "Sign in"}
+            </button>
           </div>
         </div>
         {/* Wallet Section */}
         <div className="cards-grid" style={{ marginBottom: 30 }}>
           <div className="coin-card" style={{ gridColumn: 'span 2', background: panelBg, color: textColor, boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)', border: '1px solid var(--glass-border)' }}>
-            <div className="coin-header"><h4 style={{ color: textColor }}>My Wallet</h4></div>
-            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: 12 }}>
-              <div className="currency-box" style={{ background: insetBg, color: accentColor, border: '1px solid var(--glass-border)' }}>USD <span style={{ color: textColor }}>$24,678.00</span></div>
+            <div className="coin-header"><h4 style={{ color: textColor }}>{isAuthenticated ? "Wallet preview" : "How the demo works"}</h4></div>
+            <>
+              {isAuthenticated ? (
+                <>
+                  <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: 12 }}>
+                    {walletPreview.length > 0 ? (
+                      walletPreview.map((wallet) => (
+                        <div
+                          key={wallet.walletId}
+                          className="currency-box"
+                          style={{ background: insetBg, color: accentColor, border: '1px solid var(--glass-border)' }}
+                        >
+                          {wallet.currency} <span style={{ color: textColor }}>{formatAmount(Number(wallet.balance || 0))}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <div style={{ color: mutedTextColor }}>Your wallets will appear here after sign in.</div>
+                    )}
+                  </div>
+                  <button
+                    className="btn-primary"
+                    style={{ marginTop: 12, background: accentColor, color: '#fff', border: 'none' }}
+                    onClick={() => navigate("/wallets")}
+                  >
+                    Open wallet page
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div style={{ display: 'grid', gap: 12, marginTop: 12 }}>
+                    <div style={{ padding: 12, borderRadius: 12, background: insetBg, border: '1px solid var(--glass-border)' }}>
+                      1. Create an account and upload an ID image to simulate identity data.
+                    </div>
+                    <div style={{ padding: 12, borderRadius: 12, background: insetBg, border: '1px solid var(--glass-border)' }}>
+                      2. Fund your internal wallet with a demo card deposit.
+                    </div>
+                    <div style={{ padding: 12, borderRadius: 12, background: insetBg, border: '1px solid var(--glass-border)' }}>
+                      3. Buy or sell digital assets and review the recorded transactions.
+                    </div>
+                  </div>
+                  <button
+                    className="btn-primary"
+                    style={{ marginTop: 12, background: accentColor, color: '#fff', border: 'none' }}
+                    onClick={() => navigate("/sign-up")}
+                  >
+                    Start the demo
+                  </button>
+                </>
+              )}
+              {/*
+              <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: 12 }}>
+                {walletPreview.length > 0 ? (
               <div className="currency-box" style={{ background: insetBg, color: accentColor, border: '1px solid var(--glass-border)' }}>EUR <span style={{ color: textColor }}>€28,345.00</span></div>
-              <div className="currency-box" style={{ background: insetBg, color: accentColor, border: '1px solid var(--glass-border)' }}>AUD <span style={{ color: textColor }}>$20,517.52</span></div>
+                  walletPreview.map((wallet) => (
               <div className="currency-box" style={{ background: insetBg, color: accentColor, border: '1px solid var(--glass-border)' }}>GBP <span style={{ color: textColor }}>£25,000.00</span></div>
             </div>
-            <button className="btn-primary" style={{ marginTop: 12, background: accentColor, color: '#fff', border: 'none' }}>+ Add new</button>
-          </div>    
+              */}
+            </>
+        </div>
         </div>
         {/* Cash Flow Chart */}
         <div className="chart-container" style={{ margin: "24px 0" }}>
           <BitcoinChart symbol="BTCUSD" />
         </div>
-        {/* Recent Activities Table */}
         <div className="chart-container" style={{ background: panelBg, color: textColor, boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)', border: '1px solid var(--glass-border)' }}>
-          <div className="chart-header" style={{ color: textColor }}>Recent Activities</div>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', color: textColor, background: tableRowBg }}>
-              <thead>
-                <tr style={{ background: tableHeadBg }}>
-                  <th style={{ padding: '10px 16px', color: accentColor }}>Activity</th>
-                  <th style={{ padding: '10px 16px', color: accentColor }}>Order</th>
-                  <th style={{ padding: '10px 16px', color: accentColor }}>Date</th>
-                  <th style={{ padding: '10px 16px', color: accentColor }}>Time</th>
-                  <th style={{ padding: '10px 16px', color: accentColor }}>Amount</th>
-                  <th style={{ padding: '10px 16px', color: accentColor }}>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr style={{ background: tableRowBg, borderTop: `1px solid ${tableBorderColor}` }}>
-                  <td style={{ padding: '10px 16px' }}>Software License</td>
-                  <td style={{ padding: '10px 16px' }}>No.000676</td>
-                  <td style={{ padding: '10px 16px' }}>17 Apr, 2026</td>
-                  <td style={{ padding: '10px 16px' }}>02:45 PM</td>
-                  <td style={{ padding: '10px 16px' }}>$25,500</td>
-                  <td style={{ padding: '10px 16px', color: successColor }}>Completed</td>
-                </tr>
-                <tr style={{ background: tableRowBg, borderTop: `1px solid ${tableBorderColor}` }}>
-                  <td style={{ padding: '10px 16px' }}>Deposit</td>
-                  <td style={{ padding: '10px 16px' }}>No.000677</td>
-                  <td style={{ padding: '10px 16px' }}>18 Apr, 2026</td>
-                  <td style={{ padding: '10px 16px' }}>10:15 AM</td>
-                  <td style={{ padding: '10px 16px' }}>$10,000</td>
-                  <td style={{ padding: '10px 16px', color: accentColor }}>Pending</td>
-                </tr>
-                <tr style={{ background: tableRowBg, borderTop: `1px solid ${tableBorderColor}` }}>
-                  <td style={{ padding: '10px 16px' }}>Withdrawal</td>
-                  <td style={{ padding: '10px 16px' }}>No.000678</td>
-                  <td style={{ padding: '10px 16px' }}>19 Apr, 2026</td>
-                  <td style={{ padding: '10px 16px' }}>04:30 PM</td>
-                  <td style={{ padding: '10px 16px' }}>$5,000</td>
-                  <td style={{ padding: '10px 16px', color: errorColor }}>Failed</td>
-                </tr>
-              </tbody>
-            </table>
+          <div className="chart-header" style={{ color: textColor }}>Demo User Flow</div>
+          <div className="section-grid section-grid--two">
+            <div className="section-card" style={{ background: insetBg, border: '1px solid var(--glass-border)', boxShadow: 'none', padding: 18 }}>
+              <h4 style={{ margin: 0, color: accentColor }}>1. Public Area</h4>
+              <p style={{ margin: '8px 0 0', color: mutedTextColor }}>Guests can browse markets, news, FAQ, and educational content before creating an account.</p>
+            </div>
+            <div className="section-card" style={{ background: insetBg, border: '1px solid var(--glass-border)', boxShadow: 'none', padding: 18 }}>
+              <h4 style={{ margin: 0, color: accentColor }}>2. Account and Identity</h4>
+              <p style={{ margin: '8px 0 0', color: mutedTextColor }}>Registered users can sign in, manage profile details, and upload an ID image to simulate verification.</p>
+            </div>
+            <div className="section-card" style={{ background: insetBg, border: '1px solid var(--glass-border)', boxShadow: 'none', padding: 18 }}>
+              <h4 style={{ margin: 0, color: accentColor }}>3. Wallet Funding</h4>
+              <p style={{ margin: '8px 0 0', color: mutedTextColor }}>Card deposits are simulated and increase the user's internal USD or EUR platform wallet.</p>
+            </div>
+            <div className="section-card" style={{ background: insetBg, border: '1px solid var(--glass-border)', boxShadow: 'none', padding: 18 }}>
+              <h4 style={{ margin: 0, color: accentColor }}>4. Trading Simulation</h4>
+              <p style={{ margin: '8px 0 0', color: mutedTextColor }}>Buy and sell actions update internal balances and record transactions without using a real blockchain.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -558,9 +700,57 @@ function BNBChartPage() {
     </div>
   );
 }
+
+function RequireAuth({ children }) {
+  const token = getToken();
+  const location = useLocation();
+
+  if (!token) {
+    return (
+      <Navigate
+        to="/sign-in"
+        replace
+        state={{ error: "Please sign in to continue.", from: location.pathname }}
+      />
+    );
+  }
+
+  return children;
+}
+
+const isProtectedPath = (pathname) =>
+  pathname.startsWith("/profile") ||
+  pathname.startsWith("/wallets") ||
+  pathname.startsWith("/withdraw") ||
+  pathname.startsWith("/buy-sell") ||
+  pathname.startsWith("/VerifyIdentityPage") ||
+  pathname.startsWith("/Admin");
+
+function RequireAdmin({ children }) {
+  const token = getToken();
+  const location = useLocation();
+
+  if (!token) {
+    return (
+      <Navigate
+        to="/sign-in"
+        replace
+        state={{ error: "Please sign in to continue.", from: location.pathname }}
+      />
+    );
+  }
+
+  if (getRoleFromToken(token) !== "Admin") {
+    return <Navigate to="/profile" replace state={{ error: "Admin access only." }} />;
+  }
+
+  return children;
+}
+
 export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [, setAuthVersion] = useState(0);
   const [theme, setTheme] = useState(() => {
     if (typeof window === "undefined") {
       return "dark";
@@ -639,6 +829,29 @@ export default function App() {
     };
   }, [location.pathname, navigate]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const handleAuthStateChanged = (event) => {
+      const reason = event?.detail?.reason || "unknown";
+      setAuthVersion((value) => value + 1);
+
+      if (reason === "unauthorized" && isProtectedPath(location.pathname)) {
+        navigate("/sign-in", {
+          replace: true,
+          state: { error: "Your session has expired. Please sign in again." },
+        });
+      }
+    };
+
+    window.addEventListener(AUTH_STATE_CHANGED_EVENT, handleAuthStateChanged);
+    return () => {
+      window.removeEventListener(AUTH_STATE_CHANGED_EVENT, handleAuthStateChanged);
+    };
+  }, [location.pathname, navigate]);
+
   const showGlobalMobileHeader = location.pathname !== "/" && !location.pathname.startsWith("/Admin");
   const mobileHeaderTitle = getMobileHeaderTitle(location.pathname);
 
@@ -671,11 +884,11 @@ export default function App() {
           )}
         <Routes>
           <Route path="/" element={<Home theme={theme} onToggleTheme={toggleTheme} />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/wallets" element={<Wallet />} />
-          <Route path="/withdraw" element={<WithDraw />} />
-          <Route path="/buy-sell" element={<BuyAndSell />} />
-          <Route path="/VerifyIdentityPage" element={<VerifyIdentityPage />} />
+          <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+          <Route path="/wallets" element={<RequireAuth><Wallet /></RequireAuth>} />
+          <Route path="/withdraw" element={<RequireAuth><WithDraw /></RequireAuth>} />
+          <Route path="/buy-sell" element={<RequireAuth><BuyAndSell /></RequireAuth>} />
+          <Route path="/VerifyIdentityPage" element={<RequireAuth><VerifyIdentityPage /></RequireAuth>} />
           <Route path="/VerificationEmailPage" element={<VerificationEmailPage />} />
           <Route path="/SentSMSToNumberPage" element={<SentSMSToNumberPage />} />
           <Route path="/sign-in" element={<SignInPage />} />
@@ -708,8 +921,7 @@ export default function App() {
               />
             }
           />
-
-          <Route path="/Admin/*" element={<Admin mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />} />
+          <Route path="/Admin/*" element={<RequireAdmin><Admin mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} /></RequireAdmin>} />
           <Route path="/BCrypto" element={<BCrypto assets={[]} />} />
 
           <Route path="/news" element={<News />} />

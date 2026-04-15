@@ -1,19 +1,18 @@
 # Docker commands for running DAM system on a machine without local .NET/npm installs
 # Run these from the project root: c:\Users\Lenovo\Desktop\diplomna\dam
 
-# 1) Build the app image (uses DockerFile)
-docker build -f DockerFile -t dam-app .
+# 1) Build the app image
+docker build -f BackEnd/Dockerfile -t dam-app BackEnd
 
 # 2) Create a dedicated Docker network (once)
 docker network create dam-net
 
-# 3) Start SQL Server container
-# Change the SA password before running in real environments.
-docker run -d --name dam-sql --network dam-net -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=YourStrong!Pass123" -p 1433:1433 mcr.microsoft.com/mssql/server:2022-latest
+# 3) The backend uses PostgreSQL through the connection string in
+# BackEnd/MyWebApi/appsettings.json. Do not set ConnectionStrings__DefaultConnection
+# here unless you intentionally want to override appsettings.json.
 
 # 4) Start the application container
-# IMPORTANT: keep the same SQL password as above in the connection string.
-docker run -d --name dam-app --network dam-net -p 8080:8080 -e "ConnectionStrings__DefaultConnection=Server=dam-sql,1433;Database=Digital_Assets2026;User Id=sa;Password=YourStrong!Pass123;TrustServerCertificate=True;Encrypt=False" -e "Jwt__Key=THIS_IS_A_LONG_RANDOM_SECRET_KEY_32+_CHARS" -e "Jwt__Issuer=MyWebApi" -e "Jwt__Audience=MyWebApiUsers" -e "Frontend__BaseUrl=http://localhost:8080" dam-app
+docker run -d --name dam-app --network dam-net -p 8080:10000 -e "Jwt__Key=THIS_IS_A_LONG_RANDOM_SECRET_KEY_32+_CHARS" -e "Jwt__Issuer=MyWebApi" -e "Jwt__Audience=MyWebApiUsers" -e "Frontend__BaseUrl=http://localhost:8080" dam-app
 
 # 5) Check containers are running
 docker ps
@@ -26,8 +25,8 @@ docker logs -f dam-app
 # Swagger:http://localhost:8080/swagger
 
 # 8) (Optional) Stop and remove containers
-docker stop dam-app dam-sql
-docker rm dam-app dam-sql
+docker stop dam-app
+docker rm dam-app
 
 # 9) (Optional) Remove network
 docker network rm dam-net

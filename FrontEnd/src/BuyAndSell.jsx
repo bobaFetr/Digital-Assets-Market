@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import BitcoinChart from "./BitcoinChart";
 import Sidebar from "./Components/Sidebar";
 import { getToken, request } from "./Services/Service";
@@ -17,6 +17,7 @@ const readPersistedCurrency = (key, allowedValues, fallbackValue) => {
 
 export default function BuyAndSell() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [fromCurrency, setFromCurrency] = useState(() =>
     readPersistedCurrency(BUY_SELL_FROM_CURRENCY_KEY, ["BTC", "ETH", "BNB", "ALGO"], "BTC")
   );
@@ -28,8 +29,6 @@ export default function BuyAndSell() {
   const [lastEdited, setLastEdited] = useState("crypto");
   const [available, setAvailable] = useState(null);
   const [isLoadingAvailable, setIsLoadingAvailable] = useState(false);
-  const [rawWallets, setRawWallets] = useState([]);
-  const [showWalletsDebug, setShowWalletsDebug] = useState(false);
   const [quoteRate, setQuoteRate] = useState(24.5);
   const [statusMessage, setStatusMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -76,6 +75,24 @@ export default function BuyAndSell() {
   const accentColor = "var(--brand-accent)";
   const borderColor = "var(--glass-border)";
   const errorColor = "var(--error-main)";
+  const compactInputStyle = {
+    width: "100%",
+    maxWidth: 220,
+    background: panelBg,
+    color: textColor,
+    border: `1px solid ${accentColor}`,
+    borderRadius: 8,
+    padding: "8px 10px",
+  };
+  const wideInputStyle = {
+    width: "100%",
+    maxWidth: 260,
+    background: panelBg,
+    color: textColor,
+    border: `1px solid ${accentColor}`,
+    borderRadius: 8,
+    padding: "8px 10px",
+  };
 
   useEffect(() => {
     const action = (searchParams.get("action") || "").toLowerCase();
@@ -101,7 +118,6 @@ export default function BuyAndSell() {
     const token = getToken();
     if (!token) {
       setAvailable(null);
-      setRawWallets([]);
       return;
     }
 
@@ -112,9 +128,7 @@ export default function BuyAndSell() {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.debug("/api/wallets response:", data);
       const list = Array.isArray(data) ? data : [];
-      setRawWallets(list);
       const normalizedBalanceCurrency = String(balanceCurrency || "").toUpperCase();
       const selectedWallet = list.find(
         (wallet) => String(wallet.currency || "").toUpperCase() === normalizedBalanceCurrency
@@ -343,32 +357,25 @@ export default function BuyAndSell() {
       <div className="crypto-main" style={{ background: pageBg, color: textColor, flex: 1, padding: "clamp(12px, 3vw, 24px)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h2 className="chart-header" style={{ color: accentColor }}>Buy & Sell</h2>
-          <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-            <div style={{ color: accentColor, display: "flex", gap: 8, alignItems: "center" }}>
+          <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
+            <div style={{ color: accentColor, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
               <span>Available:</span>
               <strong>{available == null ? "--" : `${available.toFixed(6)} ${balanceCurrency}`}</strong>
               {isLoadingAvailable ? (
                 <span style={{ fontSize: 12, color: mutedText, opacity: 0.9 }}>Refreshing...</span>
               ) : (
-                <>
-                  <button onClick={loadWallets} style={{ background: "transparent", color: accentColor, border: `1px solid ${accentColor}`, borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: 12 }}>Refresh</button>
-                  <button onClick={() => setShowWalletsDebug((s) => !s)} style={{ background: "transparent", color: textColor, border: `1px dashed ${borderColor}`, borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: 12 }}>Show wallets</button>
-                </>
+                <button onClick={loadWallets} style={{ background: "transparent", color: accentColor, border: `1px solid ${accentColor}`, borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: 12 }}>Refresh</button>
               )}
             </div>
-            <button className="btn-primary" style={{ background: accentColor, color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600 }}>Deposit</button>
+            <button
+              className="btn-primary"
+              onClick={() => navigate("/wallets")}
+              style={{ background: accentColor, color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600 }}
+            >
+              Deposit funds
+            </button>
           </div>
         </div>
-
-        {showWalletsDebug && (
-          <div style={{ marginTop: 12, background: panelBg, padding: 12, borderRadius: 8, color: textColor, border: `1px solid ${borderColor}` }}>
-            <div style={{ marginBottom: 8, color: accentColor }}>Debug: raw wallets (from /api/wallets)</div>
-            <pre style={{ maxHeight: 220, overflow: "auto", fontSize: 12 }}>{JSON.stringify(rawWallets, null, 2)}</pre>
-            <div style={{ marginTop: 8, fontSize: 12 }}>
-              Token: <span style={{ color: getToken() ? "var(--success-main)" : errorColor }}>{getToken() ? "present" : "missing"}</span>
-            </div>
-          </div>
-        )}
 
         <div className="cards-grid" style={{ marginTop: "18px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 18 }}>
           {marketCards.map((coin) => (
@@ -432,8 +439,13 @@ export default function BuyAndSell() {
 
         {/* Buy/Sell Exchange Box */}
         <div className="chart-container" style={{ marginTop: "18px", background: panelBg, borderRadius: 12, padding: 18, boxShadow: "0 10px 24px rgba(15, 23, 42, 0.08)", border: `1px solid ${borderColor}` }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <h3 className="chart-header" style={{ color: accentColor }}>Exchange</h3>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <div>
+              <h3 className="chart-header" style={{ color: accentColor, marginBottom: 6 }}>Exchange</h3>
+              <p style={{ margin: 0, color: mutedText, fontSize: 14 }}>
+                Choose a market pair, select buy or sell, and place a market or limit demo order.
+              </p>
+            </div>
             <div className="binance-tabs">
               <button
                 className={`binance-tab buy ${orderType === "Buy" ? "active" : ""}`}
@@ -470,7 +482,7 @@ export default function BuyAndSell() {
           </div>
           <div
             className="binance-panel"
-            style={{ background: insetBg, padding: "18px", borderRadius: "10px", border: `1px solid ${borderColor}` }}
+            style={{ background: insetBg, padding: "18px", borderRadius: "10px", border: `1px solid ${borderColor}`, marginTop: 16 }}
           >
             <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
               <button
@@ -505,11 +517,11 @@ export default function BuyAndSell() {
                 Limit
               </button>
             </div>
-            <div style={{ display: "flex", gap: "12px", alignItems: "center", marginBottom: "12px" }}>
+            <div style={{ display: "flex", gap: "12px", alignItems: "center", marginBottom: "12px", flexWrap: "wrap" }}>
               <label style={{ minWidth: "80px" }}>
                 {orderType === "Buy" ? "Buy Coin" : "Sell Coin"}
               </label>
-              <select value={fromCurrency} onChange={(e) => setFromCurrency(e.target.value)} style={{ background: panelBg, color: textColor, border: `1px solid ${accentColor}`, borderRadius: 8, padding: "6px 10px" }}>
+              <select value={fromCurrency} onChange={(e) => setFromCurrency(e.target.value)} style={{ ...compactInputStyle, maxWidth: 140 }}>
                 <option>BTC</option>
                 <option>ETH</option>
                 <option>BNB</option>
@@ -526,12 +538,12 @@ export default function BuyAndSell() {
                   }
                 }}
                 placeholder={orderType === "Buy" ? "Amount to buy (coin)" : "Amount to sell (coin)"}
-                style={{ flex: 1, background: panelBg, color: textColor, border: `1px solid ${accentColor}`, borderRadius: 8, padding: "6px 10px" }}
+                style={compactInputStyle}
               />
             </div>
 
             {orderKind === "Limit" && (
-              <div style={{ display: "flex", gap: "12px", alignItems: "center", marginBottom: "12px" }}>
+              <div style={{ display: "flex", gap: "12px", alignItems: "center", marginBottom: "12px", flexWrap: "wrap" }}>
                 <label style={{ minWidth: "80px" }}>Price</label>
                 <input
                   type="number"
@@ -549,20 +561,20 @@ export default function BuyAndSell() {
                     }
                   }}
                   placeholder={`Price in ${toCurrency}`}
-                  style={{ flex: 1, background: panelBg, color: textColor, border: `1px solid ${accentColor}`, borderRadius: 8, padding: "6px 10px" }}
+                  style={compactInputStyle}
                 />
               </div>
             )}
 
-            <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+            <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
               <label style={{ minWidth: "80px" }}>
                 {orderType === "Buy" ? "Total Cost" : "Total Value"}
               </label>
-              <select value={toCurrency} onChange={(e) => setToCurrency(e.target.value)} style={{ width: "120px", background: panelBg, color: textColor, border: `1px solid ${accentColor}`, borderRadius: 8, padding: "6px 10px" }}>
+              <select value={toCurrency} onChange={(e) => setToCurrency(e.target.value)} style={{ ...compactInputStyle, maxWidth: 120 }}>
                 <option>USD</option>
                 <option>EUR</option>
               </select>
-              <div style={{ flex: 1 }}>
+              <div>
                 <input
                   type="number"
                   value={amountQuote}
@@ -578,7 +590,7 @@ export default function BuyAndSell() {
                       ? `How much to spend (${toCurrency})`
                       : `Estimated proceeds (${toCurrency})`
                   }
-                  style={{ width: "100%", background: panelBg, color: textColor, border: `1px solid ${accentColor}`, borderRadius: 8, padding: "6px 10px" }}
+                  style={wideInputStyle}
                 />
               </div>
             </div>
