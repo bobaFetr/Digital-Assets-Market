@@ -12,9 +12,4 @@ public abstract class ApiControllerBase : ControllerBase
     {
         return User.IsInRole("Admin");
     }
-
-    //  protected bool IsAdmin()
-    // {
-    //     return User.IsInRole("Admin");
-    // }
 }

@@ -8,17 +8,13 @@ import { isSafeUploadImageType, resolveTrustedImageUrl } from "./Security/truste
 const DEFAULT_PROFILE_PICTURE = buildUrl("/OIP.webp");
 
 const parseSymbolCurrencies = (symbol) => {
-  if (!symbol || typeof symbol !== "string") {
-    return [];
-  }
-
+  if (!symbol || typeof symbol !== "string") return [];
   const normalized = symbol.trim().toUpperCase();
   for (const quote of ["USD", "EUR"]) {
     if (normalized.endsWith(quote) && normalized.length > quote.length) {
       return [normalized.slice(0, -quote.length), quote];
     }
   }
-
   return [normalized];
 };
 
@@ -29,57 +25,41 @@ const formatBalanceValue = (value) =>
   });
 
 const collectUsedCurrencies = (accountExport, bankAccounts = []) => {
-  const usedCurrencies = new Set();
-
-  for (const wallet of accountExport?.wallets || []) {
-    if (wallet?.currency) {
-      usedCurrencies.add(String(wallet.currency).toUpperCase());
-    }
-  }
-
-  for (const transaction of accountExport?.transactions || []) {
-    if (transaction?.currency) {
-      usedCurrencies.add(String(transaction.currency).toUpperCase());
-    }
-  }
-
-  for (const order of accountExport?.orders || []) {
-    for (const currency of parseSymbolCurrencies(order?.symbol)) {
-      usedCurrencies.add(currency);
-    }
-  }
-
-  for (const account of bankAccounts || []) {
-    if (account?.currency) {
-      usedCurrencies.add(String(account.currency).toUpperCase());
-    }
-  }
-
-  return Array.from(usedCurrencies).sort((a, b) => a.localeCompare(b));
+  const used = new Set();
+  for (const wallet of accountExport?.wallets || []) if (wallet?.currency) used.add(String(wallet.currency).toUpperCase());
+  for (const transaction of accountExport?.transactions || []) if (transaction?.currency) used.add(String(transaction.currency).toUpperCase());
+  for (const order of accountExport?.orders || []) for (const currency of parseSymbolCurrencies(order?.symbol)) used.add(currency);
+  for (const account of bankAccounts || []) if (account?.currency) used.add(String(account.currency).toUpperCase());
+  return Array.from(used).sort((a, b) => a.localeCompare(b));
 };
 
 const getWalletBalanceByCurrency = (wallets, currency) => {
-  const normalizedCurrency = String(currency || "").toUpperCase();
-  const wallet = (wallets || []).find(
-    (item) => String(item?.currency || "").toUpperCase() === normalizedCurrency
-  );
-
+  const normalized = String(currency || "").toUpperCase();
+  const wallet = (wallets || []).find((item) => String(item?.currency || "").toUpperCase() === normalized);
   return Number(wallet?.balance || 0);
 };
 
+function StatusMessage({ type, children }) {
+  if (!children) return null;
+  return <div className={`ui-alert ui-alert--${type}`}>{children}</div>;
+}
+
+function SectionCard({ title, description, actions, children }) {
+  return (
+    <section className="section-card">
+      <div className="section-card__header">
+        <div>
+          <h3 className="section-card__title">{title}</h3>
+          {description ? <p className="section-card__description">{description}</p> : null}
+        </div>
+        {actions ? <div className="action-row">{actions}</div> : null}
+      </div>
+      {children}
+    </section>
+  );
+}
+
 export default function Profile() {
-  const unavailableProfileOptions = [
-    "Security Settings",
-    "Two-Factor Authentication",
-    "Device Management",
-    "API Management",
-    "Payment Methods",
-    "Withdrawal Addresses",
-    "Notifications",
-    "Preferences",
-    "Linked Accounts",
-    "Referral Program",
-  ];
   const [profile, setProfile] = useState(null);
   const [wallets, setWallets] = useState([]);
   const [usedCurrencies, setUsedCurrencies] = useState([]);
@@ -107,6 +87,7 @@ export default function Profile() {
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [isDownloadingInfo, setIsDownloadingInfo] = useState(false);
   const [downloadInfoError, setDownloadInfoError] = useState("");
+  const [downloadInfoSuccess, setDownloadInfoSuccess] = useState("");
   const [cardNumber, setCardNumber] = useState("");
   const [cardHolderName, setCardHolderName] = useState("");
   const [cardCvv, setCardCvv] = useState("");
@@ -120,23 +101,12 @@ export default function Profile() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAccountSummaryLoading, setIsAccountSummaryLoading] = useState(true);
   const navigate = useNavigate();
-  const pageBackground = "var(--bg-color)";
-  const panelBackground = "var(--card-bg)";
-  const insetBackground = "var(--surface-inset)";
+
   const primaryText = "var(--text-primary)";
   const secondaryText = "var(--text-secondary)";
   const accentColor = "var(--brand-accent)";
-  const errorColor = "var(--error-main)";
-  const successColor = "var(--success-main)";
-  const panelShadow = "0 2px 8px rgba(15, 23, 42, 0.08)";
   const cardBorder = "1px solid var(--glass-border)";
-  const fieldBaseStyle = {
-    padding: "10px",
-    borderRadius: "8px",
-    border: cardBorder,
-    background: panelBackground,
-    color: primaryText,
-  };
+  const insetBackground = "var(--surface-inset)";
 
   const loadAccountSummary = async () => {
     const token = getToken();
@@ -150,20 +120,10 @@ export default function Profile() {
 
     try {
       const [accountExport, bankAccounts] = await Promise.all([
-        request(`/api/users/me/export`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }),
-        request(`/api/bank-accounts`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }).catch(() => []),
+        request("/api/users/me/export", { headers: { Authorization: `Bearer ${token}` } }),
+        request("/api/bank-accounts", { headers: { Authorization: `Bearer ${token}` } }).catch(() => []),
       ]);
-
       const nextWallets = Array.isArray(accountExport?.wallets) ? accountExport.wallets : [];
-
       setWallets(nextWallets);
       setUsedCurrencies(collectUsedCurrencies(accountExport, Array.isArray(bankAccounts) ? bankAccounts : []));
       setAccountSummaryError("");
@@ -178,30 +138,18 @@ export default function Profile() {
 
   useEffect(() => {
     let isMounted = true;
-
     const loadProfile = async () => {
       try {
-        const [data, savedCard] = await Promise.all([
-          getProfile(),
-          getSavedCardDetails().catch(() => null),
-        ]);
-
-        if (isMounted) {
-          setProfile(data);
-          setUserNameInput(data?.userName || "");
-          setSavedCardForDeposits(savedCard);
-          if (savedCard?.currency) {
-            setDepositCurrency(savedCard.currency);
-          }
-        }
+        const [data, savedCard] = await Promise.all([getProfile(), getSavedCardDetails().catch(() => null)]);
+        if (!isMounted) return;
+        setProfile(data);
+        setUserNameInput(data?.userName || "");
+        setSavedCardForDeposits(savedCard);
+        if (savedCard?.currency) setDepositCurrency(savedCard.currency);
       } catch (err) {
-        if (isMounted) {
-          setError(err.message || "Unable to load profile.");
-        }
+        if (isMounted) setError(err.message || "Unable to load profile.");
       } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+        if (isMounted) setIsLoading(false);
       }
     };
 
@@ -228,31 +176,16 @@ export default function Profile() {
   const handleProfilePictureChange = async (event) => {
     const file = event.target.files?.[0];
     event.target.value = "";
-
-    if (!file) {
-      return;
-    }
-
-    if (!isSafeUploadImageType(file.type)) {
-      setUploadError("Please select a PNG, JPG, GIF, or WEBP image.");
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      setUploadError("Image is too large. Please choose one under 5MB.");
-      return;
-    }
+    if (!file) return;
+    if (!isSafeUploadImageType(file.type)) return setUploadError("Please select a PNG, JPG, GIF, or WEBP image.");
+    if (file.size > 5 * 1024 * 1024) return setUploadError("Image is too large. Please choose one under 5MB.");
 
     setUploadError("");
     setIsUploadingPicture(true);
-
     try {
       const dataUrl = await readFileAsDataUrl(file);
       const updated = await updateProfilePicture(dataUrl);
-      setProfile((prev) => ({
-        ...(prev || {}),
-        profilePictureUrl: updated?.profilePictureUrl || dataUrl,
-      }));
+      setProfile((prev) => ({ ...(prev || {}), profilePictureUrl: updated?.profilePictureUrl || dataUrl }));
     } catch (err) {
       setUploadError(err.message || "Unable to update profile picture.");
     } finally {
@@ -264,25 +197,14 @@ export default function Profile() {
     event.preventDefault();
     setUserNameError("");
     setUserNameSuccess("");
-
     const normalizedUserName = userNameInput.trim();
-    if (!normalizedUserName) {
-      setUserNameError("Username is required.");
-      return;
-    }
-
-    if (normalizedUserName.length < 3) {
-      setUserNameError("Username must be at least 3 characters.");
-      return;
-    }
+    if (!normalizedUserName) return setUserNameError("Username is required.");
+    if (normalizedUserName.length < 3) return setUserNameError("Username must be at least 3 characters.");
 
     setIsUpdatingUserName(true);
     try {
       const updated = await updateUserName(normalizedUserName);
-      setProfile((prev) => ({
-        ...(prev || {}),
-        userName: updated?.userName || normalizedUserName,
-      }));
+      setProfile((prev) => ({ ...(prev || {}), userName: updated?.userName || normalizedUserName }));
       setUserNameInput(updated?.userName || normalizedUserName);
       setUserNameSuccess("Username updated successfully.");
     } catch (err) {
@@ -296,21 +218,9 @@ export default function Profile() {
     event.preventDefault();
     setPasswordError("");
     setPasswordSuccess("");
-
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      setPasswordError("All password fields are required.");
-      return;
-    }
-
-    if (newPassword.length < 8) {
-      setPasswordError("New password must be at least 8 characters.");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setPasswordError("New password and confirmation do not match.");
-      return;
-    }
+    if (!currentPassword || !newPassword || !confirmPassword) return setPasswordError("All password fields are required.");
+    if (newPassword.length < 8) return setPasswordError("New password must be at least 8 characters.");
+    if (newPassword !== confirmPassword) return setPasswordError("New password and confirmation do not match.");
 
     setIsChangingPassword(true);
     try {
@@ -329,27 +239,13 @@ export default function Profile() {
   const handleDeleteAccount = async (event) => {
     event.preventDefault();
     setDeleteError("");
-
-    if (!deletePassword) {
-      setDeleteError("Please enter your current password to delete account.");
-      return;
+    if (!deletePassword) return setDeleteError("Please enter your current password to delete account.");
+    if (showDeleteBankDetails && (!bankAccountHolderName.trim() || !bankName.trim() || !bankIban.trim() || !bankSwiftCode.trim())) {
+      return setDeleteError("Please fill all bank account fields to continue.");
     }
 
-    if (showDeleteBankDetails) {
-      if (!bankAccountHolderName.trim() || !bankName.trim() || !bankIban.trim() || !bankSwiftCode.trim()) {
-        setDeleteError("Please fill all bank account fields to continue.");
-        return;
-      }
-    }
-
-    const shouldDelete = window.confirm(
-      showDeleteBankDetails
-        ? "Confirm transfer to your bank account and deactivate profile?"
-        : "Are you sure you want to continue with account deletion?"
-    );
-    if (!shouldDelete) {
-      return;
-    }
+    const shouldDelete = window.confirm(showDeleteBankDetails ? "Confirm transfer to your bank account and deactivate profile?" : "Are you sure you want to continue with account deletion?");
+    if (!shouldDelete) return;
 
     setIsDeletingAccount(true);
     try {
@@ -377,31 +273,23 @@ export default function Profile() {
 
   const handleDownloadAccountInfo = async () => {
     setDownloadInfoError("");
-
+    setDownloadInfoSuccess("");
     const token = getToken();
-    if (!token) {
-      setDownloadInfoError("Not authenticated.");
-      return;
-    }
+    if (!token) return setDownloadInfoError("Not authenticated.");
 
     setIsDownloadingInfo(true);
     try {
-      const data = await request(`/api/users/me/export`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
+      const data = await request("/api/users/me/export", { headers: { Authorization: `Bearer ${token}` } });
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      const fileStamp = new Date().toISOString().replace(/[:.]/g, "-");
       link.href = url;
-      link.download = `account-info-${fileStamp}.json`;
+      link.download = `account-info-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
       document.body.appendChild(link);
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
+      setDownloadInfoSuccess("Account export is ready and has been downloaded.");
     } catch (err) {
       setDownloadInfoError(err.message || "Unable to download account info.");
     } finally {
@@ -413,52 +301,22 @@ export default function Profile() {
     event.preventDefault();
     setAddMoneyError("");
     setAddMoneySuccess("");
-
     const parsedAmount = Number(depositAmount);
-
-    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-      setAddMoneyError("Amount must be greater than zero.");
-      return;
-    }
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) return setAddMoneyError("Amount must be greater than zero.");
 
     let normalizedCardHolder = "";
     let normalizedCardNumber = "";
     let normalizedCvv = "";
     let normalizedExpiry = "";
-    let normalizedCurrency = depositCurrency;
-
-    if (savedCardForDeposits) {
-      normalizedCardHolder = "";
-      normalizedCardNumber = "";
-      normalizedCvv = "";
-      normalizedExpiry = "";
-      normalizedCurrency = depositCurrency;
-    } else {
+    if (!savedCardForDeposits) {
       normalizedCardHolder = cardHolderName.trim();
       normalizedCardNumber = cardNumber.replace(/\s+/g, "");
       normalizedCvv = cardCvv.trim();
       normalizedExpiry = cardExpiry.trim();
-      normalizedCurrency = depositCurrency;
-
-      if (!normalizedCardHolder) {
-        setAddMoneyError("Card holder name is required.");
-        return;
-      }
-
-      if (!/^\d{12,19}$/.test(normalizedCardNumber)) {
-        setAddMoneyError("Card number must be 12-19 digits.");
-        return;
-      }
-
-      if (!/^\d{3,4}$/.test(normalizedCvv)) {
-        setAddMoneyError("CVV must be 3 or 4 digits.");
-        return;
-      }
-
-      if (!/^(0[1-9]|1[0-2])\/(\d{2})$/.test(normalizedExpiry)) {
-        setAddMoneyError("Expiry date must be in MM/YY format.");
-        return;
-      }
+      if (!normalizedCardHolder) return setAddMoneyError("Card holder name is required.");
+      if (!/^\d{12,19}$/.test(normalizedCardNumber)) return setAddMoneyError("Card number must be 12-19 digits.");
+      if (!/^\d{3,4}$/.test(normalizedCvv)) return setAddMoneyError("CVV must be 3 or 4 digits.");
+      if (!/^(0[1-9]|1[0-2])\/(\d{2})$/.test(normalizedExpiry)) return setAddMoneyError("Expiry date must be in MM/YY format.");
     }
 
     setIsAddingMoney(true);
@@ -469,24 +327,21 @@ export default function Profile() {
         cvv: normalizedCvv,
         expiryDate: normalizedExpiry,
         amount: parsedAmount,
-        currency: normalizedCurrency,
+        currency: depositCurrency,
       });
-
       setAddMoneySuccess("Money added successfully.");
-
-      if (!savedCardForDeposits) {
-        const savedCard = await getSavedCardDetails().catch(() => null);
-        if (savedCard) {
-          setSavedCardForDeposits(savedCard);
-          setDepositCurrency(savedCard.currency || normalizedCurrency);
-        }
-      }
-
       setCardNumber("");
       setCardHolderName("");
       setCardCvv("");
       setCardExpiry("");
       setDepositAmount("");
+      if (!savedCardForDeposits) {
+        const savedCard = await getSavedCardDetails().catch(() => null);
+        if (savedCard) {
+          setSavedCardForDeposits(savedCard);
+          setDepositCurrency(savedCard.currency || depositCurrency);
+        }
+      }
       setIsAccountSummaryLoading(true);
       await loadAccountSummary();
     } catch (err) {
@@ -497,520 +352,211 @@ export default function Profile() {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        minHeight: "100vh",
-        background: pageBackground,
-        color: primaryText,
-        fontFamily: "Arial"
-      }}
-    >
-      {/* Sidebar */}
+    <div style={{ display: "flex", minHeight: "100vh", background: "var(--bg-color)", color: primaryText }}>
       <Sidebar />
-
-
-
-      {/* Main Content */}
-      <div style={{ flex: 1, padding: "20px" }}>
-        <h2 style={{ color: accentColor }}>Profile Page</h2>
-
-        {/* User Info Section */}
-        <div style={{ background: panelBackground, padding: "20px", borderRadius: "12px", marginTop: "20px", boxShadow: panelShadow, border: cardBorder }}>
-          <div
-            className="Profile_Picture"
-            style={{
-              width: "100px",
-              height: "100px",
-              borderRadius: "50%",
-              background: insetBackground,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "32px",
-              fontWeight: "bold",
-              color: accentColor,
-              overflow: "hidden",
-              border: `2px solid ${accentColor}`
-            }}
-          >
-            {profile?.profilePictureUrl ? (
-              <img
-                src={resolveTrustedImageUrl(profile?.profilePictureUrl, DEFAULT_PROFILE_PICTURE, buildUrl)}
-                alt="Profile"
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                onError={(event) => {
-                  event.currentTarget.src = DEFAULT_PROFILE_PICTURE;
-                }}
-              />
-            ) : (
-              <img
-                src={DEFAULT_PROFILE_PICTURE}
-                alt="Default profile"
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            )}
+      <main style={{ flex: 1, padding: 24 }}>
+        <div className="page-header" style={{ marginBottom: 20 }}>
+          <div>
+            <h2 style={{ color: accentColor }}>My Profile</h2>
+            <p className="page-subtitle">
+              Manage your personal information, internal wallets, card funding, security settings, and account export from one place.
+            </p>
           </div>
-          <div style={{ marginTop: "12px" }}>
-            <label
-              style={{
-                display: "inline-block",
-                padding: "10px 14px",
-                borderRadius: "8px",
-                background: isUploadingPicture ? "var(--table-head-bg)" : accentColor,
-                color: "#fff",
-                cursor: isUploadingPicture ? "not-allowed" : "pointer",
-                fontWeight: 600,
-                border: "none"
-              }}
-            >
-              {isUploadingPicture ? "Uploading..." : "Change Profile Picture"}
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleProfilePictureChange}
-                disabled={isUploadingPicture}
-                style={{ display: "none" }}
-              />
-            </label>
-            {uploadError && <p style={{ marginTop: "8px", color: errorColor }}>{uploadError}</p>}
+          <div className="action-row">
+            <button className="ui-button ui-button--primary" onClick={() => navigate("/wallets")}>Open Wallets</button>
+            <button className="ui-button ui-button--info" onClick={() => navigate("/VerifyIdentityPage")}>Identity Verification</button>
+            <button className="ui-button ui-button--secondary" onClick={handleLogout}>Logout</button>
           </div>
-          <h3 style={{ color: accentColor }}>User Information</h3>
-          {isLoading && <p style={{ marginTop: "10px" }}>Loading profile...</p>}
-          {error && <p style={{ marginTop: "10px", color: errorColor }}>{error}</p>}
-          {!isLoading && !error && (
-            <>
-              <p style={{ marginTop: "10px" }}>Username: {profile?.userName || "-"}</p>
-              <p style={{ marginTop: "10px" }}>Email: {profile?.email}</p>
-              <p>Role: {profile?.role}</p>
-              {isAccountSummaryLoading && <p>Account activity: Loading...</p>}
-              {!isAccountSummaryLoading && accountSummaryError && <p style={{ color: errorColor }}>Account activity: unavailable</p>}
-              {!isAccountSummaryLoading && !accountSummaryError && (
-                <>
-                  <div style={{ marginTop: "10px" }}>
-                    <strong style={{ color: accentColor }}>Fiat Account Balances</strong>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px", marginTop: "10px" }}>
-                      {["EUR", "USD"].map((currency) => (
-                        <div
-                          key={currency}
-                          style={{
-                            padding: "14px 16px",
-                            borderRadius: "10px",
-                            background: insetBackground,
-                            border: cardBorder,
-                            display: "grid",
-                            gap: "6px"
-                          }}
-                        >
-                          <span style={{ color: secondaryText, fontSize: "13px" }}>{currency} bank account</span>
-                          <strong style={{ color: accentColor, fontSize: "20px" }}>
-                            {formatBalanceValue(getWalletBalanceByCurrency(wallets, currency))} {currency}
-                          </strong>
-                        </div>
-                      ))}
-                    </div>
+        </div>
+
+        <div className="section-grid" style={{ marginBottom: 20 }}>
+          <SectionCard title="Profile Overview" description="Your demo account identity, profile picture, and quick account summary.">
+            {isLoading ? <StatusMessage type="info">Loading profile...</StatusMessage> : null}
+            {!isLoading && error ? <StatusMessage type="error">{error}</StatusMessage> : null}
+            {!isLoading && !error ? (
+              <div className="section-grid" style={{ gap: 18 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "120px minmax(0, 1fr)", gap: 18, alignItems: "center" }}>
+                  <div style={{ width: 100, height: 100, borderRadius: "50%", overflow: "hidden", border: `2px solid ${accentColor}`, background: insetBackground }}>
+                    <img
+                      src={resolveTrustedImageUrl(profile?.profilePictureUrl, DEFAULT_PROFILE_PICTURE, buildUrl)}
+                      alt="Profile"
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      onError={(event) => {
+                        event.currentTarget.src = DEFAULT_PROFILE_PICTURE;
+                      }}
+                    />
                   </div>
-                  <div style={{ marginTop: "10px" }}>
-                    <strong style={{ color: accentColor }}>Currencies used</strong>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "10px" }}>
-                      {usedCurrencies.length > 0 ? (
-                        usedCurrencies.map((currency) => (
-                          <span
-                            key={currency}
-                            style={{
-                              padding: "6px 10px",
-                              borderRadius: "999px",
-                              background: insetBackground,
-                              border: `1px solid ${accentColor}`,
-                              color: accentColor,
-                              fontSize: "13px",
-                              fontWeight: 600
-                            }}
-                          >
-                            {currency}
-                          </span>
-                        ))
-                      ) : (
-                        <span style={{ color: secondaryText }}>No currencies used yet.</span>
-                      )}
+                  <div className="section-grid" style={{ gap: 10 }}>
+                    <div className="ui-field-row" style={{ alignItems: "center", justifyContent: "space-between" }}>
+                      <div>
+                        <div style={{ fontSize: 24, fontWeight: 700 }}>{profile?.userName || "-"}</div>
+                        <div style={{ color: secondaryText }}>{profile?.email || "-"}</div>
+                        <div style={{ color: secondaryText, marginTop: 4 }}>Role: {profile?.role || "User"}</div>
+                      </div>
+                      <label className="ui-button ui-button--secondary" style={{ display: "inline-flex", alignItems: "center" }}>
+                        {isUploadingPicture ? "Uploading..." : "Change Picture"}
+                        <input type="file" accept="image/*" onChange={handleProfilePictureChange} disabled={isUploadingPicture} style={{ display: "none" }} />
+                      </label>
                     </div>
+                    <StatusMessage type="error">{uploadError}</StatusMessage>
                   </div>
-                  <div style={{ marginTop: "14px" }}>
-                    <strong style={{ color: accentColor }}>Wallet balances</strong>
-                    <div style={{ display: "grid", gap: "8px", marginTop: "10px" }}>
-                      {wallets.length > 0 ? (
-                        wallets.map((wallet) => (
+                </div>
+
+                {isAccountSummaryLoading ? <StatusMessage type="info">Loading wallet summary...</StatusMessage> : null}
+                {!isAccountSummaryLoading && accountSummaryError ? <StatusMessage type="warning">{accountSummaryError}</StatusMessage> : null}
+                {!isAccountSummaryLoading && !accountSummaryError ? (
+                  <div className="section-grid" style={{ gap: 16 }}>
+                    <div>
+                      <div style={{ fontWeight: 700, color: accentColor, marginBottom: 10 }}>Fiat balances</div>
+                      <div className="stat-grid">
+                        {["EUR", "USD"].map((currency) => (
+                          <div key={currency} className="stat-card">
+                            <div className="stat-card__label">{currency} internal balance</div>
+                            <div className="stat-card__value">{formatBalanceValue(getWalletBalanceByCurrency(wallets, currency))} {currency}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div style={{ fontWeight: 700, color: accentColor, marginBottom: 10 }}>Currencies used</div>
+                      <div className="tag-row">
+                        {usedCurrencies.length > 0 ? usedCurrencies.map((currency) => <span key={currency} className="tag-pill">{currency}</span>) : <span style={{ color: secondaryText }}>No currencies used yet.</span>}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div style={{ fontWeight: 700, color: accentColor, marginBottom: 10 }}>Wallet balances</div>
+                      <div className="section-grid" style={{ gap: 8 }}>
+                        {wallets.length > 0 ? wallets.map((wallet) => (
                           <div
                             key={wallet.walletID || wallet.walletId || `${wallet.currency}-${wallet.createdAt}`}
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              gap: "12px",
-                              padding: "10px 12px",
-                              borderRadius: "8px",
-                              background: insetBackground,
-                              border: cardBorder
-                            }}
+                            style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "12px 14px", borderRadius: 12, background: insetBackground, border: cardBorder }}
                           >
                             <span>{wallet.currency}</span>
                             <strong style={{ color: accentColor }}>{formatBalanceValue(wallet.balance)}</strong>
                           </div>
-                        ))
-                      ) : (
-                        <span style={{ color: secondaryText }}>No wallets available.</span>
-                      )}
+                        )) : <span style={{ color: secondaryText }}>No wallets available.</span>}
+                      </div>
                     </div>
                   </div>
-                </>
-              )}
-              <div style={{ marginTop: 8 }}>
-                <button onClick={() => navigate('/wallets')} style={{ padding: '8px 12px', borderRadius: 8, background: accentColor, color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 600 }} aria-label="manage-wallets">Manage wallets</button>
+                ) : null}
               </div>
-            </>
-          )}
-          <form onSubmit={handleUpdateUserName} style={{ marginTop: "14px", display: "grid", gap: "8px", maxWidth: "320px" }}>
-            <input
-              type="text"
-              placeholder="Change username"
-              value={userNameInput}
-              onChange={(event) => setUserNameInput(event.target.value)}
-              style={fieldBaseStyle}
-            />
-            <button
-              type="submit"
-              disabled={isUpdatingUserName}
-              style={{
-                padding: "10px 14px",
-                borderRadius: "8px",
-                border: "none",
-                background: isUpdatingUserName ? "var(--table-head-bg)" : accentColor,
-                color: "#fff",
-                cursor: isUpdatingUserName ? "not-allowed" : "pointer",
-                fontWeight: 600
-              }}
-            >
-              {isUpdatingUserName ? "Updating..." : "Update Username"}
-            </button>
-            {userNameError && <p style={{ margin: 0, color: errorColor }}>{userNameError}</p>}
-            {userNameSuccess && <p style={{ margin: 0, color: successColor }}>{userNameSuccess}</p>}
-          </form>
-          <div className="AddMoney">
-            <form onSubmit={handleAddMoney} style={{ display: "grid", gap: "10px", marginTop: "10px", maxWidth: "360px" }}>
-              <h4 style={{ margin: 0, color: accentColor }}>Add Money from Card</h4>
-              {savedCardForDeposits && (
-                <div style={{ color: accentColor, fontSize: "13px" }}>
-                  Using saved card: {savedCardForDeposits.cardHolderName} **** {savedCardForDeposits.cardLast4}
-                </div>
-              )}
+            ) : null}
+          </SectionCard>
+        </div>
 
-              {savedCardForDeposits && (
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px", background: panelBackground, borderRadius: "8px", overflow: "hidden", color: primaryText, border: cardBorder }}>
-                  <thead>
-                    <tr style={{ background: "var(--table-head-bg)" }}>
-                      <th style={{ textAlign: "left", padding: "8px", borderBottom: `1px solid ${accentColor}` }}>Credit Card ID</th>
-                      <th style={{ textAlign: "left", padding: "8px", borderBottom: `1px solid ${accentColor}` }}>Holder</th>
-                      <th style={{ textAlign: "left", padding: "8px", borderBottom: `1px solid ${accentColor}` }}>Last 4</th>
-                      <th style={{ textAlign: "left", padding: "8px", borderBottom: `1px solid ${accentColor}` }}>Expiry</th>
-                      <th style={{ textAlign: "left", padding: "8px", borderBottom: `1px solid ${accentColor}` }}>Currency</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td style={{ padding: "8px", borderBottom: `1px solid ${accentColor}` }}>{savedCardForDeposits.creditCardId || savedCardForDeposits.userId}</td>
-                      <td style={{ padding: "8px", borderBottom: `1px solid ${accentColor}` }}>{savedCardForDeposits.cardHolderName}</td>
-                      <td style={{ padding: "8px", borderBottom: `1px solid ${accentColor}` }}>{savedCardForDeposits.cardLast4}</td>
-                      <td style={{ padding: "8px", borderBottom: `1px solid ${accentColor}` }}>{savedCardForDeposits.expiryDate}</td>
-                      <td style={{ padding: "8px", borderBottom: `1px solid ${accentColor}` }}>{savedCardForDeposits.currency}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              )}
+        <div className="section-grid section-grid--two" style={{ marginBottom: 20 }}>
+          <SectionCard
+            title="Personal Details"
+            description="Update your username and export your account data when you need a full activity snapshot."
+            actions={<button className="ui-button ui-button--secondary" onClick={handleDownloadAccountInfo} disabled={isDownloadingInfo}>{isDownloadingInfo ? "Preparing export..." : "Download Account Export"}</button>}
+          >
+            <form onSubmit={handleUpdateUserName} className="ui-form-grid">
+              <input type="text" placeholder="Username" value={userNameInput} onChange={(event) => setUserNameInput(event.target.value)} className="ui-input" />
+              <div className="action-row">
+                <button type="submit" className="ui-button ui-button--primary" disabled={isUpdatingUserName}>{isUpdatingUserName ? "Updating..." : "Update Username"}</button>
+              </div>
+              <StatusMessage type="error">{userNameError}</StatusMessage>
+              <StatusMessage type="success">{userNameSuccess}</StatusMessage>
+              <StatusMessage type="error">{downloadInfoError}</StatusMessage>
+              <StatusMessage type="success">{downloadInfoSuccess}</StatusMessage>
+            </form>
+          </SectionCard>
 
-              {!savedCardForDeposits && (
+          <SectionCard
+            title="Fund Internal Wallet"
+            description="Add demo money with a card. This simulates a platform deposit and updates your internal wallet balance."
+            actions={<button className="ui-button ui-button--secondary" onClick={() => navigate("/wallets")}>Manage Wallets</button>}
+          >
+            <form onSubmit={handleAddMoney} className="ui-form-grid">
+              {savedCardForDeposits ? (
                 <>
-                  <input
-                    type="text"
-                    placeholder="Card holder name"
-                    value={cardHolderName}
-                    onChange={(event) => setCardHolderName(event.target.value)}
-                    style={fieldBaseStyle}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Card number"
-                    value={cardNumber}
-                    onChange={(event) => setCardNumber(event.target.value)}
-                    style={fieldBaseStyle}
-                  />
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-                    <input
-                      type="text"
-                      placeholder="CVV"
-                      value={cardCvv}
-                      onChange={(event) => setCardCvv(event.target.value)}
-                      style={fieldBaseStyle}
-                    />
-                    <input
-                      type="text"
-                      placeholder="MM/YY"
-                      value={cardExpiry}
-                      onChange={(event) => setCardExpiry(event.target.value)}
-                      style={fieldBaseStyle}
-                    />
+                  <StatusMessage type="info">Using saved card: {savedCardForDeposits.cardHolderName} ending in {savedCardForDeposits.cardLast4}.</StatusMessage>
+                  <div style={{ padding: 14, borderRadius: 14, border: cardBorder, background: insetBackground, display: "grid", gap: 6 }}>
+                    <div><strong>Holder:</strong> {savedCardForDeposits.cardHolderName}</div>
+                    <div><strong>Last 4:</strong> {savedCardForDeposits.cardLast4}</div>
+                    <div><strong>Expiry:</strong> {savedCardForDeposits.expiryDate}</div>
+                    <div><strong>Currency:</strong> {savedCardForDeposits.currency}</div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <input type="text" placeholder="Card holder name" value={cardHolderName} onChange={(event) => setCardHolderName(event.target.value)} className="ui-input" />
+                  <input type="text" placeholder="Card number" value={cardNumber} onChange={(event) => setCardNumber(event.target.value)} className="ui-input" />
+                  <div className="ui-field-row">
+                    <input type="text" placeholder="CVV" value={cardCvv} onChange={(event) => setCardCvv(event.target.value)} className="ui-input ui-input--compact" />
+                    <input type="text" placeholder="MM/YY" value={cardExpiry} onChange={(event) => setCardExpiry(event.target.value)} className="ui-input ui-input--compact" />
                   </div>
                 </>
               )}
-
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 140px", gap: "10px" }}>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder="Amount"
-                  value={depositAmount}
-                  onChange={(event) => setDepositAmount(event.target.value)}
-                  style={fieldBaseStyle}
-                />
-                <select
-                  value={depositCurrency}
-                  onChange={(event) => setDepositCurrency(event.target.value)}
-                  style={fieldBaseStyle}
-                >
+              <div className="ui-field-row">
+                <input type="number" step="0.01" min="0" placeholder="Amount" value={depositAmount} onChange={(event) => setDepositAmount(event.target.value)} className="ui-input ui-input--compact" />
+                <select value={depositCurrency} onChange={(event) => setDepositCurrency(event.target.value)} className="ui-select ui-select--compact">
                   <option value="USD">USD</option>
                   <option value="EUR">EUR</option>
                 </select>
               </div>
-              <p style={{ margin: 0, fontSize: "13px", color: secondaryText }}>
-                Deposit the amount into your {depositCurrency} bank account balance.
-              </p>
-              <button
-                type="submit"
-                disabled={isAddingMoney}
-                style={{
-                  padding: "10px 14px",
-                  borderRadius: "8px",
-                  border: "none",
-                  background: isAddingMoney ? "var(--table-head-bg)" : accentColor,
-                  color: "#fff",
-                  cursor: isAddingMoney ? "not-allowed" : "pointer",
-                  fontWeight: 600
-                }}
-              >
-                {isAddingMoney ? "Adding..." : "Add Money"}
-              </button>
-              {savedCardForDeposits && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSavedCardForDeposits(null);
-                    setDepositCurrency("USD");
-                    setAddMoneySuccess("");
-                    setAddMoneyError("");
-                  }}
-                  style={{
-                    padding: "10px 14px",
-                    borderRadius: "8px",
-                    border: `1px solid ${accentColor}`,
-                    background: panelBackground,
-                    color: accentColor,
-                    cursor: "pointer",
-                    fontWeight: 600
-                  }}
-                >
-                  Use another card
-                </button>
-              )}
-              {addMoneyError && <p style={{ margin: 0, color: errorColor }}>{addMoneyError}</p>}
-              {addMoneySuccess && <p style={{ margin: 0, color: successColor }}>{addMoneySuccess}</p>}
+              <StatusMessage type="info">Deposit the amount into your internal {depositCurrency} wallet balance. This is a simulated card funding flow.</StatusMessage>
+              <div className="action-row">
+                <button type="submit" className="ui-button ui-button--primary" disabled={isAddingMoney}>{isAddingMoney ? "Adding..." : "Add Money"}</button>
+                {savedCardForDeposits ? (
+                  <button
+                    type="button"
+                    className="ui-button ui-button--secondary"
+                    onClick={() => {
+                      setSavedCardForDeposits(null);
+                      setDepositCurrency("USD");
+                      setAddMoneySuccess("");
+                      setAddMoneyError("");
+                    }}
+                  >
+                    Use Another Card
+                  </button>
+                ) : null}
+              </div>
+              <StatusMessage type="error">{addMoneyError}</StatusMessage>
+              <StatusMessage type="success">{addMoneySuccess}</StatusMessage>
             </form>
-          </div>
-          <div>
-            <button onClick={handleDownloadAccountInfo} disabled={isDownloadingInfo} style={{
-              background: panelBackground,
-              color: accentColor,
-              border: `1px solid ${accentColor}`,
-              borderRadius: "8px",
-              padding: "10px 14px",
-              fontWeight: 600,
-              marginTop: "10px",
-              cursor: isDownloadingInfo ? "not-allowed" : "pointer"
-            }}>
-              {isDownloadingInfo ? "Preparing download..." : "Download all your account info"}
-            </button>
-            {downloadInfoError && <p style={{ marginTop: "8px", color: errorColor }}>{downloadInfoError}</p>}
-          </div>
-          <div className="DeleteAcccountButton">
-            <form onSubmit={handleDeleteAccount} style={{ display: "grid", gap: "10px", marginTop: "10px", maxWidth: "320px" }}>
-              <input
-                type="password"
-                placeholder="Current password"
-                value={deletePassword}
-                onChange={(event) => setDeletePassword(event.target.value)}
-                style={fieldBaseStyle}
-              />
-              {showDeleteBankDetails && (
+          </SectionCard>
+        </div>
+
+        <div className="section-grid section-grid--two">
+          <SectionCard title="Security and Access" description="Change your password and keep your account access details up to date.">
+            <form onSubmit={handleChangePassword} className="ui-form-grid">
+              <input type="password" placeholder="Current password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} className="ui-input" />
+              <input type="password" placeholder="New password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} className="ui-input" />
+              <input type="password" placeholder="Confirm new password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="ui-input" />
+              <div className="action-row">
+                <button type="submit" className="ui-button ui-button--primary" disabled={isChangingPassword}>{isChangingPassword ? "Changing..." : "Update Password"}</button>
+              </div>
+              <StatusMessage type="error">{passwordError}</StatusMessage>
+              <StatusMessage type="success">{passwordSuccess}</StatusMessage>
+            </form>
+          </SectionCard>
+
+          <SectionCard title="Danger Zone" description="Delete the account only if you really want to remove your demo access and wallet records.">
+            <StatusMessage type="warning">This action is intended for account closure. If the backend requires a bank transfer before deletion, the personal bank fields will appear below.</StatusMessage>
+            <form onSubmit={handleDeleteAccount} className="ui-form-grid" style={{ marginTop: 12 }}>
+              <input type="password" placeholder="Current password" value={deletePassword} onChange={(event) => setDeletePassword(event.target.value)} className="ui-input" />
+              {showDeleteBankDetails ? (
                 <>
-                  <input
-                    type="text"
-                    placeholder="Bank account holder name"
-                    value={bankAccountHolderName}
-                    onChange={(event) => setBankAccountHolderName(event.target.value)}
-                    style={fieldBaseStyle}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Bank name"
-                    value={bankName}
-                    onChange={(event) => setBankName(event.target.value)}
-                    style={fieldBaseStyle}
-                  />
-                  <input
-                    type="text"
-                    placeholder="IBAN"
-                    value={bankIban}
-                    onChange={(event) => setBankIban(event.target.value)}
-                    style={fieldBaseStyle}
-                  />
-                  <input
-                    type="text"
-                    placeholder="SWIFT code"
-                    value={bankSwiftCode}
-                    onChange={(event) => setBankSwiftCode(event.target.value)}
-                    style={fieldBaseStyle}
-                  />
+                  <input type="text" placeholder="Bank account holder name" value={bankAccountHolderName} onChange={(event) => setBankAccountHolderName(event.target.value)} className="ui-input" />
+                  <input type="text" placeholder="Bank name" value={bankName} onChange={(event) => setBankName(event.target.value)} className="ui-input" />
+                  <input type="text" placeholder="IBAN" value={bankIban} onChange={(event) => setBankIban(event.target.value)} className="ui-input" />
+                  <input type="text" placeholder="SWIFT code" value={bankSwiftCode} onChange={(event) => setBankSwiftCode(event.target.value)} className="ui-input" />
                 </>
-              )}
-              <button
-                type="submit"
-                disabled={isDeletingAccount}
-                style={{
-                  background: isDeletingAccount ? "var(--table-head-bg)" : "var(--accent-red)",
-                  border: "none",
-                  color: "#fff",
-                  cursor: isDeletingAccount ? "not-allowed" : "pointer",
-                  fontWeight: 600
-                }}
-              >
-                {isDeletingAccount ? "Deleting..." : showDeleteBankDetails ? "Confirm and Delete" : "Continue"}
-              </button>
-              {deleteError && <p style={{ margin: 0, color: errorColor }}>{deleteError}</p>}
+              ) : null}
+              <div className="action-row">
+                <button type="submit" className="ui-button ui-button--danger" disabled={isDeletingAccount}>
+                  {isDeletingAccount ? "Deleting..." : showDeleteBankDetails ? "Confirm and Delete" : "Delete Account"}
+                </button>
+              </div>
+              <StatusMessage type="error">{deleteError}</StatusMessage>
             </form>
-          </div>
-          <button
-            style={{
-              marginTop: "15px",
-              padding: "12px",
-              borderRadius: "8px",
-              background: panelBackground,
-              border: `1px solid ${accentColor}`,
-              cursor: "pointer",
-              marginLeft: "10px",
-              color: accentColor,
-              fontWeight: 600
-            }}
-            onClick={handleLogout}
-          >
-            Logout
-          </button>
+          </SectionCard>
         </div>
-
-        {/* Account Options */}
-        <div style={{ background: panelBackground, padding: "20px", borderRadius: "12px", marginTop: "30px", boxShadow: panelShadow, border: cardBorder }}>
-          <h3 style={{ color: accentColor }}>Account Options</h3>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px", marginTop: "15px" }}>
-            {unavailableProfileOptions.slice(0, 2).map((label) => (
-              <button key={label} disabled title="Coming soon" style={{ background: panelBackground, color: secondaryText, border: cardBorder, borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "not-allowed", opacity: 0.72 }}>{label}</button>
-            ))}
-            <button onClick={() => navigate('/VerifyIdentityPage')} style={{ background: panelBackground, color: accentColor, border: `1px solid ${accentColor}`, borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "pointer" }}>Identity Verification (KYC)</button>
-            {unavailableProfileOptions.slice(2, 7).map((label) => (
-              <button key={label} disabled title="Coming soon" style={{ background: panelBackground, color: secondaryText, border: cardBorder, borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "not-allowed", opacity: 0.72 }}>{label}</button>
-            ))}
-            <button onClick={() => navigate('/wallets')} style={{ background: panelBackground, color: accentColor, border: `1px solid ${accentColor}`, borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "pointer" }}>Bank Accounts</button>
-            {unavailableProfileOptions.slice(7).map((label) => (
-              <button key={label} disabled title="Coming soon" style={{ background: panelBackground, color: secondaryText, border: cardBorder, borderRadius: "8px", padding: "10px 14px", fontWeight: 600, cursor: "not-allowed", opacity: 0.72 }}>{label}</button>
-            ))}
-          </div>
-
-          <form onSubmit={handleChangePassword} style={{ marginTop: "20px", display: "grid", gap: "10px", maxWidth: "420px" }}>
-            <h4 style={{ margin: 0, color: accentColor }}>Change Password</h4>
-            <input
-              type="password"
-              placeholder="Current password"
-              value={currentPassword}
-              onChange={(event) => setCurrentPassword(event.target.value)}
-              style={fieldBaseStyle}
-            />
-            <input
-              type="password"
-              placeholder="New password"
-              value={newPassword}
-              onChange={(event) => setNewPassword(event.target.value)}
-              style={fieldBaseStyle}
-            />
-            <input
-              type="password"
-              placeholder="Confirm new password"
-              value={confirmPassword}
-              onChange={(event) => setConfirmPassword(event.target.value)}
-              style={fieldBaseStyle}
-            />
-            <button
-              type="submit"
-              disabled={isChangingPassword}
-              style={{
-                padding: "10px 14px",
-                borderRadius: "8px",
-                border: "none",
-                background: isChangingPassword ? "var(--table-head-bg)" : accentColor,
-                color: "#fff",
-                cursor: isChangingPassword ? "not-allowed" : "pointer",
-                fontWeight: 600
-              }}
-            >
-              {isChangingPassword ? "Changing..." : "Update Password"}
-            </button>
-            {passwordError && <p style={{ margin: 0, color: errorColor }}>{passwordError}</p>}
-            {passwordSuccess && <p style={{ margin: 0, color: successColor }}>{passwordSuccess}</p>}
-          </form>
-        </div>
-
-        {/* Settings Section */}
-        {/* <div style={{ background: "#1a1d2e", padding: "20px", borderRadius: "12px", marginTop: "30px" }}>
-          <h3>Account Settings</h3>
-          <button
-            style={{
-              marginTop: "15px",
-              padding: "12px",
-              borderRadius: "8px",
-              background: "#7f8cff",
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
-            Edit Profile
-          </button>
-        </div> */}
-      </div>
-
-      {/* Right Sidebar */}
-      {/* <aside
-        style={{
-          width: "300px",
-          background: "#11131f",
-          padding: "20px",
-          borderLeft: "1px solid #222",
-        }}
-      >
-        <h3>Profile Summary</h3>
-        <h1 style={{ color: "#4dff88" }}>Active</h1>
-
-        <div style={{ marginTop: "20px" }}>
-          <p>Membership Level</p>
-          <div style={{ background: "#1a1d2e", padding: "10px", borderRadius: "8px" }}>Premium</div>
-          <p style={{ marginTop: "15px" }}>Last Login</p>
-          <div style={{ background: "#1a1d2e", padding: "10px", borderRadius: "8px" }}>10 Dec 2025</div>
-        </div>
-      </aside> */}
+      </main>
     </div>
   );
 }

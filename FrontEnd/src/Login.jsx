@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import "./Login.css"; // create this file with the styles below
+import "./Login.css";
 import { getProfile, loginUser } from "./Services/Service";
 import Sidebar from "./Components/Sidebar";
 
@@ -25,15 +25,19 @@ export default function Login() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
     if (!form.email || !form.password) {
       setError("Please enter both email and password.");
       return;
     }
+
     setError("");
     setIsSubmitting(true);
+
     try {
       await loginUser({ email: form.email, password: form.password }, form.remember);
       const profile = await getProfile();
+
       if (profile?.role === "Admin") {
         navigate("/Admin");
       } else {
@@ -54,29 +58,29 @@ export default function Login() {
           <section className="login-hero">
             <div className="hero-content">
               <h1>Welcome back</h1>
-              <p>Track your digital assets, monitor live order books, and chat with your traders.</p>
+              <p>Sign in to view your profile, fund your wallet, and use the digital asset trading demo.</p>
               <ul>
-                <li>Institution-grade security</li>
-                <li>Real-time analytics dashboard</li>
-                <li>24/7 concierge support</li>
+                <li>Profile and wallet overview</li>
+                <li>Simulated card funding</li>
+                <li>Demo buy and sell of digital assets</li>
               </ul>
             </div>
           </section>
 
           <section className="login-panel">
             <div className="login-card">
-              <h2>Sign in or Sign in as Admin</h2>
-              <p className="subtext">Use your Crypto Inc ЕООД credentials</p>
+              <h2>Sign in</h2>
+              <p className="subtext">Use your registered account email and password.</p>
 
               {error && <div className="login-alert">{error}</div>}
 
               <form onSubmit={handleSubmit} className="login-form">
                 <label>
-                  Email or Username or Phone Number
+                  Email
                   <input
                     type="email"
                     name="email"
-                    placeholder="you@company.com"
+                    placeholder="you@example.com"
                     value={form.email}
                     onChange={handleChange}
                   />
@@ -87,7 +91,7 @@ export default function Login() {
                   <input
                     type="password"
                     name="password"
-                    placeholder="••••••••"
+                    placeholder="Enter your password"
                     value={form.password}
                     onChange={handleChange}
                   />
@@ -112,17 +116,15 @@ export default function Login() {
               </form>
 
               <div className="login-divider">
-                <span>or continue with</span>
+                <span>demo project</span>
               </div>
 
               <div className="social-buttons">
-                <button>Google</button>
-                {/* <button>Microsoft</button>
-                <button>Apple</button> */}
+                <button type="button" disabled>Local account only</button>
               </div>
 
               <p className="signup-text">
-                New to Crypto Inc ЕООД? <a href="/signup">Create an account</a>
+                New to the platform? <Link to="/sign-up">Create an account</Link>
               </p>
             </div>
           </section>

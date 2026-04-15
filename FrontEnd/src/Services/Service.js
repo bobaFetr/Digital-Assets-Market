@@ -2,14 +2,29 @@ import { buildUrl } from "../config/api";
 
 const TOKEN_STORAGE_KEY = "dam_token";
 const AUTH_BLOCKED_EVENT = "auth:blocked";
+const AUTH_STATE_CHANGED_EVENT = "auth:changed";
 
-const clearStoredToken = () => {
+const notifyAuthStateChanged = (reason) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.dispatchEvent(
+    new CustomEvent(AUTH_STATE_CHANGED_EVENT, {
+      detail: { reason },
+    })
+  );
+};
+
+const clearStoredToken = (reason = "logout") => {
   try {
     sessionStorage.removeItem(TOKEN_STORAGE_KEY);
     localStorage.removeItem(TOKEN_STORAGE_KEY);
   } catch (e) {
     // ignore
   }
+
+  notifyAuthStateChanged(reason);
 };
 
 const notifyBlockedAuth = (reason) => {
@@ -40,32 +55,51 @@ const request = async (path, options = {}) => {
   });
 
   if (!response.ok) {
-    let errDetail = null;
+    let errDetail = "";
+    const contentType = response.headers.get("content-type") || "";
+
     try {
-      const json = await response.json();
-      errDetail = json?.message || JSON.stringify(json);
-    } catch (e) {
-      try {
+      if (contentType.includes("application/json")) {
+        const json = await response.json();
+
+        if (typeof json === "string") {
+          errDetail = json;
+        } else if (json?.message) {
+          errDetail = json.message;
+        } else if (json?.title) {
+          errDetail = json.title;
+        } else if (json?.detail) {
+          errDetail = json.detail;
+        } else if (json?.errors) {
+          errDetail = Object.values(json.errors).flat().join(" ");
+        } else {
+          errDetail = JSON.stringify(json);
+        }
+      } else {
         errDetail = await response.text();
-      } catch (e2) {
-        errDetail = null;
       }
+    } catch (e) {
+      errDetail = "";
     }
 
     const isBlockedUser =
       response.status === 403 &&
       typeof errDetail === "string" &&
       /user is banned/i.test(errDetail);
+    const isUnauthorized = response.status === 401;
 
     if (isBlockedUser) {
-      clearStoredToken();
+      clearStoredToken("banned");
       notifyBlockedAuth("banned");
+    } else if (isUnauthorized) {
+      clearStoredToken("unauthorized");
     }
 
     const details = errDetail ? `: ${errDetail}` : "";
     const error = new Error(`(${response.status})${details}`);
     error.status = response.status;
     error.authBlocked = isBlockedUser;
+    error.authInvalid = isUnauthorized;
     throw error;
   }
 
@@ -103,6 +137,8 @@ export const loginUser = async (payload, remember = false) => {
     // fallback to sessionStorage if localStorage access fails
     sessionStorage.setItem(TOKEN_STORAGE_KEY, data.token);
   }
+
+  notifyAuthStateChanged("login");
 
   return data.token;
 };
@@ -215,7 +251,7 @@ export const updateUserName = (userName) => {
 };
 
 export const logoutUser = () => {
-  clearStoredToken();
+  clearStoredToken("logout");
 };
 
 export const getToken = () => {
@@ -333,3 +369,4 @@ export const getSavedCardDetails = () => {
 
 export { request };
 export { AUTH_BLOCKED_EVENT };
+export { AUTH_STATE_CHANGED_EVENT };

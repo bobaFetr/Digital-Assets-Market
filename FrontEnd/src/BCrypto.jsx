@@ -69,8 +69,10 @@
 // }
 // export default BCrypto;
 import React, { useState } from 'react';
+import { useNavigate } from "react-router-dom";
 import { Line } from "react-chartjs-2";
 import Sidebar from "./Components/Sidebar";
+import { getToken } from "./Services/Service";
 import {
   Chart as ChartJS,
   LineElement,
@@ -87,23 +89,38 @@ ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip,
 // 1. Added a default empty array for 'assets' to prevent .map() crashes
 function BCrypto({ assets = [] }) {
   const [log, setLog] = useState([]);
+  const navigate = useNavigate();
   const isLightTheme =
     typeof document !== "undefined" && document.body.classList.contains("light-mode");
   const chartAxisColor = isLightTheme ? "#475569" : "#94a3b8";
   const chartGridColor = isLightTheme ? "rgba(148, 163, 184, 0.24)" : "rgba(148, 163, 184, 0.18)";
 
   const handleBuy = () => {
+    if (!getToken()) {
+      navigate("/sign-in", {
+        state: { error: "Please sign in to use the trading demo." },
+      });
+      return;
+    }
+
     const latest = assets[assets.length - 1];
-    const message = `Bought ${latest.symbol || 'Crypto'} at $${latest.price}`;
+    const message = `Opening buy flow for ${latest.symbol || 'Crypto'}.`;
     setLog(prev => [message, ...prev]); // Newest actions at the top
-    alert(message);
+    navigate("/buy-sell?action=buy");
   };
 
   const handleSell = () => {
+    if (!getToken()) {
+      navigate("/sign-in", {
+        state: { error: "Please sign in to use the trading demo." },
+      });
+      return;
+    }
+
     const latest = assets[assets.length - 1];
-    const message = `Sold ${latest.symbol || 'Crypto'} at $${latest.price}`;
+    const message = `Opening sell flow for ${latest.symbol || 'Crypto'}.`;
     setLog(prev => [message, ...prev]);
-    alert(message);
+    navigate("/buy-sell?action=sell");
   };
 
   // 3. Prepare Chart Data safely
@@ -160,13 +177,13 @@ function BCrypto({ assets = [] }) {
           onClick={handleBuy} 
           style={{ flex: 1, padding: "12px", backgroundColor: "#22c55e", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}
         >
-          BUY
+          Open Buy Demo
         </button>
         <button 
           onClick={handleSell} 
           style={{ flex: 1, padding: "12px", backgroundColor: "#ef4444", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}
         >
-          SELL
+          Open Sell Demo
         </button>
       </div>
 
