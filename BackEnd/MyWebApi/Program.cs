@@ -120,19 +120,7 @@ internal class Program
         builder.Services.AddSwaggerGen();
 
         // CORS
-        var configuredOrigins = builder.Configuration["Frontend:CORS_ALLOWED_ORIGINS"]
-                               ?? Environment.GetEnvironmentVariable("CORS_ALLOWED_ORIGINS");
-
-        string[] allowedOrigins = !string.IsNullOrWhiteSpace(configuredOrigins)
-            ? configuredOrigins.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            : new[]
-            {
-                "http://localhost:5173",
-                "http://localhost:5174",
-                "https://localhost:5173",
-                "https://localhost:5174",
-                "https://crypto-inc-eood-front-end.onrender.com"
-            };
+        string[] allowedOrigins = BuildAllowedOrigins(builder.Configuration);
 
         builder.Services.AddCors(options =>
         {
@@ -307,6 +295,39 @@ internal class Program
         return rawValue.Equals("1", StringComparison.OrdinalIgnoreCase) ||
                rawValue.Equals("on", StringComparison.OrdinalIgnoreCase) ||
                rawValue.Equals("yes", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string[] BuildAllowedOrigins(IConfiguration configuration)
+    {
+        var configuredOrigins = new[]
+        {
+            configuration["Frontend:CORS_ALLOWED_ORIGINS"],
+            Environment.GetEnvironmentVariable("CORS_ALLOWED_ORIGINS"),
+            configuration["CORS_ALLOWED_ORIGINS"],
+            configuration["Frontend:BaseUrl"],
+            Environment.GetEnvironmentVariable("FRONTEND__BASEURL"),
+            Environment.GetEnvironmentVariable("FRONTEND_BASE_URL")
+        };
+
+        var defaults = new[]
+        {
+            "http://localhost:5173",
+            "http://localhost:5174",
+            "https://localhost:5173",
+            "https://localhost:5174",
+            "https://crypto-inc-eood-front-end.onrender.com"
+        };
+
+        return configuredOrigins
+            .Concat(defaults)
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .SelectMany(value => value!
+                .Split(new[] { ',', ';', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            .Select(value => value.Trim().TrimEnd('/'))
+            .Where(value => Uri.TryCreate(value, UriKind.Absolute, out var uri)
+                && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     private static void EnsureOptionalDemoTables(AppDbContext db)
