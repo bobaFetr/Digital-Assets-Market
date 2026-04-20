@@ -7,7 +7,7 @@ services:
     rootDir: BackEnd
     dockerfilePath: BackEnd/Dockerfile
     dockerContext: BackEnd
-    healthCheckPath: /api/news
+    healthCheckPath: /healthz
     envVars:
       - key: PORT
         value: 10000
@@ -33,7 +33,7 @@ services:
     dockerContext: FrontEnd
     envVars:
       - key: API_BASE_URL
-        value: ""
+        value: https://crypto-inc-eood-back-end.onrender.com
       - key: MAINTENANCE_MODE
         value: "false"
       - key: MAINTENANCE_ENABLED

@@ -170,25 +170,18 @@ internal class Program
         builder.Services.AddHostedService<PaperTradingSettlementService>();
 
         var app = builder.Build();
+        var startupLogger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Startup");
         var maintenancePagePath = Path.Combine(app.Environment.WebRootPath ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot"), "maintenance.html");
 
-        using (var scope = app.Services.CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var walletProvisioning = scope.ServiceProvider.GetRequiredService<WalletProvisioningService>();
-
-            EnsureOptionalDemoTables(db);
-
-            var created = walletProvisioning.EnsureDefaultWalletsForAllUsers();
-            if (created > 0)
-                db.SaveChanges();
-        }
+        TryRunStartupInitialization(app.Services, startupLogger);
 
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+
+        app.UseCors("FrontendCors");
 
         app.Use(async (context, next) =>
         {
@@ -263,10 +256,14 @@ internal class Program
             await next();
         });
 
-        app.UseCors("FrontendCors");
-
         app.UseAuthentication();
         app.UseAuthorization();
+
+        app.MapGet("/healthz", () => Results.Ok(new
+        {
+            status = "ok",
+            utc = DateTime.UtcNow
+        })).AllowAnonymous();
 
         app.MapControllers();
         app.MapFallbackToFile("index.html");
@@ -328,6 +325,28 @@ internal class Program
                 && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
+    }
+
+    private static void TryRunStartupInitialization(IServiceProvider services, ILogger logger)
+    {
+        try
+        {
+            using var scope = services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var walletProvisioning = scope.ServiceProvider.GetRequiredService<WalletProvisioningService>();
+
+            EnsureOptionalDemoTables(db);
+
+            var created = walletProvisioning.EnsureDefaultWalletsForAllUsers();
+            if (created > 0)
+            {
+                db.SaveChanges();
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Startup initialization failed. The app will continue running, but database-backed features may be degraded until the issue is resolved.");
+        }
     }
 
     private static void EnsureOptionalDemoTables(AppDbContext db)
