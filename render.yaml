@@ -32,8 +32,6 @@ services:
     dockerfilePath: FrontEnd/Dockerfile
     dockerContext: FrontEnd
     envVars:
-      - key: API_PROXY_URL
-        value: https://crypto-inc-eood-back-end.onrender.com
       - key: API_BASE_URL
         value: ""
       - key: MAINTENANCE_MODE
