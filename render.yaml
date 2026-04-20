@@ -1,0 +1,42 @@
+services:
+  - type: web
+    runtime: docker
+    name: crypto-inc-eood-back-end
+    plan: free
+    region: oregon
+    rootDir: BackEnd
+    dockerfilePath: BackEnd/Dockerfile
+    dockerContext: BackEnd
+    healthCheckPath: /api/news
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: Jwt__Key
+        sync: false
+      - key: Jwt__Issuer
+        value: MyWebApi
+      - key: Jwt__Audience
+        value: MyWebApiUsers
+      - key: DATABASE_URL
+        sync: false
+      - key: Frontend__BaseUrl
+        value: https://crypto-inc-eood-front-end.onrender.com
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://crypto-inc-eood-front-end.onrender.com
+
+  - type: web
+    runtime: docker
+    name: crypto-inc-eood-front-end
+    plan: free
+    rootDir: FrontEnd
+    dockerfilePath: FrontEnd/Dockerfile
+    dockerContext: FrontEnd
+    envVars:
+      - key: API_BASE_URL
+        value: https://crypto-inc-eood-back-end.onrender.com
+      - key: MAINTENANCE_MODE
+        value: "false"
+      - key: MAINTENANCE_ENABLED
+        value: ""
+      - key: ENABLE_MAINTENANCE_PAGE
+        value: ""
