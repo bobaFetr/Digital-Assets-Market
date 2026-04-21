@@ -948,6 +948,254 @@ li {
   font-weight: 600;
 }
 
+.market-chart-frame {
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(127, 140, 255, 0.08) 0%, rgba(12, 17, 26, 0) 100%);
+}
+
+.market-chart-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.market-chart-toolbar__meta {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.market-chart-toolbar__meta span {
+  color: var(--text-secondary);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.market-chart-toolbar__meta strong {
+  color: var(--text-primary);
+  font-size: 15px;
+}
+
+.market-chart-range {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.market-chart-range__button {
+  border: 1px solid var(--glass-border);
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.market-chart-range__button.is-active {
+  background: var(--brand-accent);
+  border-color: var(--brand-accent);
+  color: #fff;
+}
+
+.buy-sell-page {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 32px;
+}
+
+.buy-sell-toolbar {
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.buy-sell-toolbar-actions {
+  margin-left: auto;
+}
+
+.buy-sell-balance {
+  row-gap: 6px;
+}
+
+.buy-sell-panel {
+  overflow: hidden;
+}
+
+.buy-sell-exchange-header {
+  margin-bottom: 4px;
+}
+
+.buy-sell-chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.buy-sell-chart-subtitle {
+  max-width: 42ch;
+}
+
+.buy-sell-rate-chip {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--surface-muted);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.buy-sell-rate-chip strong {
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.buy-sell-tabs,
+.buy-sell-order-kind-tabs {
+  flex-wrap: wrap;
+}
+
+.buy-sell-form-row {
+  width: 100%;
+}
+
+.buy-sell-form-row--card {
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(127, 140, 255, 0.05);
+  border: 1px solid var(--glass-border);
+}
+
+.buy-sell-field-label {
+  flex: 0 0 92px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.buy-sell-field-control {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.buy-sell-field-control--compact {
+  flex: 0 0 140px;
+}
+
+.buy-sell-field-wrapper {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.buy-sell-field-wrapper .buy-sell-field-control {
+  width: 100%;
+  max-width: none !important;
+}
+
+.buy-sell-orderbook-list {
+  display: grid;
+  gap: 8px;
+}
+
+.buy-sell-orderbook-item {
+  background: var(--surface-muted);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.buy-sell-submit-row .btn-primary {
+  width: auto;
+  min-width: 220px;
+}
+
+.buy-sell-mobile-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.buy-sell-mobile-summary-card {
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.buy-sell-mobile-summary-card span {
+  color: var(--text-secondary);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.buy-sell-mobile-summary-card strong {
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.buy-sell-quick-amount {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(127, 140, 255, 0.05);
+  border: 1px solid var(--glass-border);
+}
+
+.buy-sell-quick-amount__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.buy-sell-quick-amount__header strong {
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.buy-sell-quick-amount__buttons {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.buy-sell-quick-amount__button {
+  border: 1px solid var(--glass-border);
+  background: var(--card-bg);
+  color: var(--brand-accent);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.buy-sell-quick-amount__button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 /* Right Sidebar */
 .crypto-right-sidebar {
   width: 320px;
@@ -1489,6 +1737,167 @@ body.sidebar-open .crypto-sidebar,
 @media (max-width: 560px) {
   .crypto-main {
     padding: 12px;
+  }
+
+  .buy-sell-page {
+    gap: 14px;
+  }
+
+  .buy-sell-section--exchange {
+    order: 1;
+  }
+
+  .buy-sell-section--chart {
+    order: 2;
+  }
+
+  .buy-sell-section--orderbook {
+    order: 3;
+  }
+
+  .buy-sell-section--market {
+    order: 4;
+  }
+
+  .buy-sell-toolbar {
+    align-items: stretch !important;
+  }
+
+  .buy-sell-toolbar-actions {
+    width: 100%;
+    margin-left: 0;
+    flex-direction: column;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+  }
+
+  .buy-sell-balance {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .buy-sell-cards-grid {
+    display: flex !important;
+    gap: 12px !important;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scroll-snap-type: x proximity;
+  }
+
+  .buy-sell-cards-grid .coin-card {
+    min-width: min(240px, 82vw);
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
+
+  .buy-sell-panel,
+  .chart-container,
+  .orderbook-section {
+    padding: 14px !important;
+    border-radius: 14px !important;
+  }
+
+  .market-chart-frame--mobile {
+    margin-inline: -4px;
+  }
+
+  .market-chart-toolbar {
+    align-items: flex-start;
+  }
+
+  .market-chart-range {
+    width: 100%;
+  }
+
+  .market-chart-range__button {
+    flex: 1 1 calc(25% - 8px);
+    text-align: center;
+  }
+
+  .buy-sell-chart-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .buy-sell-rate-chip {
+    width: 100%;
+    align-items: flex-start;
+  }
+
+  .buy-sell-exchange-header {
+    align-items: stretch !important;
+  }
+
+  .buy-sell-mobile-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .buy-sell-tabs,
+  .buy-sell-order-kind-tabs {
+    width: 100%;
+  }
+
+  .buy-sell-tabs .binance-tab,
+  .buy-sell-order-kind-tabs .binance-tab {
+    flex: 1 1 0;
+    width: 100%;
+    margin-right: 0 !important;
+    text-align: center;
+  }
+
+  .buy-sell-form-row {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  .buy-sell-form-row--card {
+    padding: 12px;
+  }
+
+  .buy-sell-field-label {
+    min-width: 0 !important;
+    flex: 0 0 auto;
+  }
+
+  .buy-sell-field-control,
+  .buy-sell-field-control--compact,
+  .buy-sell-field-wrapper {
+    width: 100%;
+    max-width: none !important;
+    flex: 1 1 auto;
+  }
+
+  .buy-sell-submit-row {
+    justify-content: stretch !important;
+  }
+
+  .buy-sell-submit-row .btn-primary {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .buy-sell-quick-amount {
+    padding: 12px;
+  }
+
+  .buy-sell-quick-amount__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .buy-sell-quick-amount__buttons {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .buy-sell-quick-amount__button {
+    padding-inline: 0;
+  }
+
+  .buy-sell-orderbook-item {
+    font-size: 13px;
+    padding: 10px;
   }
 
   .global-mobile-header {
