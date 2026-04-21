@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "./Components/Sidebar";
+import "./wallet.css";
 import {
   addMoneyFromCard,
   createBankAccount,
@@ -61,6 +62,7 @@ export default function Wallet() {
     flex: 1,
     padding: "24px",
     color: "var(--text-primary)",
+    minWidth: 0,
   };
 
   const panelStyle = {
@@ -250,17 +252,17 @@ export default function Wallet() {
   };
 
   return (
-    <div style={pageStyle}>
+    <div className="wallet-page" style={pageStyle}>
       <Sidebar />
-      <div style={sectionStyle}>
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+      <div className="wallet-main" style={sectionStyle}>
+        <div className="wallet-topbar" style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
           <div>
             <h2 style={{ marginBottom: 6 }}>Wallet & Funding</h2>
             <p style={{ margin: 0, color: "var(--text-secondary)" }}>
               Manage your platform balances, deposit with a card, and keep bank account details for withdrawals.
             </p>
           </div>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <div className="wallet-topbar-actions" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             <button onClick={() => navigate("/buy-sell")} className="ui-button ui-button--primary">
               Go to Buy / Sell
             </button>
@@ -276,7 +278,7 @@ export default function Wallet() {
 
         {!loading && (
           <>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16, marginTop: 20 }}>
+            <div className="wallet-summary-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16, marginTop: 20 }}>
               {wallets.length > 0 ? (
                 wallets.map((wallet) => (
                   <div key={wallet.walletId} style={panelStyle}>
@@ -292,8 +294,8 @@ export default function Wallet() {
               )}
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "minmax(320px, 420px) 1fr", gap: 20, marginTop: 24 }}>
-              <section style={panelStyle}>
+            <div className="wallet-two-column" style={{ display: "grid", gridTemplateColumns: "minmax(320px, 420px) 1fr", gap: 20, marginTop: 24 }}>
+              <section className="wallet-panel-card" style={panelStyle}>
                 <h3 style={{ marginTop: 0 }}>Fund wallet with card</h3>
                 <p style={{ color: "var(--text-secondary)", marginTop: 0 }}>
                   This is a demo card deposit that credits your internal platform balance.
@@ -323,7 +325,7 @@ export default function Wallet() {
                         onChange={(event) => setCardNumber(event.target.value)}
                         style={wideFieldStyle}
                       />
-                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                      <div className="wallet-inline-fields" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                         <input
                           type="text"
                           placeholder="CVV"
@@ -342,7 +344,7 @@ export default function Wallet() {
                     </>
                   )}
 
-                  <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                  <div className="wallet-inline-fields" style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
                     <input
                       type="number"
                       step="0.01"
@@ -381,8 +383,8 @@ export default function Wallet() {
                 </form>
               </section>
 
-              <section style={panelStyle}>
-                <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+              <section className="wallet-panel-card" style={panelStyle}>
+                <div className="wallet-panel-header" style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
                   <h3 style={{ margin: 0 }}>Recent transactions</h3>
                   <span style={{ color: "var(--text-secondary)", fontSize: 13 }}>
                     Latest internal activity
@@ -396,6 +398,7 @@ export default function Wallet() {
                     {transactions.slice(0, 6).map((transaction) => (
                       <div
                         key={transaction.transactionId}
+                        className="wallet-transaction-row"
                         style={{
                           display: "flex",
                           justifyContent: "space-between",
@@ -427,9 +430,9 @@ export default function Wallet() {
               </section>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 20, marginTop: 24 }}>
-              <section style={panelStyle}>
-                <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+            <div className="wallet-bottom-grid" style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 20, marginTop: 24 }}>
+              <section className="wallet-panel-card" style={panelStyle}>
+                <div className="wallet-panel-header" style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
                   <h3 style={{ margin: 0 }}>Linked bank accounts</h3>
                   <button onClick={() => startEdit(null)} className="ui-button ui-button--primary">Add bank account</button>
                 </div>
@@ -442,6 +445,7 @@ export default function Wallet() {
                   {accounts.map((account) => (
                     <div
                       key={account.bankAccountId}
+                      className="wallet-account-card"
                       style={{
                         padding: 16,
                         border: "1px solid var(--glass-border)",
@@ -449,14 +453,14 @@ export default function Wallet() {
                         background: "var(--surface-inset)",
                       }}
                     >
-                      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                      <div className="wallet-account-card__content" style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
                         <div>
                           <div><strong>{account.accountHolderName}</strong> - {account.currency}</div>
                           <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>{account.bankName}</div>
                           <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>IBAN: ****{String(account.iban || "").slice(-4)}</div>
                           <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>SWIFT: {account.swiftCode}</div>
                         </div>
-                        <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+                        <div className="wallet-account-actions" style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
                           <button onClick={() => startEdit(account)} className="ui-button ui-button--secondary">Edit</button>
                           <button onClick={() => removeBankAccount(account.bankAccountId)} className="ui-button ui-button--secondary" style={{ color: "var(--error-main)" }}>
                             Delete
@@ -468,7 +472,7 @@ export default function Wallet() {
                 </div>
               </section>
 
-              <section style={panelStyle}>
+              <section className="wallet-panel-card" style={panelStyle}>
                 <h3 style={{ marginTop: 0 }}>{editing ? "Edit bank account" : "Add bank account"}</h3>
                 <div style={{ display: "grid", gap: 10 }}>
                   <input
@@ -509,7 +513,7 @@ export default function Wallet() {
                     <option value="EUR">EUR</option>
                   </select>
 
-                  <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                  <div className="wallet-form-actions" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                     <button onClick={submitBankAccount} className="ui-button ui-button--primary">
                       {editing ? "Save changes" : "Add account"}
                     </button>
