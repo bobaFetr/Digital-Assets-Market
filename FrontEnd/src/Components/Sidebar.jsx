@@ -36,17 +36,18 @@ const navLinkStyle = ({ isActive }) => ({
   gap: "12px",
   padding: "10px 18px",
   borderRadius: "999px",
-  color: "#fff",
+  color: isActive ? "#fff" : "var(--text-primary)",
   textDecoration: "none",
-  background: isActive ? "#ff7f50" : "transparent",
+  background: isActive ? "var(--brand-accent)" : "transparent",
   boxShadow: isActive ? "0 2px 8px rgba(255, 127, 80, 0.35)" : "none",
+  border: isActive ? "1px solid transparent" : "1px solid var(--glass-border)",
   fontWeight: isActive ? 700 : 500,
 });
 
 const sectionTitleStyle = {
   margin: "16px 0 8px",
   padding: "0 18px",
-  color: "rgba(255,255,255,0.72)",
+  color: "var(--text-secondary)",
   fontSize: "12px",
   fontWeight: 700,
   letterSpacing: "0.08em",
