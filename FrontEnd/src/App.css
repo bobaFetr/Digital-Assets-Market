@@ -858,11 +858,24 @@ li {
 
 .sidebar-brand {
   display: inline-block;
+  position: relative;
 }
 
 .sidebar-brand-image {
   width: 100%;
   max-width: 150px;
+  display: block;
+}
+
+.sidebar-brand-image--light {
+  display: none;
+}
+
+.light-mode .sidebar-brand-image--dark {
+  display: none;
+}
+
+.light-mode .sidebar-brand-image--light {
   display: block;
 }
 

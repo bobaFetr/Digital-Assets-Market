@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { Link, NavLink } from "react-router-dom";
-import logo from "../assets/Gemini_Generated_Image_sb5zszsb5zszsb5z.png";
+import darkLogo from "../assets/Gemini_Generated_Image_sb5zszsb5zszsb5z.png";
+import lightLogo from "../assets/Copilot_20251008_144326.png";
 import { getToken } from "../Services/Service";
 
 const getClaimsFromToken = (token) => {
@@ -113,7 +114,16 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
           aria-label="Go to home page"
           onClick={closeMobileSidebar}
         >
-          <img className="sidebar-brand-image" src={logo} alt="Digital Asset Marketplace" />
+          <img
+            className="sidebar-brand-image sidebar-brand-image--dark"
+            src={darkLogo}
+            alt="Digital Asset Marketplace"
+          />
+          <img
+            className="sidebar-brand-image sidebar-brand-image--light"
+            src={lightLogo}
+            alt="Digital Asset Marketplace"
+          />
         </Link>
         <button
           type="button"
