@@ -1,7 +1,5 @@
-//import React, { useEffect} from 'react';
-//import Chart from 'chart.js/auto';
-import React, { useEffect, useState } from 'react';
-import './App.css';
+import React, { useEffect, useMemo, useState } from "react";
+import "./App.css";
 import {
   Chart as ChartJS,
   LineElement,
@@ -12,11 +10,10 @@ import {
   Tooltip,
   Legend,
   Filler,
-} from 'chart.js';
-import { Line } from 'react-chartjs-2';
-import { request } from './Services/Service';
+} from "chart.js";
+import { Line } from "react-chartjs-2";
+import { request } from "./Services/Service";
 
-// ✅ Register required components
 ChartJS.register(
   LineElement,
   PointElement,
@@ -28,6 +25,7 @@ ChartJS.register(
   Filler
 );
 
+const MOBILE_BREAKPOINT = 560;
 const parseSymbol = (symbol) => {
   if (typeof symbol !== "string" || symbol.length < 6) {
     return { base: symbol ?? "", quote: "USD" };
@@ -40,139 +38,223 @@ const parseSymbol = (symbol) => {
 
 function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
   const { base, quote } = parseSymbol(symbol);
-  const [chartData, setChartData] = useState({
-    labels: [],
-    datasets: [],
-  });
+  const [seriesPoints, setSeriesPoints] = useState([]);
   const [meta, setMeta] = useState({ count: 0, lastPrice: null, lastTime: null });
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
 
-  const applySeries = (points, sourceLabel) => {
+    return window.innerWidth <= MOBILE_BREAKPOINT;
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= MOBILE_BREAKPOINT);
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const applySeries = (points) => {
     if (!Array.isArray(points) || points.length === 0) {
       setMeta({ count: 0, lastPrice: null, lastTime: null });
-      setChartData({ labels: [], datasets: [] });
+      setSeriesPoints([]);
       return;
     }
 
-    const labels = points.map((item) =>
-      new Date(item.time).toLocaleTimeString("bg-BG", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      })
-    );
-    const prices = points.map((item) => Number(item.price));
     const last = points[points.length - 1];
-
     setMeta({
       count: points.length,
       lastPrice: Number(last.price),
       lastTime: last.time,
     });
+    setSeriesPoints(points);
+  };
 
-    setChartData({
-      labels,
-      datasets: [
-        {
-          label: `Price ${base}/${quote} (${sourceLabel})`,
-          data: prices,
-          borderColor: "rgb(255, 127, 80)",
-          backgroundColor: " rgba(255, 127, 80, 0.1)",
-          tension: 0.3,
-          fill: true,
-          pointRadius: 3,
-          pointBackgroundColor: " rgb(255, 127, 80)",
-        },
-      ],
-    });
+  const clearSeries = () => {
+    setMeta({ count: 0, lastPrice: null, lastTime: null });
+    setSeriesPoints([]);
   };
 
   const fetchData = async () => {
     try {
-      const candles = await request(`/api/market/klines?symbol=${encodeURIComponent(symbol)}&interval=1m&limit=120`);
+      const candles = await request(
+        `/api/market/klines?symbol=${encodeURIComponent(symbol)}&interval=1m&limit=120`
+      );
+
       const candlePoints = (candles ?? [])
-        .map((item) => ({ time: item.closeTimeUtc, price: item.close }))
-        .filter((item) => item.time != null && item.price != null);
+        .map((item) => ({ time: item.closeTimeUtc, price: Number(item.close) }))
+        .filter((item) => item.time != null && Number.isFinite(item.price));
 
       if (candlePoints.length > 0) {
-        applySeries(candlePoints, "real-market");
+        applySeries(candlePoints);
         return;
       }
 
-      setMeta({ count: 0, lastPrice: null, lastTime: null });
-      setChartData({ labels: [], datasets: [] });
+      clearSeries();
     } catch (error) {
       console.error(`Error fetching ${symbol} data:`, error?.message || error);
-      setMeta({ count: 0, lastPrice: null, lastTime: null });
-      setChartData({ labels: [], datasets: [] });
+      clearSeries();
     }
   };
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 10000); // update every 10 seconds
+    const interval = setInterval(fetchData, 10000);
     return () => clearInterval(interval);
   }, [symbol, refreshKey]);
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: {
-        type: 'category',
+  const visiblePoints = useMemo(() => {
+    const preferredCount = isMobile ? 30 : 80;
+    return seriesPoints.slice(-preferredCount);
+  }, [seriesPoints, isMobile]);
+
+  const chartData = useMemo(() => {
+    const labels = visiblePoints.map((item) =>
+      new Date(item.time).toLocaleTimeString("bg-BG", {
+        hour: "2-digit",
+        minute: "2-digit",
+        ...(isMobile ? {} : { second: "2-digit" }),
+      })
+    );
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: `${base}/${quote}`,
+          data: visiblePoints.map((item) => item.price),
+          borderColor: "rgb(255, 127, 80)",
+          backgroundColor: "rgba(255, 127, 80, 0.18)",
+          borderWidth: isMobile ? 3 : 2,
+          tension: 0.35,
+          fill: true,
+          pointRadius: 0,
+          pointHoverRadius: 5,
+          pointHitRadius: 16,
+        },
+      ],
+    };
+  }, [visiblePoints, base, quote, isMobile]);
+
+  const options = useMemo(
+    () => ({
+      responsive: true,
+      maintainAspectRatio: false,
+      normalized: true,
+      animation: false,
+      interaction: {
+        intersect: false,
+        mode: "index",
+      },
+      scales: {
+        x: {
+          type: "category",
+          title: {
+            display: !isMobile,
+            text: "Time",
+          },
+          ticks: {
+            color: "#f0f0f0",
+            autoSkip: true,
+            maxTicksLimit: isMobile ? 4 : 8,
+            maxRotation: 0,
+            minRotation: 0,
+            font: {
+              size: isMobile ? 11 : 12,
+            },
+          },
+          grid: {
+            color: "rgba(255, 255, 255, 0.08)",
+            drawTicks: false,
+          },
+          border: {
+            color: "rgba(255, 255, 255, 0.12)",
+          },
+        },
+        y: {
+          type: "linear",
+          title: {
+            display: !isMobile,
+            text: `Price (${quote})`,
+          },
+          ticks: {
+            color: "#f0f0f0",
+            maxTicksLimit: isMobile ? 5 : 7,
+            font: {
+              size: isMobile ? 11 : 12,
+            },
+          },
+          grid: {
+            color: "rgba(255, 255, 255, 0.08)",
+          },
+          border: {
+            color: "rgba(255, 255, 255, 0.12)",
+          },
+        },
+      },
+      plugins: {
+        legend: {
+          display: false,
+        },
         title: {
           display: true,
-          text: 'Time',
+          text: isMobile ? `${base}/${quote}` : `${base}/${quote} PRICE (RECENT)`,
+          color: "#f0f0f0",
+          font: {
+            size: isMobile ? 14 : 16,
+            weight: "600",
+          },
+          padding: {
+            bottom: isMobile ? 12 : 16,
+          },
         },
-        ticks: {
-          color: '#f0f0f0',
-        },
-        grid: {
-          color: '#333',
+        tooltip: {
+          displayColors: false,
+          backgroundColor: "rgba(11, 14, 17, 0.92)",
+          titleColor: "#ffffff",
+          bodyColor: "#dbe4ff",
+          padding: 10,
+          callbacks: {
+            label: (context) => `Price: ${context.formattedValue} ${quote}`,
+          },
         },
       },
-      y: {
-        type: 'linear',
-        title: {
-          display: true,
-          text: `Price (${quote})`,
-        },
-        ticks: {
-          color: '#f0f0f0',
-        },
-        grid: {
-          color: '#333',
-        },
-      },
-    },
-    plugins: {
-      legend: {
-        labels: {
-          color: '#f0f0f0',
-        },
-        position: 'top',
-      },
-      title: {
-        display: true,
-        text: `${base}/${quote} PRICE (RECENT)`,
-        color: '#f0f0f0',
-      },
-    },
-  };
+    }),
+    [base, quote, isMobile]
+  );
 
   return (
     <div style={{ width: "100%", margin: 0, padding: 0 }}>
-      {/* <h1>Графика на цената</h1> */}
-      <div style={{ width: "100%", height: "clamp(260px, 48vh, 420px)" }}>
+      <div className="market-chart-toolbar">
+        <div className="market-chart-toolbar__meta">
+          <span>Last price</span>
+          <strong>{meta.lastPrice == null ? "--" : `${meta.lastPrice} ${quote}`}</strong>
+        </div>
+      </div>
+      <div
+        className={`market-chart-frame${isMobile ? " market-chart-frame--mobile" : ""}`}
+        style={{
+          width: "100%",
+          height: isMobile ? "clamp(320px, 56vh, 420px)" : "clamp(260px, 48vh, 420px)",
+        }}
+      >
         <Line data={chartData} options={options} />
       </div>
-      <div style={{ marginTop: "10px", color: "#9aa3ff", fontSize: "12px" }}>
+      <div style={{ marginTop: "10px", color: "#9aa3ff", fontSize: isMobile ? "11px" : "12px" }}>
         {meta.count === 0
           ? "No data points yet."
-          : `Points: ${meta.count} | Last: ${meta.lastPrice} @ ${new Date(meta.lastTime).toLocaleTimeString()}`}
+          : `Showing ${visiblePoints.length} of ${meta.count} points | Last: ${meta.lastPrice} @ ${new Date(meta.lastTime).toLocaleTimeString()}`}
       </div>
     </div>
   );
-  // function OrderBook() {}////////////////////////////////////////
 }
 
 export default BitcoinChart;
