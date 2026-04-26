@@ -4,7 +4,6 @@ import BitcoinChart from "./BitcoinChart";
 import BNBChart from "./BNB";
 import Profile from "./Profile";
 import Wallet from "./Wallet";
-//import Profile from "./Profile";
 import WithDraw from "./WithdrawPage.jsx";
 import BuyAndSell from "./BuyAndSell";
 import BCrypto from "./BCrypto.jsx";
@@ -13,12 +12,10 @@ import VerifyIdentityPage from "./VerifyIdentityPage";
 import { AUTH_BLOCKED_EVENT, AUTH_STATE_CHANGED_EVENT, getKycStatus, getToken, request, getProfile } from "./Services/Service";
 import { buildUrl } from "./config/api";
 import { resolveTrustedImageUrl } from "./Security/trustedContent";
-import VerificationEmailPage from "./VerificationEmailPage";
 import SentSMSToNumberPage from "./SentSMSToNumberPage";
 
 import SignUpPage from "./SignUp.jsx";
 import SignInPage from "./Login.jsx";
-import ForgotPassword from "./ForgotPassword.jsx";
 import ResetPassword from "./ResetPassword.jsx";
 import Sidebar from "./Components/Sidebar";
 import Footer from "./Components/Footer";
@@ -97,6 +94,13 @@ const getMobileHeaderTitle = (pathname) => {
   if (pathname.startsWith("/feedback")) return "Feedback";
   if (pathname.startsWith("/rug-pull")) return "Rug Pull";
   return "Menu";
+};
+
+const buildNewsSearchPath = (rawQuery) => {
+  const normalizedQuery = String(rawQuery || "").trim();
+  return normalizedQuery
+    ? `/news?q=${encodeURIComponent(normalizedQuery)}`
+    : "/news";
 };
 
 const getClaimsFromToken = (token) => {
@@ -889,11 +893,8 @@ export default function App() {
           <Route path="/withdraw" element={<RequireAuth><WithDraw /></RequireAuth>} />
           <Route path="/buy-sell" element={<RequireAuth><BuyAndSell /></RequireAuth>} />
           <Route path="/VerifyIdentityPage" element={<RequireAuth><VerifyIdentityPage /></RequireAuth>} />
-          <Route path="/VerificationEmailPage" element={<VerificationEmailPage />} />
-          <Route path="/SentSMSToNumberPage" element={<SentSMSToNumberPage />} />
           <Route path="/sign-in" element={<SignInPage />} />
           <Route path="/sign-up" element={<SignUpPage />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/BitcoinChart" element={<BitcoinChartPage />} />
           <Route path="/BNBChart" element={<BNBChartPage />} />
@@ -933,7 +934,7 @@ export default function App() {
           <Route path="/support" element={<Support />} />
           <Route path="/feedback" element={<Feedback />} />
           <Route path="/rug-pull" element={<RugPull />} />
-          ///////////////
+          
           <Route path="*" element={<ErorPage1 />} />
         </Routes>
         </div>

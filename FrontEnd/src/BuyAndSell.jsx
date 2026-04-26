@@ -718,55 +718,7 @@ export default function BuyAndSell() {
             </div>
           </div>
         </div>
-
       </div>
-
-      {/* Right Sidebar */}
-      {/* <aside className="crypto-right-sidebar">
-        <div className="balance-card">
-          <div className="balance-title">Total Balance</div>
-          <h1 className="balance-amount">$37.4343</h1>
-        </div>
-
-        <div className="exchange-section">
-          <p className="exchange-label">You Sell</p>
-          <div className="currency-box">
-            <span>{fromCurrency}</span>
-            <span>{amount || "0.00"}</span>
-          </div>
-          <p className="exchange-label">You Get</p>
-          <div className="currency-box">
-            <span>{toCurrency}</span>
-            <span>{amount ? `${(amount * 24.5).toFixed(4)}` : "0.00"}</span>
-          </div>
-          <button className="btn-primary">Exchange Now</button>
-        </div>
-
-        <div>
-          <h3 className="chart-header">Market</h3>
-          <div className="market-list">
-            {[
-              { code: "BTC", change: "+12.34%" },
-              { code: "ACA", change: "-2.34%" },
-              { code: "ALGO", change: "-12.34%" },
-              { code: "BTH", change: "+12.34%" },
-              { code: "BTL", change: "+12.34%" },
-            ].map((m) => (
-              <div key={m.code} className="market-item">
-                <span className="market-code">{m.code}</span>
-                <span className={m.change.startsWith("-") ? "rate-down" : "rate-up"}>{m.change}</span>
-              </div>
-            ))}
-          </div>
-          <div className="footer">
-            <footer>
-              <Link>Instagram</Link>
-              <Link>Facebook</Link>
-              <Link>Twitter</Link>
-            </footer>
-          </div>
-        </div>
-      </aside> */}
     </div>
   );
 }

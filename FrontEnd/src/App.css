@@ -1566,7 +1566,6 @@ li {
   .crypto-sidebar img {
     max-width: 120px;
     height: auto;
-    display: block;
   }
 
   .sidebar-brand-row {
@@ -1601,7 +1600,20 @@ li {
   .sidebar-brand-image {
     width: 100%;
     max-width: 92px !important;
+    display: block;
     object-fit: contain;
+  }
+
+  .sidebar-brand-image--light {
+    display: none;
+  }
+
+  .light-mode .sidebar-brand-image--dark {
+    display: none;
+  }
+
+  .light-mode .sidebar-brand-image--light {
+    display: block;
   }
 
   /* prevent horizontal scroll while sidebar is hidden */
