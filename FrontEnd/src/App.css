@@ -585,6 +585,28 @@ li {
   margin-bottom: 30px;
 }
 
+.global-top-bar {
+  margin: 0 0 0 370px;
+  padding: 0 14px 0 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+}
+
+.home-top-bar {
+  display: none;
+}
+
+.global-top-bar .search-container {
+  max-width: none;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
 .top-bar-main {
   display: flex;
   align-items: center;
@@ -805,6 +827,24 @@ li {
 .top-notification-wrap {
   position: relative;
   display: inline-block;
+}
+
+.notification-count {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: var(--brand-accent);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 12px;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  border: 2px solid var(--surface-elevated);
+  z-index: 2;
 }
 
 .notification-panel {
@@ -1642,6 +1682,20 @@ li {
     border-radius: 20px;
     background: var(--sidebar-bg);
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.16);
+  }
+
+  .global-top-bar {
+    margin: 12px;
+    padding: 14px;
+    border: 1px solid var(--glass-border);
+    border-radius: 18px;
+    background: var(--sidebar-bg);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.16);
+    top: 8px;
+  }
+
+  .global-top-bar .search-container {
+    border-radius: 12px;
   }
 
   .top-bar-main {

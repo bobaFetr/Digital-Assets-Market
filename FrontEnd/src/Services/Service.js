@@ -220,19 +220,22 @@ export const getProfile = () => {
   });
 };
 
-export const updateProfilePicture = (profilePictureUrl) => {
+export const updateProfilePicture = async (profilePictureUrl) => {
   const token = getToken();
   if (!token) {
     return Promise.reject(new Error("Not authenticated"));
   }
 
-  return request("/api/users/me/profile-picture", {
+  const data = await request("/api/users/me/profile-picture", {
     method: "PUT",
     headers: {
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ profilePictureUrl }),
   });
+
+  notifyAuthStateChanged("profile-updated");
+  return data;
 };
 
 export const updateUserName = (userName) => {
