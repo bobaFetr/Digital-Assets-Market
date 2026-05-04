@@ -12,7 +12,6 @@ import VerifyIdentityPage from "./VerifyIdentityPage";
 import { AUTH_BLOCKED_EVENT, AUTH_STATE_CHANGED_EVENT, getKycStatus, getToken, request, getProfile } from "./Services/Service";
 import { buildUrl } from "./config/api";
 import { resolveTrustedImageUrl } from "./Security/trustedContent";
-import SentSMSToNumberPage from "./SentSMSToNumberPage";
 
 import SignUpPage from "./SignUp.jsx";
 import SignInPage from "./Login.jsx";
@@ -35,6 +34,8 @@ import NewsDetail from "./NewsDetail.jsx";
 import RugPull from "./RugPull.jsx";
 //////// Error page for testing 404 handling
 import ErorPage1 from "./ErorPage1.jsx";
+import ErrorPage2 from "./ErrorPage2.jsx";
+import ErrorPage3 from "./ErrorPage3.jsx";
 
 const AVAILABLE_CURRENCIES = [
   { code: "BTC", name: "Bitcoin", coinGeckoId: "bitcoin" },
@@ -77,7 +78,6 @@ const getMobileHeaderTitle = (pathname) => {
   if (pathname.startsWith("/buy-sell")) return "Buy & Sell";
   if (pathname.startsWith("/VerifyIdentityPage")) return "Verify Identity";
   if (pathname.startsWith("/VerificationEmailPage")) return "Verify Email";
-  if (pathname.startsWith("/SentSMSToNumberPage")) return "SMS Verification";
   if (pathname.startsWith("/sign-in")) return "Sign In";
   if (pathname.startsWith("/sign-up")) return "Sign Up";
   if (pathname.startsWith("/forgot-password")) return "Forgot Password";
@@ -159,6 +159,188 @@ function UserBalanceCard() {
   if (loading) return <div className="balance-amount" style={{ color: 'var(--text-primary)' }}>Loading...</div>;
   if (message) return <div className="balance-amount" style={{ color: 'var(--text-secondary)', fontSize: 16 }}>{message}</div>;
   return <div className="balance-amount" style={{ color: 'var(--text-primary)' }}>${balance?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>;
+}
+
+function GlobalTopBar({ theme, onToggleTheme, setMobileOpen, authVersion }) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchTerms, setSearchTerms] = useState([]);
+  const [unreadNews, setUnreadNews] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [newsError, setNewsError] = useState("");
+  const [profile, setProfile] = useState(null);
+  const navigate = useNavigate();
+  const isAuthenticated = Boolean(getToken());
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadNews = async () => {
+      setNewsError("");
+      try {
+        const token = getToken && getToken();
+        const data = await request(`/api/news`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        if (!isMounted) return;
+
+        const items = Array.isArray(data) ? data : [];
+        const readIds = JSON.parse(localStorage.getItem("readNewsIds") || "[]");
+        setUnreadNews(items.filter((item) => item.newsId && !readIds.includes(item.newsId)));
+      } catch (err) {
+        if (!isMounted) return;
+        setNewsError(err?.message || "Failed to load news.");
+        setUnreadNews([]);
+      }
+    };
+
+    loadNews();
+    const newsInterval = setInterval(loadNews, 60000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(newsInterval);
+    };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    const token = getToken && getToken();
+    if (!token) {
+      setProfile(null);
+      return () => {
+        mounted = false;
+      };
+    }
+
+    getProfile()
+      .then((nextProfile) => {
+        if (mounted) setProfile(nextProfile);
+      })
+      .catch(() => {
+        if (mounted) setProfile(null);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [isAuthenticated, authVersion]);
+
+  const submitSearch = (event) => {
+    event.preventDefault();
+    const trimmed = searchQuery.trim();
+    if (!trimmed) {
+      navigate("/news");
+      return;
+    }
+
+    const query = searchTerms.length > 1 ? searchTerms.join(",") : trimmed;
+    navigate(`/news?q=${encodeURIComponent(query)}`);
+  };
+
+  const markNewsRead = (newsId) => {
+    const readIds = JSON.parse(localStorage.getItem("readNewsIds") || "[]");
+    if (readIds.includes(newsId)) return;
+
+    localStorage.setItem("readNewsIds", JSON.stringify([...readIds, newsId]));
+    setUnreadNews((items) => items.filter((item) => item.newsId !== newsId));
+  };
+
+  return (
+    <div className="top-bar global-top-bar">
+      <form className="top-bar-main" onSubmit={submitSearch}>
+        <button
+          type="button"
+          className="mobile-hamburger global-top-bar__menu"
+          aria-label="Toggle navigation"
+          onClick={() => setMobileOpen((value) => !value)}
+        >
+          Menu
+        </button>
+        <div className="search-container">
+          <span className="search-icon" aria-hidden="true">Search</span>
+          <input
+            type="text"
+            placeholder="Search assets, markets, or news..."
+            value={searchQuery}
+            onChange={(event) => {
+              setSearchQuery(event.target.value);
+              setSearchTerms(event.target.value.split(",").map((term) => term.trim()).filter(Boolean));
+            }}
+            className="top-search-input"
+          />
+        </div>
+      </form>
+
+      <div className="top-bar-actions">
+        <button className="theme-toggle-btn theme-toggle-btn--text" onClick={onToggleTheme} title="Toggle Theme">
+          {theme === 'dark' ? 'Light Theme' : 'Dark Theme'}
+        </button>
+
+        <div className="top-notification-wrap">
+          <button
+            className="theme-toggle-btn header-icon-button"
+            aria-label="Notifications"
+            aria-expanded={showNotifications}
+            title="Notifications"
+            onClick={() => setShowNotifications((value) => !value)}
+            style={{ position: 'relative' }}
+          >
+            <span role="img" aria-label="notifications">Bell</span>
+            {unreadNews.length > 0 && <span className="notification-count">{unreadNews.length}</span>}
+          </button>
+
+          {showNotifications && (
+            <div className="notification-panel">
+              <div className="notification-panel__header">
+                <div style={{ fontWeight: 700, color: 'var(--brand-accent)' }}>Unread News</div>
+                <button
+                  type="button"
+                  className="notification-panel__close"
+                  aria-label="Close notifications"
+                  onClick={() => setShowNotifications(false)}
+                >
+                  Close
+                </button>
+              </div>
+              {newsError && <div style={{ color: 'var(--error-main)', marginBottom: 8 }}>{newsError}</div>}
+              {unreadNews.length === 0 && <div style={{ color: 'var(--text-secondary)' }}>No new unread news.</div>}
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {unreadNews.map((item) => (
+                  <li key={item.newsId} style={{ marginBottom: 8, borderBottom: '1px solid var(--table-border)', paddingBottom: 6 }}>
+                    <a
+                      href={`/news/${item.newsId}`}
+                      style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: 600 }}
+                      onClick={() => markNewsRead(item.newsId)}
+                    >
+                      <span style={{ color: 'var(--brand-accent)', marginRight: 6 }}>New</span>
+                      {item.title}
+                    </a>
+                    <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                      {item.publishedAt ? new Date(item.publishedAt).toLocaleString() : ''}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        <div
+          className="top-profile"
+          title={profile?.userName || 'Profile'}
+          onClick={() => navigate(isAuthenticated ? '/profile' : '/sign-in')}
+        >
+          <img
+            src={resolveTrustedImageUrl(profile?.profilePictureUrl, buildUrl('/OIP.webp'), buildUrl)}
+            alt="Profile"
+            onError={(event) => {
+              event.currentTarget.src = buildUrl('/OIP.webp');
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function Home({ theme, onToggleTheme }) {
@@ -368,7 +550,7 @@ function Home({ theme, onToggleTheme }) {
         <div className="mobile-sidebar-backdrop" onClick={() => setMobileSidebarOpen(false)} />
       )}
       <div className="crypto-main">
-        <div className="top-bar">
+        <div className="top-bar home-top-bar">
           <div className="top-bar-main">
           <button
             className="mobile-hamburger"
@@ -754,7 +936,7 @@ function RequireAdmin({ children }) {
 export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [, setAuthVersion] = useState(0);
+  const [authVersion, setAuthVersion] = useState(0);
   const [theme, setTheme] = useState(() => {
     if (typeof window === "undefined") {
       return "dark";
@@ -886,6 +1068,7 @@ export default function App() {
           {mobileOpen && (
             <div className="mobile-sidebar-backdrop" onClick={() => setMobileOpen(false)} />
           )}
+          <GlobalTopBar theme={theme} onToggleTheme={toggleTheme} setMobileOpen={setMobileOpen} authVersion={authVersion} />
         <Routes>
           <Route path="/" element={<Home theme={theme} onToggleTheme={toggleTheme} />} />
           <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
@@ -934,6 +1117,8 @@ export default function App() {
           <Route path="/support" element={<Support />} />
           <Route path="/feedback" element={<Feedback />} />
           <Route path="/rug-pull" element={<RugPull />} />
+          <Route path="/service-offline" element={<ErrorPage2 />} />
+          <Route path="/session-expired" element={<ErrorPage3 />} />
           
           <Route path="*" element={<ErorPage1 />} />
         </Routes>
