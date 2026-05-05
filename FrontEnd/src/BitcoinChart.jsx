@@ -40,6 +40,13 @@ function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
   const { base, quote } = parseSymbol(symbol);
   const [seriesPoints, setSeriesPoints] = useState([]);
   const [meta, setMeta] = useState({ count: 0, lastPrice: null, lastTime: null });
+  const [isLightTheme, setIsLightTheme] = useState(() => {
+    if (typeof document === "undefined") {
+      return false;
+    }
+
+    return document.body.classList.contains("light-mode");
+  });
   const [isMobile, setIsMobile] = useState(() => {
     if (typeof window === "undefined") {
       return false;
@@ -60,6 +67,22 @@ function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (typeof document === "undefined") {
+      return undefined;
+    }
+
+    const updateTheme = () => {
+      setIsLightTheme(document.body.classList.contains("light-mode"));
+    };
+
+    updateTheme();
+    const observer = new MutationObserver(updateTheme);
+    observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+
+    return () => observer.disconnect();
   }, []);
 
   const applySeries = (points) => {
@@ -145,90 +168,99 @@ function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
   }, [visiblePoints, base, quote, isMobile]);
 
   const options = useMemo(
-    () => ({
-      responsive: true,
-      maintainAspectRatio: false,
-      normalized: true,
-      animation: false,
-      interaction: {
-        intersect: false,
-        mode: "index",
-      },
-      scales: {
-        x: {
-          type: "category",
-          title: {
-            display: !isMobile,
-            text: "Time",
-          },
-          ticks: {
-            color: "#f0f0f0",
-            autoSkip: true,
-            maxTicksLimit: isMobile ? 4 : 8,
-            maxRotation: 0,
-            minRotation: 0,
-            font: {
-              size: isMobile ? 11 : 12,
+    () => {
+      const axisColor = isLightTheme ? "#334155" : "#f0f0f0";
+      const titleColor = isLightTheme ? "#0f172a" : "#f0f0f0";
+      const gridColor = isLightTheme ? "rgba(15, 23, 42, 0.12)" : "rgba(255, 255, 255, 0.08)";
+      const borderColor = isLightTheme ? "rgba(15, 23, 42, 0.18)" : "rgba(255, 255, 255, 0.12)";
+
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        normalized: true,
+        animation: false,
+        interaction: {
+          intersect: false,
+          mode: "index",
+        },
+        scales: {
+          x: {
+            type: "category",
+            title: {
+              display: !isMobile,
+              text: "Time",
+              color: titleColor,
+            },
+            ticks: {
+              color: axisColor,
+              autoSkip: true,
+              maxTicksLimit: isMobile ? 4 : 8,
+              maxRotation: 0,
+              minRotation: 0,
+              font: {
+                size: isMobile ? 11 : 12,
+              },
+            },
+            grid: {
+              color: gridColor,
+              drawTicks: false,
+            },
+            border: {
+              color: borderColor,
             },
           },
-          grid: {
-            color: "rgba(255, 255, 255, 0.08)",
-            drawTicks: false,
-          },
-          border: {
-            color: "rgba(255, 255, 255, 0.12)",
-          },
-        },
-        y: {
-          type: "linear",
-          title: {
-            display: !isMobile,
-            text: `Price (${quote})`,
-          },
-          ticks: {
-            color: "#f0f0f0",
-            maxTicksLimit: isMobile ? 5 : 7,
-            font: {
-              size: isMobile ? 11 : 12,
+          y: {
+            type: "linear",
+            title: {
+              display: !isMobile,
+              text: `Price (${quote})`,
+              color: titleColor,
+            },
+            ticks: {
+              color: axisColor,
+              maxTicksLimit: isMobile ? 5 : 7,
+              font: {
+                size: isMobile ? 11 : 12,
+              },
+            },
+            grid: {
+              color: gridColor,
+            },
+            border: {
+              color: borderColor,
             },
           },
-          grid: {
-            color: "rgba(255, 255, 255, 0.08)",
+        },
+        plugins: {
+          legend: {
+            display: false,
           },
-          border: {
-            color: "rgba(255, 255, 255, 0.12)",
+          title: {
+            display: true,
+            text: isMobile ? `${base}/${quote}` : `${base}/${quote} PRICE (RECENT)`,
+            color: titleColor,
+            font: {
+              size: isMobile ? 14 : 16,
+              weight: "600",
+            },
+            padding: {
+              bottom: isMobile ? 12 : 16,
+            },
+          },
+          tooltip: {
+            displayColors: false,
+            backgroundColor: "rgba(11, 14, 17, 0.92)",
+            titleColor: "#ffffff",
+            bodyColor: "#dbe4ff",
+            padding: 10,
+            callbacks: {
+              label: (context) => `Price: ${context.formattedValue} ${quote}`,
+            },
           },
         },
-      },
-      plugins: {
-        legend: {
-          display: false,
-        },
-        title: {
-          display: true,
-          text: isMobile ? `${base}/${quote}` : `${base}/${quote} PRICE (RECENT)`,
-          color: "#f0f0f0",
-          font: {
-            size: isMobile ? 14 : 16,
-            weight: "600",
-          },
-          padding: {
-            bottom: isMobile ? 12 : 16,
-          },
-        },
-        tooltip: {
-          displayColors: false,
-          backgroundColor: "rgba(11, 14, 17, 0.92)",
-          titleColor: "#ffffff",
-          bodyColor: "#dbe4ff",
-          padding: 10,
-          callbacks: {
-            label: (context) => `Price: ${context.formattedValue} ${quote}`,
-          },
-        },
-      },
-    }),
-    [base, quote, isMobile]
+      };
+    },
+    [base, quote, isMobile, isLightTheme]
   );
 
   return (
@@ -248,7 +280,13 @@ function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
       >
         <Line data={chartData} options={options} />
       </div>
-      <div style={{ marginTop: "10px", color: "#9aa3ff", fontSize: isMobile ? "11px" : "12px" }}>
+      <div
+        style={{
+          marginTop: "10px",
+          color: isLightTheme ? "#475569" : "#9aa3ff",
+          fontSize: isMobile ? "11px" : "12px",
+        }}
+      >
         {meta.count === 0
           ? "No data points yet."
           : `Showing ${visiblePoints.length} of ${meta.count} points | Last: ${meta.lastPrice} @ ${new Date(meta.lastTime).toLocaleTimeString()}`}
