@@ -65,7 +65,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
     { to: "/", label: "Home", icon: "Home" },
     { to: "/news", label: "News", icon: "News" },
     { to: "/education", label: "Education", icon: "Learn" },
-    { to: "/faq", label: "FAQ", icon: "FAQ" },
+    { to: "/faq", label: "Questions and answers", icon: "FAQ" },
     { to: "/BitcoinChart", label: "Markets", icon: "Market" },
   ];
 
