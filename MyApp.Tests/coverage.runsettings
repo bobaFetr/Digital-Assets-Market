@@ -6,8 +6,7 @@
         <Configuration>
           <Format>cobertura</Format>
           <Include>[MyWebApi]*</Include>
-          <IncludeByFile>**/ApiControllerBase.cs;**/NewsController.cs;**/OrderBookController.cs;**/WalletsController.cs;**/TransactionsController.cs</IncludeByFile>
-          <ExcludeByFile>**/Program.cs;**/ApiDtos.cs</ExcludeByFile>
+          <ExcludeByFile>**/Program.cs,**/ApiDtos.cs,**/MarketDataDtos.cs,**/Dtos/UserDto.cs,**/Services/BinanceMarketDataService.cs,**/Services/SmtpEmailSender.cs,**/Controllers/ExternalController.cs</ExcludeByFile>
         </Configuration>
       </DataCollector>
     </DataCollectors>
