@@ -45,6 +45,47 @@ public class OrdersControllerTests
     }
 
     [Test]
+    public async Task GetOrders_NonAdminSeesOnlyOwnOrders_WithFilters()
+    {
+        using var db = ControllerTestHelpers.CreateDbContext();
+        var currentUserId = Guid.NewGuid();
+        db.Orders.AddRange(
+            CreateOrder(currentUserId, "ALGOUSD", OrderStatus.Open),
+            CreateOrder(currentUserId, "BTCUSD", OrderStatus.Filled),
+            CreateOrder(Guid.NewGuid(), "ALGOUSD", OrderStatus.Open));
+        await db.SaveChangesAsync();
+
+        var controller = CreateController(db);
+        ControllerTestHelpers.SetUser(controller, currentUserId);
+
+        var result = await controller.GetOrders(null, OrderStatus.Open, "ALGOUSD");
+
+        var ok = result as OkObjectResult;
+        Assert.That(ok, Is.Not.Null);
+        var orders = ok!.Value as List<OrderDto>;
+        Assert.That(orders, Is.Not.Null);
+        Assert.That(orders, Has.Count.EqualTo(1));
+        Assert.That(orders![0].UserId, Is.EqualTo(currentUserId));
+        Assert.That(orders[0].Symbol, Is.EqualTo("ALGOUSD"));
+    }
+
+    [Test]
+    public async Task GetOrder_ReturnsForbid_WhenNonOwnerReadsAnotherUsersOrder()
+    {
+        using var db = ControllerTestHelpers.CreateDbContext();
+        var order = CreateOrder(Guid.NewGuid(), "ALGOUSD", OrderStatus.Open);
+        db.Orders.Add(order);
+        await db.SaveChangesAsync();
+
+        var controller = CreateController(db);
+        ControllerTestHelpers.SetUser(controller, Guid.NewGuid());
+
+        var result = await controller.GetOrder(order.OrderId);
+
+        Assert.That(result, Is.InstanceOf<ForbidResult>());
+    }
+
+    [Test]
     public async Task CreateOrder_MarketOrder_ReturnsBadRequest_WhenNotEnoughMarketLiquidity()
     {
         using var db = ControllerTestHelpers.CreateDbContext();
@@ -269,5 +310,99 @@ public class OrdersControllerTests
 
         var buyerUsdWallet = db.Wallets.Single(w => w.UserId == buyerId && w.Currency == "USD");
         Assert.That(buyerUsdWallet.Balance, Is.EqualTo(20m));
+    }
+
+    [Test]
+    public async Task UpdateOrder_UpdatesClosedOrderFields()
+    {
+        using var db = ControllerTestHelpers.CreateDbContext();
+        var userId = Guid.NewGuid();
+        var feeTableId = Guid.NewGuid();
+        var order = CreateOrder(userId, "ALGOUSD", OrderStatus.Filled);
+        db.Orders.Add(order);
+        await db.SaveChangesAsync();
+
+        var controller = CreateController(db);
+        ControllerTestHelpers.SetUser(controller, userId);
+
+        var result = await controller.UpdateOrder(order.OrderId, new UpdateOrderRequest
+        {
+            FeeTableId = feeTableId,
+            Price = 0.25m,
+            Amount = 12m,
+            OrderStatus = OrderStatus.Cancelled
+        });
+
+        Assert.That(result, Is.InstanceOf<OkObjectResult>());
+        Assert.That(order.FeeTableId, Is.EqualTo(feeTableId));
+        Assert.That(order.Price, Is.EqualTo(0.25m));
+        Assert.That(order.Amount, Is.EqualTo(12m));
+        Assert.That(order.OrderStatus, Is.EqualTo(OrderStatus.Cancelled));
+    }
+
+    [Test]
+    public async Task UpdateOrder_CancelOpenBuyOrder_RefundsAndRemovesOrderBookEntry()
+    {
+        using var db = ControllerTestHelpers.CreateDbContext();
+        var userId = Guid.NewGuid();
+        var order = CreateOrder(userId, "ALGOUSD", OrderStatus.Open);
+        order.Price = 0.10m;
+        order.Amount = 8m;
+        db.Wallets.Add(new WalletTable
+        {
+            WalletID = Guid.NewGuid(),
+            UserId = userId,
+            Currency = "USD",
+            Balance = 19.2m,
+            Addres = string.Empty,
+            Status = "Active",
+            CreatedAt = DateTime.UtcNow
+        });
+        db.Orders.Add(order);
+        db.OrderBookTable.Add(new OrderBook
+        {
+            OrderBookId = Guid.NewGuid(),
+            OrderId = order.OrderId,
+            Symbol = order.Symbol,
+            Price = order.Price,
+            Amount = order.Amount,
+            Timestamp = DateTime.UtcNow
+        });
+        await db.SaveChangesAsync();
+
+        var controller = CreateController(db);
+        ControllerTestHelpers.SetUser(controller, userId);
+
+        var result = await controller.UpdateOrder(order.OrderId, new UpdateOrderRequest
+        {
+            OrderStatus = OrderStatus.Cancelled
+        });
+
+        Assert.That(result, Is.InstanceOf<OkObjectResult>());
+        Assert.That(order.OrderStatus, Is.EqualTo(OrderStatus.Cancelled));
+        Assert.That(db.OrderBookTable, Is.Empty);
+        Assert.That(db.Wallets.Single(w => w.UserId == userId && w.Currency == "USD").Balance, Is.EqualTo(20m));
+    }
+
+    private static OrdersController CreateController(NetServer.Data.AppDbContext db)
+    {
+        return new OrdersController(
+            db,
+            new PaperTradingService(db, new FakeMarketDataService(), ControllerTestHelpers.CreateLogger<PaperTradingService>()));
+    }
+
+    private static OrdersTable CreateOrder(Guid userId, string symbol, OrderStatus status)
+    {
+        return new OrdersTable
+        {
+            OrderId = Guid.NewGuid(),
+            UserId = userId,
+            TypeOfOrder = OrderType.Buy,
+            Symbol = symbol,
+            Price = 0.10m,
+            Amount = 5m,
+            OrderStatus = status,
+            CreatedAt = DateTime.UtcNow
+        };
     }
 }

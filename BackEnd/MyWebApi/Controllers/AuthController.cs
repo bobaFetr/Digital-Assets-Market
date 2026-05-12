@@ -246,7 +246,7 @@ public class AuthController : ControllerBase
             return Unauthorized("Invalid credentials");
 
         if (existing.IsBanned)
-            return StatusCode(403, "User is banned");
+            return StatusCode(403, "Your account  is banned");
 
         if (shouldUpgradePasswordHash)
         {
