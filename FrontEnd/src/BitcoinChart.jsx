@@ -9,8 +9,8 @@ import {
   Title,
   Tooltip,
   Legend,
-  Filler,
-} from "chart.js";
+  Filler } from
+"chart.js";
 import { Line } from "react-chartjs-2";
 import { request } from "./Services/Service";
 
@@ -96,7 +96,7 @@ function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
     setMeta({
       count: points.length,
       lastPrice: Number(last.price),
-      lastTime: last.time,
+      lastTime: last.time
     });
     setSeriesPoints(points);
   };
@@ -112,9 +112,9 @@ function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
         `/api/market/klines?symbol=${encodeURIComponent(symbol)}&interval=1m&limit=120`
       );
 
-      const candlePoints = (candles ?? [])
-        .map((item) => ({ time: item.closeTimeUtc, price: Number(item.close) }))
-        .filter((item) => item.time != null && Number.isFinite(item.price));
+      const candlePoints = (candles ?? []).
+      map((item) => ({ time: item.closeTimeUtc, price: Number(item.close) })).
+      filter((item) => item.time != null && Number.isFinite(item.price));
 
       if (candlePoints.length > 0) {
         applySeries(candlePoints);
@@ -141,29 +141,29 @@ function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
 
   const chartData = useMemo(() => {
     const labels = visiblePoints.map((item) =>
-      new Date(item.time).toLocaleTimeString("bg-BG", {
-        hour: "2-digit",
-        minute: "2-digit",
-        ...(isMobile ? {} : { second: "2-digit" }),
-      })
+    new Date(item.time).toLocaleTimeString("bg-BG", {
+      hour: "2-digit",
+      minute: "2-digit",
+      ...(isMobile ? {} : { second: "2-digit" })
+    })
     );
 
     return {
       labels,
       datasets: [
-        {
-          label: `${base}/${quote}`,
-          data: visiblePoints.map((item) => item.price),
-          borderColor: "rgb(255, 127, 80)",
-          backgroundColor: "rgba(255, 127, 80, 0.18)",
-          borderWidth: isMobile ? 3 : 2,
-          tension: 0.35,
-          fill: true,
-          pointRadius: 0,
-          pointHoverRadius: 5,
-          pointHitRadius: 16,
-        },
-      ],
+      {
+        label: `${base}/${quote}`,
+        data: visiblePoints.map((item) => item.price),
+        borderColor: "rgb(255, 127, 80)",
+        backgroundColor: "rgba(255, 127, 80, 0.18)",
+        borderWidth: isMobile ? 3 : 2,
+        tension: 0.35,
+        fill: true,
+        pointRadius: 0,
+        pointHoverRadius: 5,
+        pointHitRadius: 16
+      }]
+
     };
   }, [visiblePoints, base, quote, isMobile]);
 
@@ -181,7 +181,7 @@ function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
         animation: false,
         interaction: {
           intersect: false,
-          mode: "index",
+          mode: "index"
         },
         scales: {
           x: {
@@ -189,7 +189,7 @@ function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
             title: {
               display: !isMobile,
               text: "Time",
-              color: titleColor,
+              color: titleColor
             },
             ticks: {
               color: axisColor,
@@ -198,42 +198,42 @@ function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
               maxRotation: 0,
               minRotation: 0,
               font: {
-                size: isMobile ? 11 : 12,
-              },
+                size: isMobile ? 11 : 12
+              }
             },
             grid: {
               color: gridColor,
-              drawTicks: false,
+              drawTicks: false
             },
             border: {
-              color: borderColor,
-            },
+              color: borderColor
+            }
           },
           y: {
             type: "linear",
             title: {
               display: !isMobile,
               text: `Price (${quote})`,
-              color: titleColor,
+              color: titleColor
             },
             ticks: {
               color: axisColor,
               maxTicksLimit: isMobile ? 5 : 7,
               font: {
-                size: isMobile ? 11 : 12,
-              },
+                size: isMobile ? 11 : 12
+              }
             },
             grid: {
-              color: gridColor,
+              color: gridColor
             },
             border: {
-              color: borderColor,
-            },
-          },
+              color: borderColor
+            }
+          }
         },
         plugins: {
           legend: {
-            display: false,
+            display: false
           },
           title: {
             display: true,
@@ -241,11 +241,11 @@ function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
             color: titleColor,
             font: {
               size: isMobile ? 14 : 16,
-              weight: "600",
+              weight: "600"
             },
             padding: {
-              bottom: isMobile ? 12 : 16,
-            },
+              bottom: isMobile ? 12 : 16
+            }
           },
           tooltip: {
             displayColors: false,
@@ -254,17 +254,17 @@ function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
             bodyColor: "#dbe4ff",
             padding: 10,
             callbacks: {
-              label: (context) => `Price: ${context.formattedValue} ${quote}`,
-            },
-          },
-        },
+              label: (context) => `Price: ${context.formattedValue} ${quote}`
+            }
+          }
+        }
       };
     },
     [base, quote, isMobile, isLightTheme]
   );
 
   return (
-    <div style={{ width: "100%", margin: 0, padding: 0 }}>
+    <div>
       <div className="market-chart-toolbar">
         <div className="market-chart-toolbar__meta">
           <span>Last price</span>
@@ -272,27 +272,27 @@ function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
         </div>
       </div>
       <div
-        className={`market-chart-frame${isMobile ? " market-chart-frame--mobile" : ""}`}
-        style={{
-          width: "100%",
-          height: isMobile ? "clamp(320px, 56vh, 420px)" : "clamp(260px, 48vh, 420px)",
-        }}
-      >
+        className={`market-chart-frame${isMobile ? " market-chart-frame--mobile" : ""}`}>
+
+
+
+
+
         <Line data={chartData} options={options} />
       </div>
-      <div
-        style={{
-          marginTop: "10px",
-          color: isLightTheme ? "#475569" : "#9aa3ff",
-          fontSize: isMobile ? "11px" : "12px",
-        }}
-      >
-        {meta.count === 0
-          ? "No data points yet."
-          : `Showing ${visiblePoints.length} of ${meta.count} points | Last: ${meta.lastPrice} @ ${new Date(meta.lastTime).toLocaleTimeString()}`}
+      <div>
+
+
+
+
+
+
+        {meta.count === 0 ?
+        "No data points yet." :
+        `Showing ${visiblePoints.length} of ${meta.count} points | Last: ${meta.lastPrice} @ ${new Date(meta.lastTime).toLocaleTimeString()}`}
       </div>
-    </div>
-  );
+    </div>);
+
 }
 
 export default BitcoinChart;

@@ -16,7 +16,7 @@ import { Line } from 'react-chartjs-2';
 import { request } from './Services/Service';
 import './App.css';
 
-// ✅ Register required components
+// Register the chart components used on this page.
 ChartJS.register(
   LineElement,
   PointElement,

@@ -1,62 +1,21 @@
-import React, { useState } from "react";
+import React from "react";
+import { Link } from "react-router-dom";
 import Sidebar from "./Components/Sidebar";
 
 export default function Feedback() {
-  const [rating, setRating] = useState("5");
-  const [comment, setComment] = useState("");
-  const [status, setStatus] = useState("");
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    if (!comment.trim()) {
-      setStatus("Please add your feedback comment.");
-      return;
-    }
-
-    setStatus("Thank you for your feedback.");
-    setRating("5");
-    setComment("");
-  };
-
   return (
     <div className="crypto-layout">
       <Sidebar />
-      <div className="crypto-main">
-        <h1 style={{ marginBottom: "12px" }}>Feedback</h1>
-        <p style={{ color: "var(--text-secondary)", marginBottom: "20px" }}>
-          Share your experience and help improve the platform.
-        </p>
-
-        <div style={{ background: "var(--card-bg)", padding: "20px", borderRadius: "12px", border: "1px solid var(--glass-border)", maxWidth: "700px" }}>
-          <form onSubmit={handleSubmit} style={{ display: "grid", gap: "12px" }}>
-            <label style={{ display: "grid", gap: "6px" }}>
-              <span>Rating</span>
-              <select
-                value={rating}
-                onChange={(event) => setRating(event.target.value)}
-                style={{ padding: "10px", borderRadius: "8px", border: "1px solid var(--glass-border)", background: "var(--panel-bg)", color: "var(--input-text)" }}
-              >
-                <option value="5">5 - Excellent</option>
-                <option value="4">4 - Good</option>
-                <option value="3">3 - Average</option>
-                <option value="2">2 - Poor</option>
-                <option value="1">1 - Very poor</option>
-              </select>
-            </label>
-            <textarea
-              placeholder="Your feedback"
-              rows={6}
-              value={comment}
-              onChange={(event) => setComment(event.target.value)}
-              style={{ padding: "10px", borderRadius: "8px", border: "1px solid var(--glass-border)", background: "var(--panel-bg)", color: "var(--input-text)", resize: "vertical" }}
-            />
-            <button type="submit" style={{ width: "fit-content", padding: "10px 14px", borderRadius: "8px", border: "none", background: "#7f8cff", color: "#fff", cursor: "pointer" }}>
-              Submit Feedback
-            </button>
-          </form>
-          {status && <p style={{ marginTop: "12px", color: "#9aa3ff" }}>{status}</p>}
-        </div>
-      </div>
+      <main className="crypto-main">
+        <header className="page-header">
+          <h1>Feedback</h1>
+          <p>Feedback collection is not connected in this prototype.</p>
+        </header>
+        <section className="section-card">
+          <p>No message is stored or submitted from this page.</p>
+          <Link className="btn-primary" to="/">Return home</Link>
+        </section>
+      </main>
     </div>
   );
 }

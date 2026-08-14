@@ -36,8 +36,7 @@ export default function NewsDetail() {
                 setError(fetchError?.message || "Failed to load news item.");
                 setArticle(null);
             } finally {
-                if (!isActive) return;
-                setIsLoading(false);
+                if (isActive) setIsLoading(false);
             }
         };
 
@@ -51,14 +50,8 @@ export default function NewsDetail() {
         <div className="crypto-layout">
             <Sidebar />
             <main className="crypto-main news-page-main">
-                <header className="news-hero news-detail-hero">
-                    <div className="news-hero-content">
-                        <p className="news-hero-kicker">Article</p>
-                        <h1 className="news-hero-title">News Detail</h1>
-                        <Link to="/news" className="news-back-link">
-                            Back to news
-                        </Link>
-                    </div>
+                <header className="page-header">
+                    <Link to="/news">Back to news</Link>
                 </header>
 
                 {error && <div className="login-alert news-alert news-alert-error">{error}</div>}
@@ -66,11 +59,8 @@ export default function NewsDetail() {
 
                 {!isLoading && !error && article && (
                     <article className="news-detail-card">
-                        <div className="news-card-head">
-                            <span className="news-chip">Update</span>
-                            <span className="news-time">{formatDate(article.publishedAt)}</span>
-                        </div>
-                        <h2 className="news-detail-title">{article.title}</h2>
+                        <div className="news-list-date">{formatDate(article.publishedAt)}</div>
+                        <h1 className="news-detail-title">{article.title}</h1>
                         <p className="news-detail-content">{article.content}</p>
                     </article>
                 )}

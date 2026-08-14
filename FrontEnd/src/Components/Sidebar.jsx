@@ -1,7 +1,5 @@
 import React, { useMemo } from "react";
 import { Link, NavLink } from "react-router-dom";
-import darkLogo from "../assets/Gemini_Generated_Image_sb5zszsb5zszsb5z.png";
-import lightLogo from "../assets/Copilot_20251008_144326.png";
 import { getToken } from "../Services/Service";
 
 const getClaimsFromToken = (token) => {
@@ -29,30 +27,6 @@ const getUserRole = (token) => {
     claims?.["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ||
     ""
   );
-};
-
-const navLinkStyle = ({ isActive }) => ({
-  display: "flex",
-  alignItems: "center",
-  gap: "12px",
-  padding: "10px 18px",
-  borderRadius: "999px",
-  color: isActive ? "#fff" : "var(--text-primary)",
-  textDecoration: "none",
-  background: isActive ? "var(--brand-accent)" : "transparent",
-  boxShadow: isActive ? "0 2px 8px rgba(255, 127, 80, 0.35)" : "none",
-  border: isActive ? "1px solid transparent" : "1px solid var(--glass-border)",
-  fontWeight: isActive ? 700 : 500,
-});
-
-const sectionTitleStyle = {
-  margin: "16px 0 8px",
-  padding: "0 18px",
-  color: "var(--text-secondary)",
-  fontSize: "12px",
-  fontWeight: 700,
-  letterSpacing: "0.08em",
-  textTransform: "uppercase",
 };
 
 export default function Sidebar({ mobileOpen, setMobileOpen }) {
@@ -98,9 +72,9 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
         key={link.to}
         to={link.to}
         className="nav-item nav-item-link"
-        style={navLinkStyle}
         onClick={closeMobileSidebar}
       >
+        <span className="nav-item__mark" aria-hidden="true">{link.icon.slice(0, 2).toUpperCase()}</span>
         <span>{link.label}</span>
       </NavLink>
     ));
@@ -114,16 +88,8 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
           aria-label="Go to home page"
           onClick={closeMobileSidebar}
         >
-          <img
-            className="sidebar-brand-image sidebar-brand-image--dark"
-            src={darkLogo}
-            alt="Digital Asset Marketplace"
-          />
-          <img
-            className="sidebar-brand-image sidebar-brand-image--light"
-            src={lightLogo}
-            alt="Digital Asset Marketplace"
-          />
+          <span className="sidebar-brand-mark">DM</span>
+          <span className="sidebar-brand-copy"><strong>Digital Market</strong><small>Paper exchange</small></span>
         </Link>
         <button
           type="button"
@@ -136,30 +102,32 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
       </div>
 
       <nav className="nav-links">
-        <div style={sectionTitleStyle}>Explore</div>
+        <div className="nav-section-title">Explore</div>
         {renderLinks(publicLinks)}
 
         {isAuthenticated && (
           <>
-            <div style={sectionTitleStyle}>Account</div>
+            <div className="nav-section-title">Account</div>
             {renderLinks(userLinks)}
           </>
         )}
 
         {isAdmin && (
           <>
-            <div style={sectionTitleStyle}>Admin</div>
+            <div className="nav-section-title">Admin</div>
             {renderLinks([{ to: "/Admin", label: "Admin Panel", icon: "Admin" }])}
           </>
         )}
 
         {!isAuthenticated && (
           <>
-            <div style={sectionTitleStyle}>Access</div>
+            <div className="nav-section-title">Access</div>
             {renderLinks(guestLinks)}
           </>
         )}
       </nav>
+
+      <div className="sidebar-environment"><span className="sidebar-environment__dot" />Simulation mode</div>
 
       <nav className="mobile-bottom-nav" role="navigation" aria-label="Mobile navigation">
         {renderLinks(
