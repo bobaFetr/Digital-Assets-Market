@@ -1,7 +1,9 @@
 import { getRuntimeConfig } from "./runtimeConfig";
 
 const runtimeConfig = getRuntimeConfig();
-const hasRuntimeApiBase = Object.prototype.hasOwnProperty.call(runtimeConfig, "API_BASE_URL");
+const hasRuntimeApiBase =
+  Object.prototype.hasOwnProperty.call(runtimeConfig, "API_BASE_URL") &&
+  String(runtimeConfig.API_BASE_URL ?? "").trim().length > 0;
 const runtimeBase = hasRuntimeApiBase
   ? runtimeConfig.API_BASE_URL
   : (runtimeConfig.VITE_API_BASE ?? undefined);

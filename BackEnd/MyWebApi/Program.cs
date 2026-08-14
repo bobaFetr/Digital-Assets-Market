@@ -175,6 +175,8 @@ internal class Program
             throw new InvalidOperationException("Database connection string is missing.");
         }
 
+        connectionString = NormalizePostgresConnectionString(connectionString);
+
         builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
 
@@ -362,6 +364,7 @@ internal class Program
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var walletProvisioning = scope.ServiceProvider.GetRequiredService<WalletProvisioningService>();
 
+            db.Database.Migrate();
             EnsureOptionalDemoTables(db);
 
             var created = walletProvisioning.EnsureDefaultWalletsForAllUsers();
@@ -374,6 +377,33 @@ internal class Program
         {
             logger.LogWarning(ex, "Startup initialization failed. The app will continue running, but database-backed features may be degraded until the issue is resolved.");
         }
+    }
+
+    private static string NormalizePostgresConnectionString(string connectionString)
+    {
+        if (!Uri.TryCreate(connectionString, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != "postgres" && uri.Scheme != "postgresql"))
+        {
+            return connectionString;
+        }
+
+        var userInfo = uri.UserInfo.Split(':', 2);
+        if (userInfo.Length != 2)
+        {
+            throw new InvalidOperationException("PostgreSQL URL is missing credentials.");
+        }
+
+        var builder = new Npgsql.NpgsqlConnectionStringBuilder
+        {
+            Host = uri.Host,
+            Port = uri.IsDefaultPort ? 5432 : uri.Port,
+            Username = Uri.UnescapeDataString(userInfo[0]),
+            Password = Uri.UnescapeDataString(userInfo[1]),
+            Database = Uri.UnescapeDataString(uri.AbsolutePath.TrimStart('/')),
+            SslMode = Npgsql.SslMode.Require
+        };
+
+        return builder.ConnectionString;
     }
 
     private static void EnsureOptionalDemoTables(AppDbContext db)
