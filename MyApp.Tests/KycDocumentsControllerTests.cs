@@ -131,7 +131,7 @@ public class KycDocumentsControllerTests
         Assert.That(saved.DocumentNumber, Is.EqualTo("BG12345"));
         Assert.That(saved.FullName, Is.EqualTo("Alice Test"));
         Assert.That(saved.CountryOfResidence, Is.EqualTo("BG"));
-        Assert.That(saved.Status, Is.EqualTo("Verified"));
+        Assert.That(saved.Status, Is.EqualTo("Pending"));
         Assert.That(saved.DateOfBirth.Kind, Is.EqualTo(DateTimeKind.Utc));
         Assert.That(saved.ExpiryDate.Kind, Is.EqualTo(DateTimeKind.Utc));
     }
@@ -180,7 +180,7 @@ public class KycDocumentsControllerTests
         await db.SaveChangesAsync();
 
         var controller = new KycDocumentsController(db);
-        ControllerTestHelpers.SetUser(controller, currentUserId);
+        ControllerTestHelpers.SetUser(controller, currentUserId, isAdmin: true);
         var newDob = DateTime.UtcNow.AddYears(-30);
         var newExpiry = DateTime.UtcNow.AddYears(10);
 

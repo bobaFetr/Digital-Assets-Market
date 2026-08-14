@@ -98,6 +98,7 @@ public class WalletsController : ApiControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> CreateWallet([FromBody] CreateWalletRequest request)
     {
         if (!TryGetUserId(out var currentUserId))
@@ -129,6 +130,7 @@ public class WalletsController : ApiControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateWallet(Guid id, [FromBody] UpdateWalletRequest request)
     {
         if (!TryGetUserId(out var currentUserId))
@@ -172,6 +174,7 @@ public class WalletsController : ApiControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteWallet(Guid id)
     {
         if (!TryGetUserId(out var currentUserId))
@@ -216,6 +219,11 @@ public class WalletsController : ApiControllerBase
     [HttpPost("deposit-card")]
     public async Task<IActionResult> AddMoneyFromCard([FromBody] AddMoneyByCardRequest request)
     {
+        if (!string.Equals(Environment.GetEnvironmentVariable("ENABLE_SIMULATED_CARD_DEPOSITS"), "true", StringComparison.OrdinalIgnoreCase))
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable,
+                "Simulated card deposits are disabled. Configure a verified payment provider before accepting deposits.");
+        }
         if (!TryGetUserId(out var currentUserId))
         {
             return Unauthorized();

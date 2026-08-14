@@ -148,7 +148,7 @@ public class KycDocumentsController : ApiControllerBase
             DateOfBirth = dobUtc,
             CountryOfResidence = countryOfResidence,
             ExpiryDate = expiryUtc,
-            Status = string.IsNullOrWhiteSpace(status) ? "Verified" : status,
+            Status = IsAdmin() && !string.IsNullOrWhiteSpace(status) ? status : "Pending",
             UploadedAt = DateTime.UtcNow
         };
 
@@ -244,6 +244,11 @@ public class KycDocumentsController : ApiControllerBase
 
         if (request.Status != null)
         {
+            if (!IsAdmin())
+            {
+                return Forbid();
+            }
+
             if (!RequestSecurity.TryValidatePlainText(request.Status, "Status", out var status, out var statusError, 50))
             {
                 return BadRequest(statusError);

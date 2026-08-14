@@ -9,6 +9,8 @@ using NetServer.Data; // Added Namespace
 using NetServer.Data.Models; // Added Namespace
 using System.ComponentModel.DataAnnotations;
 using MyWebApi.Services;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Security.Cryptography;
 
 [ApiController]
 [Route("api/auth")]
@@ -29,6 +31,7 @@ public class AuthController : ControllerBase
 
     // REGISTER
     [HttpPost("register")]
+    [EnableRateLimiting("AuthSensitive")]
     public IActionResult Register([FromBody] RegisterRequest request)
     {
         if (!ModelState.IsValid)
@@ -222,6 +225,7 @@ public class AuthController : ControllerBase
 
     // LOGIN (returns JWT)
     [HttpPost("login")]
+    [EnableRateLimiting("AuthSensitive")]
     public IActionResult Login([FromBody] LoginRequest request)
     {
         if (!ModelState.IsValid)
@@ -256,11 +260,13 @@ public class AuthController : ControllerBase
         _walletProvisioning.EnsureDefaultWalletsForUser(existing.Id);
         _db.SaveChanges();
 
+        var sessionId = Guid.NewGuid();
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, existing.Id.ToString()),
             new Claim(ClaimTypes.Email, existing.Email),
-            new Claim(ClaimTypes.Role, existing.Role)
+            new Claim(ClaimTypes.Role, existing.Role),
+            new Claim(JwtRegisteredClaimNames.Sid, sessionId.ToString())
         };
 
         var jwtKey = _config["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is missing.");
@@ -281,9 +287,9 @@ public class AuthController : ControllerBase
 
         _db.Sessions.Add(new SessionTable
         {
-            SessionId = Guid.NewGuid(),
+            SessionId = sessionId,
             UserId = existing.Id,
-            Token = tokenValue,
+            Token = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(tokenValue))),
             IpAddress = string.IsNullOrWhiteSpace(ipAddress) ? "Unknown IP" : ipAddress,
             DeviceInfo = string.IsNullOrWhiteSpace(userAgent) ? "Unknown device" : userAgent,
             CreatedAt = DateTime.UtcNow,
@@ -395,10 +401,21 @@ public class AuthController : ControllerBase
         return Ok("User banned");
     }
 
-    // LOGOUT (client-side only for JWT)
+    // LOGOUT (revokes the server-side session backing the JWT)
     [HttpPost("logout")]
+    [Authorize]
     public IActionResult Logout()
     {
+        var sessionIdValue = User.FindFirstValue(JwtRegisteredClaimNames.Sid);
+        if (Guid.TryParse(sessionIdValue, out var sessionId))
+        {
+            var session = _db.Sessions.FirstOrDefault(s => s.SessionId == sessionId);
+            if (session != null)
+            {
+                _db.Sessions.Remove(session);
+                _db.SaveChanges();
+            }
+        }
         return Ok();
     }
 
@@ -450,6 +467,7 @@ public class AuthController : ControllerBase
         }
 
         user.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+        _db.Sessions.RemoveRange(_db.Sessions.Where(s => s.UserId == userId));
         _db.SaveChanges();
 
         return Ok("Password changed successfully.");
@@ -540,6 +558,7 @@ public class AuthController : ControllerBase
 
     [HttpPost("forgot-password")]
     [AllowAnonymous]
+    [EnableRateLimiting("AuthSensitive")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
     {
         if (!ModelState.IsValid)
@@ -589,6 +608,7 @@ public class AuthController : ControllerBase
 
     [HttpPost("reset-password")]
     [AllowAnonymous]
+    [EnableRateLimiting("AuthSensitive")]
     public IActionResult ResetPassword([FromBody] ResetPasswordRequest request)
     {
         if (!ModelState.IsValid)
@@ -626,6 +646,7 @@ public class AuthController : ControllerBase
         }
 
         user.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+        _db.Sessions.RemoveRange(_db.Sessions.Where(s => s.UserId == user.Id));
         _db.SaveChanges();
 
         return Ok("Password has been reset successfully.");
@@ -637,7 +658,8 @@ public class AuthController : ControllerBase
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Email, user.Email),
-            new Claim("purpose", "password_reset")
+            new Claim("purpose", "password_reset"),
+            new Claim("password_version", PasswordVersion(user.Password))
         };
 
         var jwtKey = _config["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is missing.");
@@ -679,6 +701,25 @@ public class AuthController : ControllerBase
                 return null;
             }
 
+            var userIdValue = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+            var passwordVersion = principal.FindFirstValue("password_version");
+            if (!Guid.TryParse(userIdValue, out var userId) || string.IsNullOrWhiteSpace(passwordVersion))
+            {
+                return null;
+            }
+
+            var currentPasswordHash = _db.Users
+                .Where(u => u.Id == userId)
+                .Select(u => u.Password)
+                .FirstOrDefault();
+            if (currentPasswordHash == null ||
+                !CryptographicOperations.FixedTimeEquals(
+                    Encoding.UTF8.GetBytes(passwordVersion),
+                    Encoding.UTF8.GetBytes(PasswordVersion(currentPasswordHash))))
+            {
+                return null;
+            }
+
             return principal;
         }
         catch
@@ -686,6 +727,9 @@ public class AuthController : ControllerBase
             return null;
         }
     }
+
+    private static string PasswordVersion(string passwordHash) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(passwordHash)));
 
     private static bool VerifyPassword(string providedPassword, string storedPassword, out bool shouldUpgradePasswordHash)
     {

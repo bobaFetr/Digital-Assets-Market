@@ -65,6 +65,7 @@ public class TransactionsController : ApiControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> CreateTransaction([FromBody] CreateExchangeTransactionRequest request)
     {
         if (!TryGetUserId(out var currentUserId))
@@ -97,6 +98,7 @@ public class TransactionsController : ApiControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateTransaction(Guid id, [FromBody] UpdateExchangeTransactionRequest request)
     {
         if (!TryGetUserId(out var currentUserId))
@@ -135,6 +137,7 @@ public class TransactionsController : ApiControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteTransaction(Guid id)
     {
         if (!TryGetUserId(out var currentUserId))

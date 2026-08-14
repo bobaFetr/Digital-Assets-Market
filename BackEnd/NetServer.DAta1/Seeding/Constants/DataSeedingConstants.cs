@@ -18,7 +18,8 @@ namespace NetServer.Data.Seeding.Constants
 
             public const string Username1 = "Alice";
             public const string Email = "Alice@email.com";
-            public const string Password = "Password";
+            // Seeded users must not have a usable shared credential.
+            public const string Password = "";
             public static readonly DateTime CreatedAt1 = new DateTime(2025, 11, 28, 0, 0, 0, DateTimeKind.Utc);
             public const User.StatusBit Status1 = User.StatusBit.Active;
             public const bool IsBanned1 = false;
@@ -36,7 +37,7 @@ namespace NetServer.Data.Seeding.Constants
 
             public const string Username1 = "neWadmin";
             public const string Email = "newadmin@example.com";
-            public const string Password = "NewAdmin123789!";
+            public const string Password = "";
             public static readonly DateTime CreatedAt1 = new DateTime(2025, 11, 28, 0, 0, 0, DateTimeKind.Utc);
             public const User.StatusBit Status1 = User.StatusBit.Active;
             public const bool IsBanned1 = false;

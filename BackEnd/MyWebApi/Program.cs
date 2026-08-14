@@ -7,6 +7,8 @@ using NetServer.DAta1;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.Net.Http.Headers;
+using System.IdentityModel.Tokens.Jwt;
+using System.Threading.RateLimiting;
 
 internal class Program
 {
@@ -92,6 +94,15 @@ internal class Program
                         if (user.IsBanned)
                         {
                             context.Fail("User is banned");
+                            return;
+                        }
+
+                        var sessionIdValue = context.Principal?.FindFirstValue(JwtRegisteredClaimNames.Sid);
+                        if (!Guid.TryParse(sessionIdValue, out var sessionId) ||
+                            !await db.Sessions.AsNoTracking().AnyAsync(s =>
+                                s.SessionId == sessionId && s.UserId == userId && s.ExpiresAt > DateTime.UtcNow))
+                        {
+                            context.Fail("Session is no longer valid.");
                         }
                     },
                     OnChallenge = async context =>
@@ -110,6 +121,21 @@ internal class Program
             });
 
         builder.Services.AddControllers();
+
+        builder.Services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            options.AddPolicy("AuthSensitive", context =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 5,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueLimit = 0,
+                        AutoReplenishment = true
+                    }));
+        });
 
         builder.Services.Configure<Microsoft.AspNetCore.Mvc.ApiBehaviorOptions>(options =>
         {
@@ -257,6 +283,7 @@ internal class Program
         });
 
         app.UseAuthentication();
+        app.UseRateLimiter();
         app.UseAuthorization();
 
         app.MapGet("/healthz", () => Results.Ok(new

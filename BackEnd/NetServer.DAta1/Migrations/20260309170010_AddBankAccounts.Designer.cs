@@ -757,7 +757,7 @@ namespace NetServer.DAta1.Migrations
                             CreatedAt = new DateTime(2025, 11, 28, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "Alice@email.com",
                             IsBanned = false,
-                            Password = "Password",
+                            Password = "",
                             Role = "User",
                             Status = 1,
                             UserName = "Alice"

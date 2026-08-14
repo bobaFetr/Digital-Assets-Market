@@ -404,7 +404,7 @@ namespace NetServer.DAta1.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "CreatedAt", "Email", "IsBanned", "Password", "ProfilePictureUrl", "Role", "Status", "UserName" },
-                values: new object[] { new Guid("a1b2c3d4-e5f6-7890-abcd-ef1234567890"), new DateTime(2025, 11, 28, 0, 0, 0, 0, DateTimeKind.Utc), "Alice@email.com", false, "Password", null, "User", 1, "Alice" });
+                values: new object[] { new Guid("a1b2c3d4-e5f6-7890-abcd-ef1234567890"), new DateTime(2025, 11, 28, 0, 0, 0, 0, DateTimeKind.Utc), "Alice@email.com", false, "", null, "User", 1, "Alice" });
 
             migrationBuilder.InsertData(
                 table: "AuditLogs",

@@ -5,6 +5,14 @@ namespace MyApp.Tests;
 
 public class WalletsControllerTests
 {
+    [SetUp]
+    public void EnableExplicitDemoDepositModeForLegacyDepositTests() =>
+        Environment.SetEnvironmentVariable("ENABLE_SIMULATED_CARD_DEPOSITS", "true");
+
+    [TearDown]
+    public void DisableExplicitDemoDepositMode() =>
+        Environment.SetEnvironmentVariable("ENABLE_SIMULATED_CARD_DEPOSITS", null);
+
     [Test]
     public async Task GetWallets_ReturnsUnauthorized_WhenNoUserClaim()
     {
