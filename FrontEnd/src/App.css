@@ -62,7 +62,7 @@
 .crypto-sidebar.is-authenticated .nav-item__mark { display: none; }
 .app-shell:has(.crypto-sidebar.is-authenticated) .app-shell-content { padding-top: 150px; }
 .crypto-layout:has(> .crypto-sidebar.is-authenticated) .global-top-bar { top: 150px; }
-@media (min-width: 901px) {
+@media (min-width: 1101px) {
   .app-shell-content { padding-top: 150px; }
   .crypto-sidebar { min-height: 150px; flex-wrap: wrap; align-content: center; row-gap: 8px; }
   .crypto-sidebar .desktop-header-search { max-width: none; margin-right: 290px; }
@@ -77,7 +77,7 @@
 .cookie-popup { position: fixed; z-index: 100; padding: 18px; }
 .cookie-popup__actions { display: flex; gap: 8px; margin-top: 14px; }
 .cookie-btn { min-height: 38px; padding: 0 13px; cursor: pointer; }
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .app-shell-content { padding-top: 0; }
   .global-top-bar { top: 0; }
   .global-top-bar .top-bar-main, .home-top-bar .top-bar-main { display: flex; }

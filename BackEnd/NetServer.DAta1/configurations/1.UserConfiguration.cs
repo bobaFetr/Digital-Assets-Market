@@ -16,6 +16,8 @@ namespace NetServer.Data.Configurations
         public void Configure(EntityTypeBuilder<User> builder)
         {
             builder.HasKey(u => u.Id);
+            builder.HasIndex(u => u.Email).IsUnique();
+            builder.HasIndex(u => u.UserName).IsUnique();
             builder.HasData(UserSeeding.GenerateUsers());
         }
     }

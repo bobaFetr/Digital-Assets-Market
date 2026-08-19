@@ -428,3 +428,4 @@ FodyWeavers.xsd
 .fake
 # Local ASP.NET Core development cookie keys
 BackEnd/MyWebApi/.dev-keys/
+BackEnd/MyWebApi/App_Data/

@@ -17,6 +17,9 @@ internal class Program
     private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        builder.Logging.ClearProviders();
+        builder.Logging.AddConsole();
+        builder.Logging.AddDebug();
         var maintenanceModeEnabled = IsMaintenanceModeEnabled(builder.Configuration);
 
         if (builder.Environment.IsDevelopment())
@@ -175,8 +178,11 @@ internal class Program
                 throw new InvalidOperationException("Database connection string is missing.");
             }
 
+            var developmentDataDirectory = Path.Combine(builder.Environment.ContentRootPath, "App_Data");
+            Directory.CreateDirectory(developmentDataDirectory);
+            var developmentDatabasePath = Path.Combine(developmentDataDirectory, "dam-development.db");
             builder.Services.AddDbContext<AppDbContext>(options =>
-                options.UseInMemoryDatabase("DigitalAssetsMarketDevelopment"));
+                options.UseSqlite($"Data Source={developmentDatabasePath}"));
         }
         else
         {
@@ -369,7 +375,11 @@ internal class Program
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var walletProvisioning = scope.ServiceProvider.GetRequiredService<WalletProvisioningService>();
 
-            if (db.Database.IsRelational())
+            if (db.Database.ProviderName?.Contains("Sqlite", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                db.Database.EnsureCreated();
+            }
+            else if (db.Database.IsRelational())
             {
                 db.Database.Migrate();
                 EnsureOptionalDemoTables(db);

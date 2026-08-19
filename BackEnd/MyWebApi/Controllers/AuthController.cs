@@ -47,7 +47,8 @@ public class AuthController : ControllerBase
 
             return BadRequest(new { errors });
         }
-        if (_db.Users.Any(u => u.Email == request.Email))
+        var normalizedEmail = request.Email.Trim().ToLowerInvariant();
+        if (_db.Users.Any(u => u.Email.ToLower() == normalizedEmail))
         {
              return BadRequest("User already exists.");
         }
@@ -134,9 +135,9 @@ public class AuthController : ControllerBase
         var user = new User
         {
             UserName = normalizedUserName,
-            Email = request.Email.Trim(),
+            Email = normalizedEmail,
             Password = request.Password,
-            Role = string.IsNullOrWhiteSpace(request.Role) ? "User" : request.Role
+            Role = "User"
         };
 
         user.Role = string.IsNullOrWhiteSpace(user.Role) ? "User" : user.Role;//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -157,10 +158,10 @@ public class AuthController : ControllerBase
                 FilePath = request.IdFilePath?.Trim() ?? string.Empty,
                 DocumentNumber = request.IdNumber.Trim(),
                 FullName = request.FullName.Trim(),
-                DateOfBirth = dobUtc.Value,
+                DateOfBirth = dobUtc.GetValueOrDefault(),
                 CountryOfResidence = request.Country.Trim(),
-                ExpiryDate = expiryUtc.Value,
-                Status = "Verified",
+                ExpiryDate = expiryUtc.GetValueOrDefault(),
+                Status = "Pending",
                 UploadedAt = DateTime.UtcNow
             });
         }
@@ -187,7 +188,8 @@ public class AuthController : ControllerBase
             return BadRequest(new { errors });
         }
 
-         if (_db.Users.Any(u => u.Email == request.Email))
+         var normalizedEmail = request.Email.Trim().ToLowerInvariant();
+         if (_db.Users.Any(u => u.Email.ToLower() == normalizedEmail))
         {
              return BadRequest("User already exists.");
         }
@@ -209,7 +211,7 @@ public class AuthController : ControllerBase
         var user = new User
         {
             UserName = normalizedUserName,
-            Email = request.Email.Trim(),
+            Email = normalizedEmail,
             Password = request.Password,
             Role = "Admin"
         };
@@ -241,8 +243,9 @@ public class AuthController : ControllerBase
             return BadRequest(new { errors = errs });
         }
 
+        var normalizedEmail = request.Email.Trim().ToLowerInvariant();
         var existing = _db.Users
-            .FirstOrDefault(u => u.Email == request.Email);
+            .FirstOrDefault(u => u.Email.ToLower() == normalizedEmail);
 
         if (existing == null)
             return Unauthorized("Invalid credentials");
@@ -801,8 +804,6 @@ public class RegisterRequest
     [Required]
     [RegularExpression(@"^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$", ErrorMessage = "Password must be at least 8 characters and include an uppercase letter, a number and a special character")]
     public string Password { get; set; } = "";
-
-    public string? Role { get; set; }
 
     public string FullName { get; set; } = "";
     public string IdNumber { get; set; } = "";
