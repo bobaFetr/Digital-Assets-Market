@@ -17,6 +17,7 @@ const clearStoredToken = (reason = "logout") => {
   cookieSessionActive = false;
   if (typeof document !== "undefined") {
     document.cookie = "dam_auth=; Max-Age=0; Path=/; SameSite=Lax";
+    document.cookie = "dam_role=; Max-Age=0; Path=/; SameSite=Lax";
   }
   try {
     sessionStorage.removeItem(TOKEN_STORAGE_KEY);
@@ -222,6 +223,11 @@ export const getToken = () => {
   if (cookieSessionActive) return "cookie-session";
   if (typeof document === "undefined") return "";
   return document.cookie.split(";").some(part => part.trim() === "dam_auth=1") ? "cookie-session" : "";
+};
+export const getUserRoleHint = () => {
+  if (typeof document === "undefined") return "";
+  const roleCookie = document.cookie.split(";").map(part => part.trim()).find(part => part.startsWith("dam_role="));
+  return roleCookie ? decodeURIComponent(roleCookie.slice("dam_role=".length)) : "";
 };
 export const getKycStatus = () => {
   const token = getToken();

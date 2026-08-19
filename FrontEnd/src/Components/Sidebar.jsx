@@ -1,37 +1,12 @@
-import React, { useMemo } from "react";
-import { Link, NavLink } from "react-router-dom";
-import { getToken } from "../Services/Service";
-
-const getClaimsFromToken = (token) => {
-  if (!token) {
-    return null;
-  }
-
-  try {
-    const payload = token.split(".")[1];
-    if (!payload) {
-      return null;
-    }
-
-    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
-    return JSON.parse(atob(normalized));
-  } catch {
-    return null;
-  }
-};
-
-const getUserRole = (token) => {
-  const claims = getClaimsFromToken(token);
-  return (
-    claims?.role ||
-    claims?.["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ||
-    ""
-  );
-};
+import React, { useState } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { getToken, getUserRoleHint } from "../Services/Service";
 
 export default function Sidebar({ mobileOpen, setMobileOpen }) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
   const token = getToken();
-  const role = useMemo(() => getUserRole(token), [token]);
+  const role = getUserRoleHint();
   const isAuthenticated = Boolean(token);
   const isAdmin = role === "Admin";
 
@@ -66,6 +41,13 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
     }
   };
 
+  const submitSearch = (event) => {
+    event.preventDefault();
+    const query = searchQuery.trim();
+    navigate(query ? `/news?q=${encodeURIComponent(query)}` : "/news");
+    closeMobileSidebar();
+  };
+
   const renderLinks = (links) =>
     links.map((link) => (
       <NavLink
@@ -80,7 +62,8 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
     ));
 
   return (
-    <aside className={`crypto-sidebar ${mobileOpen ? "mobile-open" : ""}`}>
+    <>
+    <aside className={`crypto-sidebar ${isAuthenticated ? "is-authenticated" : "is-guest"} ${mobileOpen ? "mobile-open" : ""}`}>
       <div className="sidebar-brand-row">
         <Link
           to="/"
@@ -100,6 +83,18 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
           Close
         </button>
       </div>
+
+      <form className="desktop-header-search" role="search" onSubmit={submitSearch}>
+        <label className="visually-hidden" htmlFor="desktop-market-search">Search assets, markets, or news</label>
+        <input
+          id="desktop-market-search"
+          type="search"
+          placeholder="Search assets, markets, or news..."
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+        />
+        <button type="submit" aria-label="Search">Search</button>
+      </form>
 
       <nav className="nav-links">
         <div className="nav-section-title">Explore</div>
@@ -129,6 +124,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
 
       <div className="sidebar-environment"><span className="sidebar-environment__dot" />Simulation mode</div>
 
+    </aside>
       <nav className="mobile-bottom-nav" role="navigation" aria-label="Mobile navigation">
         {renderLinks(
           isAuthenticated
@@ -146,6 +142,6 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
               ]
         )}
       </nav>
-    </aside>
+    </>
   );
 }

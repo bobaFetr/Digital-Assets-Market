@@ -151,8 +151,8 @@ export default function Profile() {
       isMounted = false;
     };
   }, []);
-  const handleLogout = () => {
-    logoutUser();
+  const handleLogout = async () => {
+    await logoutUser();
     navigate("/sign-in");
   };
   const readFileAsDataUrl = file => new Promise((resolve, reject) => {
@@ -242,7 +242,7 @@ export default function Profile() {
         iban: showDeleteBankDetails ? bankIban.trim() : undefined,
         swiftCode: showDeleteBankDetails ? bankSwiftCode.trim() : undefined
       });
-      logoutUser();
+      await logoutUser();
       navigate("/sign-in");
     } catch (err) {
       const message = err.message || "Unable to delete account.";

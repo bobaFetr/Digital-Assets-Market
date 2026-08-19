@@ -145,7 +145,7 @@ export default function Faq() {
           Ask a question and help other users by replying to unanswered ones.
         </p>
 
-        <div>
+        <div className="faq-question-list">
           <h3>Ask a question</h3>
           <form onSubmit={submitQuestion}>
             <textarea
@@ -226,11 +226,12 @@ export default function Faq() {
             const replyAuthorLabel = item.replyAuthorUserName || item.replyAuthorEmail || "Unknown replier";
 
             return (
-              <div
+              <article
+                className="faq-question-item"
                 key={item.faqId}>
 
 
-                <div>
+                <div className="faq-question-author">
                   <div>
 
 
@@ -248,6 +249,7 @@ export default function Faq() {
 
                     {item.authorProfilePictureUrl ?
                     <img
+                      className="faq-profile-picture"
                       src={resolveTrustedImageUrl(item.authorProfilePictureUrl, DEFAULT_PROFILE_PICTURE, buildUrl)}
                       alt="Author"
 
@@ -257,6 +259,7 @@ export default function Faq() {
 
 
                     <img
+                      className="faq-profile-picture"
                       src={DEFAULT_PROFILE_PICTURE}
                       alt="Default profile" />
 
@@ -284,8 +287,8 @@ export default function Faq() {
 
                 {hasAnswer ?
                 <div>
-                    <div>
-                      <div>
+                    <div className="faq-reply">
+                    <div className="faq-reply-author">
 
 
 
@@ -303,6 +306,7 @@ export default function Faq() {
 
                         {item.replyAuthorProfilePictureUrl ?
                       <img
+                        className="faq-profile-picture"
                         src={resolveTrustedImageUrl(item.replyAuthorProfilePictureUrl, DEFAULT_PROFILE_PICTURE, buildUrl)}
                         alt="Replier"
 
@@ -312,6 +316,7 @@ export default function Faq() {
 
 
                       <img
+                        className="faq-profile-picture"
                         src={DEFAULT_PROFILE_PICTURE}
                         alt="Default profile" />
 
@@ -353,7 +358,7 @@ export default function Faq() {
                     </button>
                   </div>
                 }
-              </div>);
+              </article>);
 
           })}
         </div>

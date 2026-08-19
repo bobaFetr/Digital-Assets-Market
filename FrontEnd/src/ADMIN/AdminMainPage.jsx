@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { NavLink, Routes, Route } from "react-router-dom";
 import "./Admin.css";
 import UserSidebar from "../Components/Sidebar";
@@ -14,7 +14,7 @@ const Users = () => {
   const [statusMessage, setStatusMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [actionUserId, setActionUserId] = useState("");
-  const loadUsers = async (nextStatus = statusFilter) => {
+  const loadUsers = useCallback(async (nextStatus = statusFilter) => {
     const token = getToken();
     if (!token) {
       setError("Admin authentication required.");
@@ -35,10 +35,10 @@ const Users = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [statusFilter]);
   useEffect(() => {
     loadUsers(statusFilter);
-  }, [statusFilter]);
+  }, [statusFilter, loadUsers]);
   const resolveIdentifierPayload = value => {
     const trimmed = value.trim();
     if (!trimmed) {

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import "./App.css";
 import {
   Chart as ChartJS,
@@ -85,7 +85,7 @@ function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
     return () => observer.disconnect();
   }, []);
 
-  const applySeries = (points) => {
+  const applySeries = useCallback((points) => {
     if (!Array.isArray(points) || points.length === 0) {
       setMeta({ count: 0, lastPrice: null, lastTime: null });
       setSeriesPoints([]);
@@ -99,14 +99,14 @@ function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
       lastTime: last.time
     });
     setSeriesPoints(points);
-  };
+  }, []);
 
-  const clearSeries = () => {
+  const clearSeries = useCallback(() => {
     setMeta({ count: 0, lastPrice: null, lastTime: null });
     setSeriesPoints([]);
-  };
+  }, []);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const candles = await request(
         `/api/market/klines?symbol=${encodeURIComponent(symbol)}&interval=1m&limit=120`
@@ -126,13 +126,13 @@ function BitcoinChart({ symbol = "BTCUSD", refreshKey = 0 }) {
       console.error(`Error fetching ${symbol} data:`, error?.message || error);
       clearSeries();
     }
-  };
+  }, [symbol, applySeries, clearSeries]);
 
   useEffect(() => {
     fetchData();
     const interval = setInterval(fetchData, 10000);
     return () => clearInterval(interval);
-  }, [symbol, refreshKey]);
+  }, [fetchData, refreshKey]);
 
   const visiblePoints = useMemo(() => {
     const preferredCount = isMobile ? 30 : 80;

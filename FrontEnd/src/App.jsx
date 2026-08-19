@@ -8,7 +8,7 @@ import WithDraw from "./WithdrawPage.jsx";
 import BuyAndSell from "./BuyAndSell";
 import CryptoServerAssetPage from "./CryptoServerAssetPage";
 import VerifyIdentityPage from "./VerifyIdentityPage";
-import { AUTH_BLOCKED_EVENT, AUTH_STATE_CHANGED_EVENT, getKycStatus, getToken, request, getProfile } from "./Services/Service";
+import { AUTH_BLOCKED_EVENT, AUTH_STATE_CHANGED_EVENT, getKycStatus, getToken, getUserRoleHint, request, getProfile } from "./Services/Service";
 import { buildUrl } from "./config/api";
 import { resolveTrustedImageUrl } from "./Security/trustedContent";
 import SignUpPage from "./SignUp.jsx";
@@ -85,24 +85,8 @@ const getMobileHeaderTitle = pathname => {
   if (pathname.startsWith("/rug-pull")) return "Rug Pull";
   return "Menu";
 };
-const getClaimsFromToken = token => {
-  if (!token) {
-    return null;
-  }
-  try {
-    const payload = token.split(".")[1];
-    if (!payload) {
-      return null;
-    }
-    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
-    return JSON.parse(atob(normalized));
-  } catch {
-    return null;
-  }
-};
 const getRoleFromToken = token => {
-  const claims = getClaimsFromToken(token);
-  return claims?.role || claims?.["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || "";
+  return token ? getUserRoleHint() : "";
 };
 function UserBalanceCard() {
   const [balance, setBalance] = useState(null);

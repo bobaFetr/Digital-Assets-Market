@@ -140,12 +140,12 @@ input::placeholder, textarea::placeholder { color: var(--text-tertiary); }
 
 @media (max-width: 900px) {
   .crypto-layout { display: block; }
-  .crypto-main { padding: 18px 16px 84px; }
+  .crypto-main { padding: 18px 16px 48px; }
   .crypto-sidebar { position: fixed; left: 0; top: 0; width: min(286px, 86vw); transform: translateX(-105%); box-shadow: var(--shadow-md); }
   .crypto-sidebar.mobile-open, body.sidebar-open .crypto-sidebar { transform: translateX(0); }
   .mobile-bottom-nav { background: var(--surface); border-top: 1px solid var(--glass-border); }
   .login-panel { padding: 24px 16px 48px; }
-  .app-footer { padding: 30px 20px 90px; }
+  .app-footer { padding: 30px 20px 36px; }
 }
 
 @media (max-width: 560px) {

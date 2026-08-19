@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import BitcoinChart from "./BitcoinChart";
 import Sidebar from "./Components/Sidebar";
@@ -6,6 +6,16 @@ import { getToken, request } from "./Services/Service";
 const BUY_SELL_FROM_CURRENCY_KEY = "buySell.fromCurrency";
 const BUY_SELL_TO_CURRENCY_KEY = "buySell.toCurrency";
 const MOBILE_BREAKPOINT = 560;
+const SYMBOL_MAP = {
+  USD: { BTC: "BTCUSD", ETH: "ETHUSD", BNB: "BNBUSD", ALGO: "ALGOUSD" },
+  EUR: { BTC: "BTCEUR", ETH: "ETHEUR", BNB: "BNBEUR", ALGO: "ALGOEUR" }
+};
+const CARD_COINS = [
+  { name: "Ethereum", code: "ETH" },
+  { name: "Bitcoin", code: "BTC" },
+  { name: "Binance Coin", code: "BNB" },
+  { name: "Algorand", code: "ALGO" }
+];
 const readPersistedCurrency = (key, allowedValues, fallbackValue) => {
   if (typeof window === "undefined") {
     return fallbackValue;
@@ -43,38 +53,11 @@ export default function BuyAndSell() {
     }
     return window.innerWidth <= MOBILE_BREAKPOINT;
   });
-  const symbolMap = {
-    USD: {
-      BTC: "BTCUSD",
-      ETH: "ETHUSD",
-      BNB: "BNBUSD",
-      ALGO: "ALGOUSD"
-    },
-    EUR: {
-      BTC: "BTCEUR",
-      ETH: "ETHEUR",
-      BNB: "BNBEUR",
-      ALGO: "ALGOEUR"
-    }
-  };
-  const mappedSymbol = symbolMap[toCurrency]?.[fromCurrency] || "BTCUSD";
+  const mappedSymbol = SYMBOL_MAP[toCurrency]?.[fromCurrency] || "BTCUSD";
   const pairSymbol = mappedSymbol;
   const chartSymbol = mappedSymbol;
   const balanceCurrency = orderType === "Buy" ? toCurrency : fromCurrency;
   const effectiveRate = orderKind === "Limit" && Number(limitPrice) > 0 ? Number(limitPrice) : Number(quoteRate);
-  const cardCoins = [{
-    name: "Ethereum",
-    code: "ETH"
-  }, {
-    name: "Bitcoin",
-    code: "BTC"
-  }, {
-    name: "Binance Coin",
-    code: "BNB"
-  }, {
-    name: "Algorand",
-    code: "ALGO"
-  }];
   useEffect(() => {
     if (typeof window === "undefined") {
       return undefined;
@@ -102,7 +85,7 @@ export default function BuyAndSell() {
       setToCurrency(quote);
     }
   }, [searchParams]);
-  const loadWallets = async () => {
+  const loadWallets = useCallback(async () => {
     const token = getToken();
     if (!token) {
       setAvailable(null);
@@ -125,10 +108,10 @@ export default function BuyAndSell() {
     } finally {
       setIsLoadingAvailable(false);
     }
-  };
+  }, [balanceCurrency]);
   useEffect(() => {
     loadWallets();
-  }, [balanceCurrency]);
+  }, [loadWallets]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -137,7 +120,7 @@ export default function BuyAndSell() {
     }, 10000); // every 10s
 
     return () => clearInterval(interval);
-  }, [balanceCurrency]);
+  }, [loadWallets]);
   useEffect(() => {
     if (typeof window !== "undefined") {
       window.localStorage.setItem(BUY_SELL_FROM_CURRENCY_KEY, fromCurrency);
@@ -181,7 +164,7 @@ export default function BuyAndSell() {
     } else {
       setAmountCrypto(Number(amountQuote) / rate);
     }
-  }, [effectiveRate, lastEdited]);
+  }, [effectiveRate, lastEdited, amountCrypto, amountQuote]);
   useEffect(() => {
     if (orderKind !== "Limit") {
       setIsLimitPriceTouched(false);
@@ -222,8 +205,8 @@ export default function BuyAndSell() {
   useEffect(() => {
     const loadMarketCards = async () => {
       try {
-        const results = await Promise.all(cardCoins.map(async coin => {
-          const symbol = symbolMap[toCurrency]?.[coin.code];
+        const results = await Promise.all(CARD_COINS.map(async coin => {
+          const symbol = SYMBOL_MAP[toCurrency]?.[coin.code];
           if (!symbol) {
             return {
               ...coin,
@@ -250,7 +233,7 @@ export default function BuyAndSell() {
         setMarketCards(results);
       } catch (error) {
         console.error("Error loading market cards:", error);
-        setMarketCards(cardCoins.map(coin => ({
+        setMarketCards(CARD_COINS.map(coin => ({
           ...coin,
           rateText: "--",
           rateValue: null

@@ -23,7 +23,54 @@
 .ui-button { min-height: 40px; padding: 0 14px; cursor: pointer; font-weight: 600; }
 .error-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .mobile-bottom-nav, .global-mobile-header, .sidebar-close-button { display: none; }
+.mobile-hamburger { display: none; }
+.app-shell-content > .mobile-hamburger { display: none !important; }
+.app-shell-content { padding-top: 72px; }
+.global-top-bar { top: 72px; }
+.global-top-bar .top-bar-main, .home-top-bar .top-bar-main { display: none; }
 .mobile-sidebar-backdrop { position: fixed; inset: 0; z-index: 35; background: rgba(0, 0, 0, .48); }
+.crypto-layout { display: block; }
+.crypto-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  width: 100%;
+  height: auto;
+  min-height: 72px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 24px;
+  padding: 10px 24px;
+  border-right: 0;
+  border-bottom: 1px solid currentColor;
+  background: #FFFFFF;
+}
+.crypto-sidebar .sidebar-brand-row { min-height: 0; padding: 0; border-bottom: 0; flex: 0 0 auto; }
+.desktop-header-search { display: flex; flex: 1 1 360px; max-width: 440px; min-width: 220px; height: 40px; }
+.desktop-header-search input { width: 100%; min-width: 0; height: 40px; padding: 0 12px; border: 1px solid currentColor; border-right: 0; }
+.desktop-header-search button { height: 40px; padding: 0 14px; border: 1px solid currentColor; background: transparent; color: inherit; cursor: pointer; }
+.crypto-sidebar .nav-links { flex: 1; flex-direction: row; align-items: center; justify-content: flex-end; gap: 2px; padding: 0; overflow-x: auto; }
+.crypto-sidebar .nav-section-title, .crypto-sidebar .sidebar-environment { display: none; }
+.crypto-sidebar .nav-item.nav-item-link { flex: 0 0 auto; min-height: 40px; margin: 0; padding: 0 11px; border: 1px solid transparent; white-space: nowrap; }
+.crypto-sidebar .nav-item.nav-item-link.active { border-color: currentColor; }
+.crypto-sidebar.is-authenticated { min-height: 150px; flex-wrap: wrap; align-content: center; row-gap: 8px; }
+.crypto-sidebar.is-authenticated .desktop-header-search { max-width: none; }
+.crypto-sidebar.is-authenticated .nav-links { flex: 0 0 100%; width: 100%; flex-wrap: wrap; justify-content: center; overflow: visible; }
+.crypto-sidebar.is-authenticated .nav-item__mark { display: none; }
+.app-shell:has(.crypto-sidebar.is-authenticated) .app-shell-content { padding-top: 150px; }
+.crypto-layout:has(> .crypto-sidebar.is-authenticated) .global-top-bar { top: 150px; }
+@media (min-width: 901px) {
+  .app-shell-content { padding-top: 150px; }
+  .crypto-sidebar { min-height: 150px; flex-wrap: wrap; align-content: center; row-gap: 8px; }
+  .crypto-sidebar .desktop-header-search { max-width: none; margin-right: 290px; }
+  .crypto-sidebar .nav-links { flex: 0 0 100%; width: 100%; flex-wrap: wrap; justify-content: center; overflow: visible; }
+  .crypto-sidebar .nav-item__mark { display: none; }
+  .global-top-bar, .home-top-bar { min-height: 0; height: 0; margin: 0; padding: 0; border: 0; }
+  .global-top-bar .top-bar-actions, .home-top-bar .top-bar-actions { position: fixed; top: 16px; right: 24px; z-index: 55; justify-content: flex-end; }
+}
 .app-footer__top { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 28px; }
 .app-footer__links, .app-footer__socials { display: flex; flex-wrap: wrap; align-content: start; gap: 12px 18px; }
 .app-footer__bottom { margin-top: 28px; padding-top: 16px; border-top: 1px solid #263244; }
@@ -31,10 +78,32 @@
 .cookie-popup__actions { display: flex; gap: 8px; margin-top: 14px; }
 .cookie-btn { min-height: 38px; padding: 0 13px; cursor: pointer; }
 @media (max-width: 900px) {
+  .app-shell-content { padding-top: 0; }
+  .global-top-bar { top: 0; }
+  .global-top-bar .top-bar-main, .home-top-bar .top-bar-main { display: flex; }
   .global-mobile-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; }
-  .mobile-bottom-nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 45; display: grid; grid-template-columns: repeat(4, 1fr); padding: 7px; }
+  .crypto-layout { display: block; }
+  .crypto-sidebar { position: fixed; left: 0; top: 0; width: min(286px, 86vw); height: 100vh; display: flex; flex-direction: column; align-items: stretch; gap: 0; padding: 16px 12px 12px; border-right: 1px solid currentColor; border-bottom: 0; transform: translateX(-105%); }
+  .crypto-sidebar.is-authenticated { min-height: 0; flex-wrap: nowrap; align-content: normal; row-gap: 0; }
+  .crypto-sidebar.mobile-open, body.sidebar-open .crypto-sidebar { transform: translateX(0); }
+  .crypto-sidebar .sidebar-brand-row { min-height: 62px; padding: 0 4px 14px; border-bottom: 1px solid currentColor; }
+  .desktop-header-search { display: none; }
+  .global-top-bar, .home-top-bar { height: auto; }
+  .global-top-bar .top-bar-actions, .home-top-bar .top-bar-actions { position: static; }
+  .crypto-sidebar .nav-links { display: flex; flex: 1; flex-direction: column; align-items: stretch; justify-content: flex-start; padding-top: 10px; overflow-y: auto; }
+  .crypto-sidebar .nav-section-title { display: block; }
+  .crypto-sidebar .sidebar-environment { display: flex; }
+  .crypto-sidebar .nav-item.nav-item-link { min-height: 42px; margin: 2px 0; padding: 0 10px; }
+  .crypto-sidebar.is-authenticated .nav-links { width: auto; flex: 1; flex-wrap: nowrap; justify-content: flex-start; overflow-y: auto; }
+  .crypto-sidebar.is-authenticated .nav-item__mark { display: inline-block; }
+  .app-shell:has(.crypto-sidebar.is-authenticated) .app-shell-content { padding-top: 0; }
+  .crypto-layout:has(> .crypto-sidebar.is-authenticated) .global-top-bar { top: 0; }
+  .mobile-bottom-nav { position: fixed; left: 0; right: 0; top: auto; bottom: 0; z-index: 45; display: grid; grid-template-columns: repeat(4, 1fr); padding: 7px; border-top: 1px solid currentColor; background: #FFFFFF; }
   .mobile-bottom-nav .nav-item { justify-content: center; padding: 7px 4px; font-size: 11px; }
+  .crypto-main { padding-bottom: 84px; }
+  .app-footer { padding-bottom: 90px; }
   .sidebar-close-button { display: inline-flex; }
+  .global-mobile-header .mobile-hamburger, .home-top-bar .mobile-hamburger, .sidebar-close-button { display: inline-flex; }
   .search-container { min-width: 0; flex: 1; }
   .top-bar { align-items: stretch; flex-direction: column; }
   .app-footer__top { grid-template-columns: 1fr; }
@@ -70,7 +139,7 @@
 .negative { color: var(--danger); }
 .home-workspace-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: start; }
 .home-chart { width: 100%; min-width: 0; padding: clamp(20px, 2vw, 32px); }
-.home-chart .market-chart-frame { width: 100%; min-height: clamp(360px, 38vw, 620px); }
+.home-chart .market-chart-frame { width: 100%; min-height: clamp(240px, 24vw, 360px); }
 .home-chart canvas { width: 100% !important; height: 100% !important; }
 .home-briefing { padding: 20px; border: 1px solid var(--glass-border); border-radius: 6px; background: var(--surface); }
 .home-briefing ol { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
@@ -79,6 +148,12 @@
 .home-briefing li::before { content: counter(briefing, decimal-leading-zero); position: absolute; top: 14px; left: 0; color: var(--text-tertiary); font: 10px "DM Mono", monospace; }
 .home-briefing li a { color: var(--text-primary); font-weight: 600; }
 .home-briefing time { color: var(--text-tertiary); font-size: 11px; }
+.faq-question-list { margin-top: 12px; }
+.faq-question-item { padding: 28px 0; }
+.faq-question-item + .faq-question-item { border-top: 1px solid currentColor; }
+.faq-question-author, .faq-reply-author { display: flex; align-items: center; gap: 12px; }
+.faq-profile-picture { width: 40px; height: 40px; max-width: 40px; border: 1px solid currentColor; border-radius: 50%; object-fit: cover; flex: 0 0 40px; }
+.faq-reply { margin-top: 18px; padding: 16px; border: 1px solid currentColor; }
 @media (max-width: 900px) {
   .home-hero { grid-template-columns: 1fr; gap: 20px; padding-top: 24px; }
   .home-workspace-grid { grid-template-columns: 1fr; }
@@ -90,6 +165,8 @@
   .home-market-table { margin-right: -16px; border-right: 0; border-radius: 6px 0 0 6px; }
   .home-market-table th { height: 42px; padding: 0 12px; }
   .home-market-table td { height: 66px; padding: 12px; }
-  .home-chart .market-chart-frame { min-height: 300px; }
+  .home-chart .market-chart-frame { min-height: 220px; }
   .home-briefing ol { grid-template-columns: 1fr; }
+  .faq-question-item { padding: 22px 0; }
+  .faq-profile-picture { width: 34px; height: 34px; max-width: 34px; flex-basis: 34px; }
 }

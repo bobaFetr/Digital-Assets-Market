@@ -305,6 +305,15 @@ public class AuthController : ControllerBase
             MaxAge = request.RememberMe ? TimeSpan.FromHours(1) : null,
             IsEssential = true
         });
+        Response.Cookies.Append("dam_role", Uri.EscapeDataString(existing.Role), new CookieOptions
+        {
+            HttpOnly = false,
+            Secure = Request.IsHttps,
+            SameSite = SameSiteMode.Lax,
+            Path = "/",
+            MaxAge = request.RememberMe ? TimeSpan.FromHours(1) : null,
+            IsEssential = true
+        });
 
         return Ok(new { authenticated = true });
     }
@@ -424,6 +433,7 @@ public class AuthController : ControllerBase
         }
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         Response.Cookies.Delete("dam_auth", new CookieOptions { Path = "/" });
+        Response.Cookies.Delete("dam_role", new CookieOptions { Path = "/" });
         return Ok();
     }
 
