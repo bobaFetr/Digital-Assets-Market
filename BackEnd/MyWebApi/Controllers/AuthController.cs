@@ -11,6 +11,8 @@ using System.ComponentModel.DataAnnotations;
 using MyWebApi.Services;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Cryptography;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 [ApiController]
 [Route("api/auth")]
@@ -223,10 +225,10 @@ public class AuthController : ControllerBase
         return Ok("Admin registered");
     }
 
-    // LOGIN (returns JWT)
+    // LOGIN (creates an HttpOnly authentication cookie)
     [HttpPost("login")]
     [EnableRateLimiting("AuthSensitive")]
-    public IActionResult Login([FromBody] LoginRequest request)
+    public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         if (!ModelState.IsValid)
         {
@@ -266,22 +268,8 @@ public class AuthController : ControllerBase
             new Claim(ClaimTypes.NameIdentifier, existing.Id.ToString()),
             new Claim(ClaimTypes.Email, existing.Email),
             new Claim(ClaimTypes.Role, existing.Role),
-            new Claim(JwtRegisteredClaimNames.Sid, sessionId.ToString())
+            new Claim("sid", sessionId.ToString())
         };
-
-        var jwtKey = _config["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is missing.");
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(jwtKey));
-
-        var token = new JwtSecurityToken(
-            issuer: _config["Jwt:Issuer"],
-            audience: _config["Jwt:Audience"],
-            claims: claims,
-            expires: DateTime.UtcNow.AddHours(1),
-            signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
-        );
-
-        var tokenValue = new JwtSecurityTokenHandler().WriteToken(token);
         var userAgent = Request.Headers.UserAgent.ToString();
         var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
 
@@ -289,7 +277,7 @@ public class AuthController : ControllerBase
         {
             SessionId = sessionId,
             UserId = existing.Id,
-            Token = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(tokenValue))),
+            Token = Convert.ToHexString(SHA256.HashData(sessionId.ToByteArray())),
             IpAddress = string.IsNullOrWhiteSpace(ipAddress) ? "Unknown IP" : ipAddress,
             DeviceInfo = string.IsNullOrWhiteSpace(userAgent) ? "Unknown device" : userAgent,
             CreatedAt = DateTime.UtcNow,
@@ -297,10 +285,28 @@ public class AuthController : ControllerBase
         });
         _db.SaveChanges();
 
-        return Ok(new
+        await HttpContext.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme)),
+            new AuthenticationProperties
         {
-            token = tokenValue
+            IsPersistent = request.RememberMe,
+            ExpiresUtc = DateTimeOffset.UtcNow.AddHours(1),
+            AllowRefresh = false
         });
+
+        // Non-sensitive UI hint only. Authorization always relies on the protected HttpOnly cookie.
+        Response.Cookies.Append("dam_auth", "1", new CookieOptions
+        {
+            HttpOnly = false,
+            Secure = Request.IsHttps,
+            SameSite = SameSiteMode.Lax,
+            Path = "/",
+            MaxAge = request.RememberMe ? TimeSpan.FromHours(1) : null,
+            IsEssential = true
+        });
+
+        return Ok(new { authenticated = true });
     }
 
     [Authorize(Roles = "Admin")]
@@ -404,9 +410,9 @@ public class AuthController : ControllerBase
     // LOGOUT (revokes the server-side session backing the JWT)
     [HttpPost("logout")]
     [Authorize]
-    public IActionResult Logout()
+    public async Task<IActionResult> Logout()
     {
-        var sessionIdValue = User.FindFirstValue(JwtRegisteredClaimNames.Sid);
+        var sessionIdValue = User.FindFirstValue("sid");
         if (Guid.TryParse(sessionIdValue, out var sessionId))
         {
             var session = _db.Sessions.FirstOrDefault(s => s.SessionId == sessionId);
@@ -416,6 +422,8 @@ public class AuthController : ControllerBase
                 _db.SaveChanges();
             }
         }
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        Response.Cookies.Delete("dam_auth", new CookieOptions { Path = "/" });
         return Ok();
     }
 
@@ -823,6 +831,8 @@ public class LoginRequest
 
     [Required]
     public string Password { get; set; } = "";
+
+    public bool RememberMe { get; set; }
 }
 
 public class ForgotPasswordRequest

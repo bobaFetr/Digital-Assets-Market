@@ -2,6 +2,7 @@ import { buildUrl } from "../config/api";
 const TOKEN_STORAGE_KEY = "dam_token";
 const AUTH_BLOCKED_EVENT = "auth:blocked";
 const AUTH_STATE_CHANGED_EVENT = "auth:changed";
+let cookieSessionActive = false;
 const notifyAuthStateChanged = reason => {
   if (typeof window === "undefined") {
     return;
@@ -13,6 +14,10 @@ const notifyAuthStateChanged = reason => {
   }));
 };
 const clearStoredToken = (reason = "logout") => {
+  cookieSessionActive = false;
+  if (typeof document !== "undefined") {
+    document.cookie = "dam_auth=; Max-Age=0; Path=/; SameSite=Lax";
+  }
   try {
     sessionStorage.removeItem(TOKEN_STORAGE_KEY);
     localStorage.removeItem(TOKEN_STORAGE_KEY);
@@ -35,12 +40,16 @@ const request = async (path, options = {}) => {
   const headers = {
     ...(options.headers || {})
   };
+  // Legacy screens may still supply a Bearer header; cookie authentication never sends it.
+  delete headers.Authorization;
+  delete headers.authorization;
   if (options.body != null) {
     headers["Content-Type"] = headers["Content-Type"] || "application/json";
   }
   const url = buildUrl(path);
   const response = await fetch(url, {
     ...options,
+    credentials: "include",
     headers
   });
   if (!response.ok) {
@@ -96,23 +105,14 @@ export const registerUser = payload => request("/api/auth/register", {
 export const loginUser = async (payload, remember = false) => {
   const data = await request("/api/auth/login", {
     method: "POST",
-    body: JSON.stringify(payload)
+    body: JSON.stringify({ ...payload, rememberMe: remember })
   });
-  if (!data?.token) {
-    throw new Error("No token returned by server");
+  if (!data?.authenticated) {
+    throw new Error("The server did not create an authenticated session");
   }
-  try {
-    if (remember) {
-      localStorage.setItem(TOKEN_STORAGE_KEY, data.token);
-    } else {
-      sessionStorage.setItem(TOKEN_STORAGE_KEY, data.token);
-    }
-  } catch {
-    // fallback to sessionStorage if localStorage access fails
-    sessionStorage.setItem(TOKEN_STORAGE_KEY, data.token);
-  }
+  cookieSessionActive = true;
   notifyAuthStateChanged("login");
-  return data.token;
+  return data;
 };
 export const createDefaultWallets = payload => {
   const token = getToken();
@@ -211,15 +211,17 @@ export const updateUserName = userName => {
     })
   });
 };
-export const logoutUser = () => {
-  clearStoredToken("logout");
+export const logoutUser = async () => {
+  try {
+    await request("/api/auth/logout", { method: "POST" });
+  } finally {
+    clearStoredToken("logout");
+  }
 };
 export const getToken = () => {
-  try {
-    return sessionStorage.getItem(TOKEN_STORAGE_KEY) || localStorage.getItem(TOKEN_STORAGE_KEY) || "";
-  } catch {
-    return sessionStorage.getItem(TOKEN_STORAGE_KEY) || "";
-  }
+  if (cookieSessionActive) return "cookie-session";
+  if (typeof document === "undefined") return "";
+  return document.cookie.split(";").some(part => part.trim() === "dam_auth=1") ? "cookie-session" : "";
 };
 export const getKycStatus = () => {
   const token = getToken();

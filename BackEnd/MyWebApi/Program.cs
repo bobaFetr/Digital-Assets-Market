@@ -1,4 +1,5 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MyWebApi.Services;
@@ -9,6 +10,7 @@ using System.Text;
 using Microsoft.Net.Http.Headers;
 using System.IdentityModel.Tokens.Jwt;
 using System.Threading.RateLimiting;
+using System.Security.Cryptography;
 
 internal class Program
 {
@@ -16,6 +18,14 @@ internal class Program
     {
         var builder = WebApplication.CreateBuilder(args);
         var maintenanceModeEnabled = IsMaintenanceModeEnabled(builder.Configuration);
+
+        if (builder.Environment.IsDevelopment())
+        {
+            var developmentKeysPath = Path.Combine(builder.Environment.ContentRootPath, ".dev-keys");
+            builder.Services.AddDataProtection()
+                .PersistKeysToFileSystem(new DirectoryInfo(developmentKeysPath))
+                .SetApplicationName("DigitalAssetsMarket.Development");
+        }
 
         string? jwtKey = builder.Configuration["Jwt:Key"];
         if (string.IsNullOrWhiteSpace(jwtKey))
@@ -48,31 +58,31 @@ internal class Program
         }
 
         if (string.IsNullOrWhiteSpace(jwtKey))
-            throw new InvalidOperationException("Jwt:Key is missing. Set environment variable 'Jwt__Key' or configuration 'Jwt:Key'.");
+        {
+            if (!builder.Environment.IsDevelopment())
+                throw new InvalidOperationException("Jwt:Key is missing. Set environment variable 'Jwt__Key' or configuration 'Jwt:Key'.");
 
-        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options =>
+            jwtKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
+            builder.Configuration["Jwt:Key"] = jwtKey;
+        }
+
+        builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie(options =>
             {
-                options.TokenValidationParameters = new TokenValidationParameters
+                options.Cookie.Name = "dam_session";
+                options.Cookie.HttpOnly = true;
+                options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+                options.ExpireTimeSpan = TimeSpan.FromHours(1);
+                options.SlidingExpiration = false;
+                options.Events = new CookieAuthenticationEvents
                 {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                    ValidAudience = builder.Configuration["Jwt:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(jwtKey))
-                };
-
-                options.Events = new JwtBearerEvents
-                {
-                    OnTokenValidated = async context =>
+                    OnValidatePrincipal = async context =>
                     {
                         var userIdValue = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
                         if (!Guid.TryParse(userIdValue, out var userId))
                         {
-                            context.Fail("Invalid token.");
+                            context.RejectPrincipal();
                             return;
                         }
 
@@ -85,37 +95,24 @@ internal class Program
                             .Select(u => new { u.IsBanned })
                             .FirstOrDefaultAsync();
 
-                        if (user == null)
-                        {
-                            context.Fail("User not found.");
-                            return;
-                        }
-
-                        if (user.IsBanned)
-                        {
-                            context.Fail("User is banned");
-                            return;
-                        }
-
-                        var sessionIdValue = context.Principal?.FindFirstValue(JwtRegisteredClaimNames.Sid);
+                        var sessionIdValue = context.Principal?.FindFirstValue("sid");
                         if (!Guid.TryParse(sessionIdValue, out var sessionId) ||
+                            user == null || user.IsBanned ||
                             !await db.Sessions.AsNoTracking().AnyAsync(s =>
                                 s.SessionId == sessionId && s.UserId == userId && s.ExpiresAt > DateTime.UtcNow))
                         {
-                            context.Fail("Session is no longer valid.");
+                            context.RejectPrincipal();
                         }
                     },
-                    OnChallenge = async context =>
+                    OnRedirectToLogin = context =>
                     {
-                        if (!string.Equals(context.AuthenticateFailure?.Message, "User is banned", StringComparison.Ordinal))
-                        {
-                            return;
-                        }
-
-                        context.HandleResponse();
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        return Task.CompletedTask;
+                    },
+                    OnRedirectToAccessDenied = context =>
+                    {
                         context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                        context.Response.ContentType = "application/json";
-                        await context.Response.WriteAsync("{\"message\":\"User is banned\"}");
+                        return Task.CompletedTask;
                     }
                 };
             });
@@ -154,7 +151,8 @@ internal class Program
             {
                 policy.WithOrigins(allowedOrigins)
                       .AllowAnyHeader()
-                      .AllowAnyMethod();
+                      .AllowAnyMethod()
+                      .AllowCredentials();
             });
         });
 
@@ -172,13 +170,20 @@ internal class Program
 
         if (string.IsNullOrWhiteSpace(connectionString))
         {
-            throw new InvalidOperationException("Database connection string is missing.");
+            if (!builder.Environment.IsDevelopment())
+            {
+                throw new InvalidOperationException("Database connection string is missing.");
+            }
+
+            builder.Services.AddDbContext<AppDbContext>(options =>
+                options.UseInMemoryDatabase("DigitalAssetsMarketDevelopment"));
         }
-
-        connectionString = NormalizePostgresConnectionString(connectionString);
-
-        builder.Services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(connectionString));
+        else
+        {
+            connectionString = NormalizePostgresConnectionString(connectionString);
+            builder.Services.AddDbContext<AppDbContext>(options =>
+                options.UseNpgsql(connectionString));
+        }
 
         var marketDataBaseUrl = builder.Configuration["MarketData:BinanceBaseUrl"];
         if (string.IsNullOrWhiteSpace(marketDataBaseUrl))
@@ -364,8 +369,15 @@ internal class Program
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var walletProvisioning = scope.ServiceProvider.GetRequiredService<WalletProvisioningService>();
 
-            db.Database.Migrate();
-            EnsureOptionalDemoTables(db);
+            if (db.Database.IsRelational())
+            {
+                db.Database.Migrate();
+                EnsureOptionalDemoTables(db);
+            }
+            else
+            {
+                db.Database.EnsureCreated();
+            }
 
             var created = walletProvisioning.EnsureDefaultWalletsForAllUsers();
             if (created > 0)
