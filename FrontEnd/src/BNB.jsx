@@ -1,124 +1,55 @@
-//import React, { useEffect} from 'react';
-//import Chart from 'chart.js/auto';
-import React, { useEffect, useState } from 'react';
-import './App.css';
+import React, { useCallback, useEffect, useState } from "react";
+import { Line } from "react-chartjs-2";
 import {
-  Chart as ChartJS,
-  LineElement,
-  PointElement,
-  LinearScale,
-  CategoryScale,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js';
-import { Line } from 'react-chartjs-2';
-import { request } from './Services/Service';
-import './App.css';
+  CategoryScale, Chart as ChartJS, Legend, LineElement, LinearScale,
+  PointElement, Title, Tooltip,
+} from "chart.js";
+import { request } from "./Services/Service";
+import "./App.css";
 
-// Register the chart components used on this page.
-ChartJS.register(
-  LineElement,
-  PointElement,
-  LinearScale,
-  CategoryScale,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Title, Tooltip, Legend);
 
-function BitcoinChart() {
-  const [chartData, setChartData] = useState({
-    labels: [],
-    datasets: [],
-  });
+export default function BNBChart() {
+  const [chartData, setChartData] = useState({ labels: [], datasets: [] });
+  const [error, setError] = useState("");
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
-      const data = await request('/api/Bnb/history');
-      const rows = Array.isArray(data) ? data : [];
-      const labels = rows.map(item =>
-        new Date(item.time).toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' })
-      );
-      const prices = rows.map(item => item.price);
-
+      const rows = await request("/api/market/klines?symbol=BNBUSD&interval=1m&limit=60");
+      const candles = Array.isArray(rows) ? rows : [];
       setChartData({
-        labels,
-        datasets: [
-          {
-            label: 'Цена на BNB (в USD)',
-            data: prices,
-            borderColor: '#357859ff',
-            backgroundColor: 'rgba(0, 255, 204, 0.1)',
-            tension: 0.3,
-            fill: true,
-            pointRadius: 3,
-            pointBackgroundColor: '#00ffcc',
-          },
-        ],
+        labels: candles.map(item => new Date(item.closeTimeUtc).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })),
+        datasets: [{
+          label: "BNB price (USD)", data: candles.map(item => Number(item.close)),
+          borderColor: "#357859", backgroundColor: "rgba(0, 255, 204, 0.1)",
+          tension: 0.3, fill: true, pointRadius: 2, pointBackgroundColor: "#00ffcc",
+        }],
       });
-    } catch (error) {
-      console.error('Error fetching BTC data:', error);
+      setError("");
+    } catch (loadError) {
+      setError(loadError?.message || "Unable to load BNB market data.");
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 10000); // update every 10 seconds
-    return () => clearInterval(interval);
-  }, []);
+    const timer = setInterval(fetchData, 10000);
+    return () => clearInterval(timer);
+  }, [fetchData]);
 
   const options = {
     responsive: true,
     scales: {
-      x: {
-        type: 'category',
-        title: {
-          display: true,
-          text: 'Време',
-        },
-        ticks: {
-          color: '#f0f0f0',
-        },
-        grid: {
-          color: '#333',
-        },
-      },
-      y: {
-        type: 'linear',
-        title: {
-          display: true,
-          text: 'Цена на BTC (в USD)',
-        },
-        ticks: {
-          color: '#f0f0f0',
-        },
-        grid: {
-          color: '#333',
-        },
-      },
+      x: { title: { display: true, text: "Time" }, ticks: { color: "#94a3b8" }, grid: { color: "rgba(148, 163, 184, 0.18)" } },
+      y: { title: { display: true, text: "BNB price (USD)" }, ticks: { color: "#94a3b8" }, grid: { color: "rgba(148, 163, 184, 0.18)" } },
     },
     plugins: {
-      legend: {
-        labels: {
-          color: '#f0f0f0',
-        },
-        position: 'top',
-      },
-      title: {
-        display: true,
-        text: 'BTC PRICE LAST 60 MINUTES',
-        color: '#f0f0f0',
-      },
+      legend: { labels: { color: "#94a3b8" }, position: "top" },
+      title: { display: true, text: "BNB price — last 60 minutes", color: "#94a3b8" },
     },
   };
 
-  return (
-    <div className="container">
-      {/* <h1>Графика на цената</h1> */}
-      <Line data={chartData} options={options} />
-    </div>
-  );
+  return <div className="container">
+    {error ? <div className="ui-notice ui-notice--error">{error}</div> : <Line data={chartData} options={options} />}
+  </div>;
 }
-
-export default BitcoinChart;

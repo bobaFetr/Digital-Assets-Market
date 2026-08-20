@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using MyWebApi.Services;
 using NetServer.Data.Models;
 using System.Reflection;
@@ -28,6 +30,20 @@ public class AuthControllerTests
                 ["Jwt:Audience"] = "test-audience"
             })
             .Build();
+    }
+
+    private static DefaultHttpContext CreateAuthenticatedHttpContext()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddDataProtection();
+        services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie();
+
+        return new DefaultHttpContext
+        {
+            RequestServices = services.BuildServiceProvider()
+        };
     }
 
     [Test]
@@ -164,11 +180,11 @@ public class AuthControllerTests
         var kyc = db.KycDocuments.SingleOrDefault(k => k.UserId == createdUser!.Id);
         Assert.That(kyc, Is.Not.Null);
         Assert.That(kyc!.DocumentNumber, Is.EqualTo("ID-778899"));
-        Assert.That(kyc.Status, Is.EqualTo("Verified"));
+        Assert.That(kyc.Status, Is.EqualTo("Pending"));
     }
 
     [Test]
-    public void Login_ReturnsOk_AndUpgradesPasswordHash_WhenStoredPasswordIsLegacyPlainText()
+    public async Task Login_ReturnsOk_AndUpgradesPasswordHash_WhenStoredPasswordIsLegacyPlainText()
     {
         using var db = ControllerTestHelpers.CreateDbContext();
         var userId = Guid.NewGuid();
@@ -189,11 +205,11 @@ public class AuthControllerTests
         {
             ControllerContext = new ControllerContext
             {
-                HttpContext = new DefaultHttpContext()
+                HttpContext = CreateAuthenticatedHttpContext()
             }
         };
 
-        var result = controller.Login(new LoginRequest
+        var result = await controller.Login(new LoginRequest
         {
             Email = "Alice@email.com",
             Password = "bobata"
@@ -208,7 +224,7 @@ public class AuthControllerTests
     }
 
     [Test]
-    public void Login_ReturnsUnauthorized_WhenStoredPasswordIsLegacyPlainText_AndPasswordDoesNotMatch()
+    public async Task Login_ReturnsUnauthorized_WhenStoredPasswordIsLegacyPlainText_AndPasswordDoesNotMatch()
     {
         using var db = ControllerTestHelpers.CreateDbContext();
         db.Users.Add(new User
@@ -232,7 +248,7 @@ public class AuthControllerTests
             }
         };
 
-        var result = controller.Login(new LoginRequest
+        var result = await controller.Login(new LoginRequest
         {
             Email = "Alice@email.com",
             Password = "wrong-password"

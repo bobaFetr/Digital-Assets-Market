@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyWebApi", "BackEnd\MyWebAp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetServer.DAta1", "BackEnd\NetServer.DAta1\NetServer.DAta1.csproj", "{8508E6AB-B222-4306-AB93-183C8B399D19}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyApp.Tests", "MyApp.Tests\MyApp.Tests.csproj", "{B4EC034F-3AD1-4D20-95E6-C9D31B81A504}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,18 @@ Global
 		{8508E6AB-B222-4306-AB93-183C8B399D19}.Release|x64.Build.0 = Release|Any CPU
 		{8508E6AB-B222-4306-AB93-183C8B399D19}.Release|x86.ActiveCfg = Release|Any CPU
 		{8508E6AB-B222-4306-AB93-183C8B399D19}.Release|x86.Build.0 = Release|Any CPU
+		{B4EC034F-3AD1-4D20-95E6-C9D31B81A504}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4EC034F-3AD1-4D20-95E6-C9D31B81A504}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4EC034F-3AD1-4D20-95E6-C9D31B81A504}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B4EC034F-3AD1-4D20-95E6-C9D31B81A504}.Debug|x64.Build.0 = Debug|Any CPU
+		{B4EC034F-3AD1-4D20-95E6-C9D31B81A504}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B4EC034F-3AD1-4D20-95E6-C9D31B81A504}.Debug|x86.Build.0 = Debug|Any CPU
+		{B4EC034F-3AD1-4D20-95E6-C9D31B81A504}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4EC034F-3AD1-4D20-95E6-C9D31B81A504}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4EC034F-3AD1-4D20-95E6-C9D31B81A504}.Release|x64.ActiveCfg = Release|Any CPU
+		{B4EC034F-3AD1-4D20-95E6-C9D31B81A504}.Release|x64.Build.0 = Release|Any CPU
+		{B4EC034F-3AD1-4D20-95E6-C9D31B81A504}.Release|x86.ActiveCfg = Release|Any CPU
+		{B4EC034F-3AD1-4D20-95E6-C9D31B81A504}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

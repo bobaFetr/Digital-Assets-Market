@@ -170,3 +170,51 @@
   .faq-question-item { padding: 22px 0; }
   .faq-profile-picture { width: 34px; height: 34px; max-width: 34px; flex-basis: 34px; }
 }
+/* Restored live-trading demo and cookie-consent surfaces. */
+.bcrypto-empty-state,
+.bcrypto-content {
+  width: min(900px, 95%);
+  margin: 20px auto;
+  color: var(--text-primary);
+}
+
+.bcrypto-empty-state,
+.bcrypto-chart,
+.bcrypto-log {
+  padding: 20px;
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+}
+
+.bcrypto-empty-state { text-align: center; }
+.bcrypto-actions { display: flex; gap: 15px; margin-top: 30px; }
+.bcrypto-actions button { flex: 1; padding: 12px; color: #fff; border: 0; border-radius: 8px; cursor: pointer; font-weight: 700; }
+.bcrypto-buy { background: #22c55e; }
+.bcrypto-sell { background: #ef4444; }
+.bcrypto-log { margin-top: 30px; max-height: 200px; overflow-y: auto; }
+
+.cookie-popup {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 3000;
+  width: min(420px, calc(100vw - 24px));
+  padding: 16px;
+  color: var(--text-primary);
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.cookie-popup h3 { margin: 0 0 8px; }
+.cookie-popup p { margin: 0; color: var(--text-secondary); line-height: 1.4; }
+.cookie-popup__actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+.cookie-btn { padding: 8px 12px; border: 0; border-radius: 8px; cursor: pointer; font-weight: 600; }
+.cookie-btn--secondary { color: var(--text-primary); background: transparent; border: 1px solid var(--glass-border); }
+.cookie-btn--primary { color: #fff; background: var(--accent-blue); }
+
+@media (max-width: 560px) {
+  .cookie-popup { right: 12px; bottom: 12px; left: 12px; width: auto; }
+}

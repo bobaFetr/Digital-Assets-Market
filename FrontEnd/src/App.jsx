@@ -1,37 +1,38 @@
 ﻿import React, { useEffect, useState } from "react";
 import { Navigate, Routes, Route, useLocation, useNavigate } from "react-router-dom";
-import BitcoinChart from "./BitcoinChart";
-import BNBChart from "./BNB";
-import Profile from "./Profile";
-import Wallet from "./Wallet";
-import WithDraw from "./WithdrawPage.jsx";
-import BuyAndSell from "./BuyAndSell";
-import CryptoServerAssetPage from "./CryptoServerAssetPage";
-import VerifyIdentityPage from "./VerifyIdentityPage";
+const BitcoinChart = React.lazy(() => import("./BitcoinChart"));
+const BNBChart = React.lazy(() => import("./BNB"));
+const BCrypto = React.lazy(() => import("./BCrypto"));
+const Profile = React.lazy(() => import("./Profile"));
+const Wallet = React.lazy(() => import("./Wallet"));
+const WithDraw = React.lazy(() => import("./WithdrawPage.jsx"));
+const BuyAndSell = React.lazy(() => import("./BuyAndSell"));
+const CryptoServerAssetPage = React.lazy(() => import("./CryptoServerAssetPage"));
+const VerifyIdentityPage = React.lazy(() => import("./VerifyIdentityPage"));
 import { AUTH_BLOCKED_EVENT, AUTH_STATE_CHANGED_EVENT, getKycStatus, getToken, getUserRoleHint, request, getProfile } from "./Services/Service";
 import { buildUrl } from "./config/api";
 import { resolveTrustedImageUrl } from "./Security/trustedContent";
-import SignUpPage from "./SignUp.jsx";
-import SignInPage from "./Login.jsx";
-import ResetPassword from "./ResetPassword.jsx";
-import ForgotPassword from "./ForgotPassword.jsx";
+const SignUpPage = React.lazy(() => import("./SignUp.jsx"));
+const SignInPage = React.lazy(() => import("./Login.jsx"));
+const ResetPassword = React.lazy(() => import("./ResetPassword.jsx"));
+const ForgotPassword = React.lazy(() => import("./ForgotPassword.jsx"));
 import Sidebar from "./Components/Sidebar";
 import Footer from "./Components/Footer";
+import CookieConsent from "./Components/CookieConsent";
 import "./App.css";
-import Admin from "./ADMIN/AdminMainPage.jsx";
-import Education from "./Education.jsx";
-import HowToSecureWallet from "./HowToSecureWallet.jsx";
-import WhatIsBlockchain from "./WhatIsBlockchain.jsx";
-import Faq from "./Faq.jsx";
-import Support from "./Support.jsx";
-import Feedback from "./Feedback.jsx";
-import News from "./News.jsx";
-import NewsDetail from "./NewsDetail.jsx";
-import RugPull from "./RugPull.jsx";
-//////// Error page for testing 404 handling
-import ErorPage1 from "./ErorPage1.jsx";
-import ErrorPage2 from "./ErrorPage2.jsx";
-import ErrorPage3 from "./ErrorPage3.jsx";
+const Admin = React.lazy(() => import("./ADMIN/AdminMainPage.jsx"));
+const Education = React.lazy(() => import("./Education.jsx"));
+const HowToSecureWallet = React.lazy(() => import("./HowToSecureWallet.jsx"));
+const WhatIsBlockchain = React.lazy(() => import("./WhatIsBlockchain.jsx"));
+const Faq = React.lazy(() => import("./Faq.jsx"));
+const Support = React.lazy(() => import("./Support.jsx"));
+const Feedback = React.lazy(() => import("./Feedback.jsx"));
+const News = React.lazy(() => import("./News.jsx"));
+const NewsDetail = React.lazy(() => import("./NewsDetail.jsx"));
+const RugPull = React.lazy(() => import("./RugPull.jsx"));
+const ErorPage1 = React.lazy(() => import("./ErorPage1.jsx"));
+const ErrorPage2 = React.lazy(() => import("./ErrorPage2.jsx"));
+const ErrorPage3 = React.lazy(() => import("./ErrorPage3.jsx"));
 const AVAILABLE_CURRENCIES = [{
   code: "BTC",
   name: "Bitcoin",
@@ -75,6 +76,7 @@ const getMobileHeaderTitle = pathname => {
   if (pathname.startsWith("/reset-password")) return "Reset Password";
   if (pathname.startsWith("/BitcoinChart")) return "BTC Markets";
   if (pathname.startsWith("/BNBChart")) return "BNB Markets";
+  if (pathname.startsWith("/BCrypto")) return "Markets";
   if (pathname.startsWith("/real-currencies/btcusdt")) return "BTCUSDT";
   if (pathname.startsWith("/real-currencies/bchusdt")) return "BCHUSDT";
   if (pathname.startsWith("/news")) return "News";
@@ -291,16 +293,14 @@ function Home({
     // Fetch live prices
     const loadLivePrices = async () => {
       try {
-        const ids = AVAILABLE_CURRENCIES.map(currency => currency.coinGeckoId).join(",");
-        const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${encodeURIComponent(ids)}&vs_currencies=usd`);
-        if (!response.ok) {
-          throw new Error("Unable to fetch market prices.");
-        }
-        const payload = await response.json();
+        const tickers = await Promise.all(AVAILABLE_CURRENCIES.map(currency =>
+          request(`/api/market/ticker?symbol=${currency.code}USD`)
+        ));
         if (!isMounted) return;
         setLivePrices(previousList => AVAILABLE_CURRENCIES.map(currency => {
           const previous = previousList.find(item => item.code === currency.code);
-          const nextPrice = Number(payload?.[currency.coinGeckoId]?.usd);
+          const ticker = tickers.find(item => item?.symbol === `${currency.code}USD`);
+          const nextPrice = Number(ticker?.lastPrice);
           const previousPrice = previous?.price ?? null;
           const hasComparablePrices = typeof previousPrice === "number" && Number.isFinite(previousPrice) && Number.isFinite(nextPrice) && previousPrice > 0;
           return {
@@ -360,7 +360,7 @@ function Home({
     let mounted = true;
     const fetchServerInfo = async () => {
       try {
-        const data = await request(`/api/binance/btc`);
+        const data = await request(`/api/market/ticker?symbol=BTCUSD`);
         if (!mounted) return;
         setServerInfo(data);
       } catch (err) {
@@ -540,7 +540,7 @@ function Home({
               setSelectedCurrency(c.code);
               if (c.code === 'BTC') {
                 try {
-                  const data = await request(`/api/binance/btc`);
+                  const data = await request(`/api/market/ticker?symbol=BTCUSD`);
                   setServerInfo(data);
                 } catch (err) {
                   setServerInfo({
@@ -732,6 +732,7 @@ export default function App() {
           </button>
           {mobileOpen && <div className="mobile-sidebar-backdrop" onClick={() => setMobileOpen(false)} />}
           {location.pathname !== "/" && <GlobalTopBar theme={theme} onToggleTheme={toggleTheme} setMobileOpen={setMobileOpen} authVersion={authVersion} />}
+        <React.Suspense fallback={<main className="route-loading" aria-busy="true">Loading page…</main>}>
         <Routes>
           <Route path="/" element={<Home theme={theme} onToggleTheme={toggleTheme} />} />
           <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
@@ -745,6 +746,7 @@ export default function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/BitcoinChart" element={<BitcoinChartPage />} />
           <Route path="/BNBChart" element={<BNBChartPage />} />
+          <Route path="/BCrypto" element={<BCrypto assets={[]} />} />
           <Route path="/real-currencies/btcusdt" element={<CryptoServerAssetPage title="BTCUSDT" symbol="BTCUSDT" pricePath="/api/bitcoin" historyPath="/api/bitcoin/history" ordersPath="/api/bitcoin/orders" />} />
 
           <Route path="/real-currencies/bchusdt" element={<CryptoServerAssetPage title="BCHUSDT" symbol="BCHUSDT" pricePath="/api/bitcoincash" historyPath="/api/bitcoincash/history" ordersPath="/api/bitcoincash/orders" />} />
@@ -764,8 +766,10 @@ export default function App() {
 
           <Route path="*" element={<ErorPage1 />} />
         </Routes>
+        </React.Suspense>
         </div>
         <Footer />
+        <CookieConsent />
       </div>
     </KycGate>;
 }
