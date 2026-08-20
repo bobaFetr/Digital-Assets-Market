@@ -173,23 +173,14 @@ internal class Program
 
         if (string.IsNullOrWhiteSpace(connectionString))
         {
-            if (!builder.Environment.IsDevelopment())
-            {
-                throw new InvalidOperationException("Database connection string is missing.");
-            }
+            throw new InvalidOperationException(
+                "PostgreSQL connection string is missing. Configure ConnectionStrings:DefaultConnection, " +
+                "ConnectionStrings__DefaultConnection, or DATABASE_URL.");
+        }
 
-            var developmentDataDirectory = Path.Combine(builder.Environment.ContentRootPath, "App_Data");
-            Directory.CreateDirectory(developmentDataDirectory);
-            var developmentDatabasePath = Path.Combine(developmentDataDirectory, "dam-development.db");
-            builder.Services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlite($"Data Source={developmentDatabasePath}"));
-        }
-        else
-        {
-            connectionString = NormalizePostgresConnectionString(connectionString);
-            builder.Services.AddDbContext<AppDbContext>(options =>
-                options.UseNpgsql(connectionString));
-        }
+        connectionString = NormalizePostgresConnectionString(connectionString);
+        builder.Services.AddDbContext<AppDbContext>(options =>
+            options.UseNpgsql(connectionString));
 
         var marketDataBaseUrl = builder.Configuration["MarketData:BinanceBaseUrl"];
         if (string.IsNullOrWhiteSpace(marketDataBaseUrl))
@@ -375,19 +366,8 @@ internal class Program
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var walletProvisioning = scope.ServiceProvider.GetRequiredService<WalletProvisioningService>();
 
-            if (db.Database.ProviderName?.Contains("Sqlite", StringComparison.OrdinalIgnoreCase) == true)
-            {
-                db.Database.EnsureCreated();
-            }
-            else if (db.Database.IsRelational())
-            {
-                db.Database.Migrate();
-                EnsureOptionalDemoTables(db);
-            }
-            else
-            {
-                db.Database.EnsureCreated();
-            }
+            db.Database.Migrate();
+            EnsureOptionalDemoTables(db);
 
             var created = walletProvisioning.EnsureDefaultWalletsForAllUsers();
             if (created > 0)

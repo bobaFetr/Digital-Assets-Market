@@ -146,6 +146,17 @@ The database connection string is resolved in this order:
 
 The provider is PostgreSQL, configured through `UseNpgsql(...)`.
 
+PostgreSQL is mandatory in every runtime environment, including local development. The API fails fast with a configuration error when none of the connection-string settings is present. SQLite and schema creation through `EnsureCreated()` are not used.
+
+Example local PowerShell configuration:
+
+```powershell
+$env:ConnectionStrings__DefaultConnection = "Host=localhost;Port=5432;Database=digital_assets_market;Username=postgres;Password=your_password"
+dotnet run --project BackEnd/MyWebApi
+```
+
+At startup, the API applies the committed PostgreSQL migrations with `Database.Migrate()` before performing wallet backfill.
+
 ### Dependency injection
 
 The active service registrations are:
